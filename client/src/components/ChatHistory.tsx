@@ -102,7 +102,8 @@ export default function ChatHistory({ userId, onSelectSession, className }: Chat
 
   const formatDate = (date: Date) => {
     const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    const dateObj = new Date(date); // Ensure it's a Date object
+    const diffInHours = (now.getTime() - dateObj.getTime()) / (1000 * 60 * 60);
     
     if (diffInHours < 24) {
       return 'Today';
