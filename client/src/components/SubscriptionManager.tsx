@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CreditCard, Calendar, Star, Crown, Zap, Sparkles, ArrowRight, Check } from 'lucide-react';
@@ -47,6 +46,14 @@ const tierInfo = {
   }
 };
 
+// Define subscription tiers for easier access and management
+const subscriptionTiers = [
+  { id: 'free', name: 'First Steps', icon: <Sparkles className="w-5 h-5" />, color: 'gray', price: 0 },
+  { id: 'growth', name: 'Growth', icon: <Zap className="w-5 h-5" />, color: 'indigo', price: 19 },
+  { id: 'transformation', name: 'Transformation', icon: <Star className="w-5 h-5" />, color: 'purple', price: 39 },
+  { id: 'facilitator', name: 'Facilitator', icon: <Crown className="w-5 h-5" />, color: 'amber', price: 99 },
+];
+
 interface SubscriptionManagerProps {
   userId: string;
 }
@@ -66,10 +73,13 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
       if (response.ok) {
         const data = await response.json();
         setSubscription(data);
+      } else {
+        // Handle non-OK responses, e.g., subscription not found
+        setSubscription(null); // Or set to a default free tier state
       }
     } catch (error) {
       console.error('Error fetching subscription:', error);
-      // Mock data for demo
+      // Mock data for demo if fetch fails
       setSubscription({
         tier: 'growth',
         status: 'active',
@@ -93,10 +103,13 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tier: newTier })
       });
-      
+
       if (response.ok) {
         await fetchSubscription();
         setShowUpgrade(false);
+      } else {
+        console.error('Upgrade failed:', response.statusText);
+        // Optionally show an error message to the user
       }
     } catch (error) {
       console.error('Error upgrading subscription:', error);
@@ -108,9 +121,12 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
       const response = await fetch(`/api/user/${userId}/subscription/cancel`, {
         method: 'POST'
       });
-      
+
       if (response.ok) {
         await fetchSubscription();
+      } else {
+        console.error('Cancellation failed:', response.statusText);
+        // Optionally show an error message to the user
       }
     } catch (error) {
       console.error('Error cancelling subscription:', error);
@@ -126,10 +142,20 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
     );
   }
 
-  if (!subscription) return null;
+  // Get current tier info with fallback to free tier if subscription is null or tier is not found
+  const currentTier = subscriptionTiers.find(tier => tier.id === subscription?.tier) || subscriptionTiers[0];
 
-  const currentTier = tierInfo[subscription.tier] || tierInfo.free;
-  const usagePercentage = subscription.usageStats.blissInteractions.limit > 0 
+  if (!subscription) {
+    return (
+      <Card className="p-4 sm:p-6">
+        <div className="text-center text-muted-foreground">
+          Loading subscription information...
+        </div>
+      </Card>
+    );
+  }
+
+  const usagePercentage = subscription.usageStats.blissInteractions.limit > 0
     ? (subscription.usageStats.blissInteractions.used / subscription.usageStats.blissInteractions.limit) * 100
     : 0;
 
@@ -138,38 +164,38 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
       {/* Current Subscription */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <div className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center",
                 `bg-${currentTier.color}-100 text-${currentTier.color}-600`
               )}>
                 {currentTier.icon}
               </div>
-              <div>
-                <CardTitle className="flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <CardTitle className="flex items-center gap-2 truncate">
                   {currentTier.name}
-                  <Badge 
+                  <Badge
                     variant={subscription.status === 'active' ? 'default' : 'secondary'}
                     className="capitalize"
                   >
                     {subscription.status}
                   </Badge>
                 </CardTitle>
-                <CardDescription>
-                  {subscription.tier === 'free' 
-                    ? 'Free forever' 
+                <CardDescription className="truncate">
+                  {subscription.tier === 'free'
+                    ? 'Free forever'
                     : `$${currentTier.price}/month • Renews ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`
                   }
                 </CardDescription>
               </div>
             </div>
-            
+
             {subscription.tier !== 'facilitator' && (
               <Button
                 onClick={() => setShowUpgrade(true)}
                 variant="outline"
-                className="hover-elevate"
+                className="hover-elevate w-full sm:w-auto"
               >
                 Upgrade
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -185,7 +211,7 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
               <div className="flex justify-between text-sm mb-2">
                 <span>Bliss Conversations</span>
                 <span>
-                  {subscription.usageStats.blissInteractions.limit > 0 
+                  {subscription.usageStats.blissInteractions.limit > 0
                     ? `${subscription.usageStats.blissInteractions.used}/${subscription.usageStats.blissInteractions.limit}`
                     : `${subscription.usageStats.blissInteractions.used} (Unlimited)`
                   }
@@ -203,9 +229,9 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
                   {subscription.usageStats.communityCircles.access}/{subscription.usageStats.communityCircles.total}
                 </span>
               </div>
-              <Progress 
-                value={(subscription.usageStats.communityCircles.access / subscription.usageStats.communityCircles.total) * 100} 
-                className="h-2" 
+              <Progress
+                value={(subscription.usageStats.communityCircles.access / subscription.usageStats.communityCircles.total) * 100}
+                className="h-2"
               />
             </div>
 
@@ -217,9 +243,9 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
                     {subscription.usageStats.coachingSessions.used}/{subscription.usageStats.coachingSessions.included}
                   </span>
                 </div>
-                <Progress 
-                  value={(subscription.usageStats.coachingSessions.used / subscription.usageStats.coachingSessions.included) * 100} 
-                  className="h-2" 
+                <Progress
+                  value={(subscription.usageStats.coachingSessions.used / subscription.usageStats.coachingSessions.included) * 100}
+                  className="h-2"
                 />
               </div>
             )}
@@ -256,27 +282,27 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-xl font-medium mb-4">Upgrade Your Plan</h3>
-            
+
             <div className="space-y-3">
-              {Object.entries(tierInfo)
-                .filter(([key]) => key !== subscription.tier && key !== 'free')
-                .map(([tierKey, info]) => (
+              {subscriptionTiers
+                .filter((tier) => tier.id !== subscription.tier && tier.id !== 'free')
+                .map((tier) => (
                   <div
-                    key={tierKey}
+                    key={tier.id}
                     className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer"
-                    onClick={() => handleUpgrade(tierKey)}
+                    onClick={() => handleUpgrade(tier.id)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className={cn(
                           "w-8 h-8 rounded-full flex items-center justify-center",
-                          `bg-${info.color}-100 text-${info.color}-600`
+                          `bg-${tier.color}-100 text-${tier.color}-600`
                         )}>
-                          {info.icon}
+                          {tier.icon}
                         </div>
                         <div>
-                          <div className="font-medium">{info.name}</div>
-                          <div className="text-sm text-muted-foreground">${info.price}/month</div>
+                          <div className="font-medium">{tier.name}</div>
+                          <div className="text-sm text-muted-foreground">${tier.price}/month</div>
                         </div>
                       </div>
                       <ArrowRight className="w-4 h-4 text-muted-foreground" />

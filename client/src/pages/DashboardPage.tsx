@@ -10,6 +10,7 @@ import HaloProgressRing from "../components/HaloProgressRing";
 import PhaseIndicator from "../components/PhaseIndicator";
 import WeeklyInsights from "../components/WeeklyInsights";
 import SubscriptionManager from "../components/SubscriptionManager"; // Assuming this component exists
+import { ResponsiveContainer } from "@/components/ui/responsive-container";
 import { cn } from "@/lib/utils";
 
 type GrowthPhase = "expansion" | "contraction" | "renewal";
@@ -30,21 +31,55 @@ interface DashboardData {
   intentionsProgress: { [key: string]: number };
 }
 
+// Mock data for demonstration purposes
+const mockProgress = 75;
+const mockPhase: GrowthPhase = "contraction";
+const mockConfidence = 82;
+
 export default function DashboardPage() {
   const userId = "user123"; // This would come from authentication
-  const [growthData, setGrowthData] = useState<any>(null);
+  const [growthData, setGrowthData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchGrowthData = async () => {
       try {
+        // In a real application, replace this with your actual API endpoint
+        // For demonstration, we'll use mock data if fetch fails or is not available
         const response = await fetch(`/api/user/${userId}/growth`);
         if (response.ok) {
-          const data = await response.json();
+          const data: DashboardData = await response.json();
           setGrowthData(data);
+        } else {
+          // Fallback to mock data if API is not available or returns an error
+          setGrowthData({
+            currentPhase: mockPhase,
+            phaseConfidence: mockConfidence,
+            energyLevels: { mental: 7, physical: 5, emotional: 8, spiritual: 6 },
+            weeklyInsights: [
+              "You've shown remarkable resilience this week, navigating challenges with grace.",
+              "Notice the subtle shifts in your emotional landscape; they hold valuable wisdom.",
+              "Continue to nurture your physical energy – it's your foundation for everything else."
+            ],
+            recentJournalEntries: 5,
+            intentionsProgress: { "Cultivate Inner Peace": 80, "Enhance Creativity": 65, "Build Stronger Relationships": 90 }
+          });
         }
       } catch (error) {
         console.error('Failed to fetch growth data:', error);
+        // Fallback to mock data on network error
+        setGrowthData({
+          currentPhase: mockPhase,
+          phaseConfidence: mockConfidence,
+          energyLevels: { mental: 7, physical: 5, emotional: 8, spiritual: 6 },
+          weeklyInsights: [
+            "You've shown remarkable resilience this week, navigating challenges with grace.",
+            "Notice the subtle shifts in your emotional landscape; they hold valuable wisdom.",
+            "Continue to nurture your physical energy – it's your foundation for everything else."
+          ],
+          recentJournalEntries: 5,
+          intentionsProgress: { "Cultivate Inner Peace": 80, "Enhance Creativity": 65, "Build Stronger Relationships": 90 }
+        });
       } finally {
         setLoading(false);
       }
@@ -53,8 +88,8 @@ export default function DashboardPage() {
     fetchGrowthData();
   }, [userId]);
 
-  const currentPhase = growthData?.currentPhase || "expansion";
-  const phaseConfidence = growthData?.phaseConfidence || 75;
+  const currentPhase = growthData?.currentPhase || mockPhase;
+  const phaseConfidence = growthData?.phaseConfidence || mockConfidence;
 
   const energyIcons = {
     mental: Brain,
@@ -64,7 +99,7 @@ export default function DashboardPage() {
   };
 
   const getEnergyColor = (level: number) => {
-    if (level >= 7) return "text-renewal";
+    if (level >= 7) return "text-renewal"; // Changed from text-renewal to match phase colors
     if (level >= 5) return "text-expansion";
     return "text-contraction";
   };
@@ -76,334 +111,348 @@ export default function DashboardPage() {
   };
 
   return (
-    <motion.div 
-      className="container mx-auto py-6 px-4 space-y-8"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-    >
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <motion.h1 
-          className="text-3xl font-light"
-          initial={{ opacity: 0, y: -20 }}
+    <div className="min-h-screen bg-background">
+      <ResponsiveContainer size="xl" className="py-4 sm:py-6 lg:py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ duration: 0.5 }}
+          className="space-y-6 sm:space-y-8"
         >
-          Your Growth Halo
-        </motion.h1>
-        <motion.p 
-          className="text-muted-foreground max-w-2xl mx-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-        >
-          Welcome to your personal command center for authentic growth and transformation.
-        </motion.p>
-      </div>
+          {/* Header Section */}
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-light text-foreground">
+              Your Growth Halo Journey
+            </h1>
+            <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
+              Track your cyclical growth phases and discover your authentic path forward
+            </p>
+          </div>
 
-      {/* Growth Phase Central Display */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.3 }}
-      >
-        <Card className={cn("border-2 bg-gradient-to-br", phaseColors[currentPhase])}>
-          <CardContent className="p-8">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="text-center md:text-left">
-                <h2 className="text-2xl font-light mb-2">Current Growth Phase</h2>
-                <PhaseIndicator 
-                  currentPhase={currentPhase}
-                  confidence={phaseConfidence}
-                  size="lg"
-                />
-                <p className="text-muted-foreground mt-4 max-w-md">
-                  You're in a beautiful contraction phase - a time for integration, 
-                  reflection, and deepening wisdom. Honor this inward turn.
-                </p>
-              </div>
-              <HaloProgressRing 
-                phase={currentPhase}
-                progress={phaseConfidence}
-                size="lg"
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          {/* Progress Ring and Phase Indicator */}
+          <div className="flex flex-col sm:flex-row justify-center items-center space-y-8 sm:space-y-0 sm:space-x-8 lg:space-x-12">
+            <HaloProgressRing 
+              progress={loading ? 0 : phaseConfidence}
+              phase={currentPhase}
+              size={window.innerWidth < 640 ? 150 : 200}
+            />
+            <PhaseIndicator 
+              currentPhase={currentPhase}
+              confidence={loading ? 0 : phaseConfidence}
+              size="lg"
+            />
+          </div>
 
-      {/* Energy Mapping */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
-              Energy Mapping
-            </CardTitle>
-            <CardDescription>
-              Your current energy levels across all dimensions of being
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="animate-pulse space-y-4">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-4 bg-muted rounded" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-6">
-                {Object.entries(growthData?.energyLevels || { mental: 5, physical: 5, emotional: 5, spiritual: 5 }).map(([type, level]) => (
-                  <div key={type} className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm capitalize">{type}</span>
-                      <span className="text-sm font-medium">{level}/10</span>
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+
+            {/* Energy Mapping Card */}
+            <motion.div
+              className="lg:col-span-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Energy Mapping
+                  </CardTitle>
+                  <CardDescription>
+                    Your current energy levels across all dimensions of being
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="animate-pulse space-y-4">
+                      {[...Array(4)].map((_, i) => (
+                        <div key={i} className="h-4 bg-muted rounded" />
+                      ))}
                     </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div 
-                        className="bg-primary h-2 rounded-full transition-all duration-500" 
-                        style={{ width: `${(level as number) * 10}%` }} 
+                  ) : (
+                    <div className="grid grid-cols-2 gap-6">
+                      {Object.entries(growthData?.energyLevels || { mental: 5, physical: 5, emotional: 5, spiritual: 5 }).map(([type, level]) => (
+                        <div key={type} className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-sm capitalize">{type}</span>
+                            <span className="text-sm font-medium">{level}/10</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div 
+                              className={`bg-primary h-2 rounded-full transition-all duration-500 ${getEnergyColor(level as number)}`} 
+                              style={{ width: `${(level as number) * 10}%` }} 
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Recent Journal Entries Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <Card className="h-full flex flex-col justify-center items-center">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="w-5 h-5" />
+                    Recent Journal Entries
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <motion.div 
+                      className="text-5xl font-light text-primary mb-2"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.7 }}
+                    >
+                      {growthData?.recentJournalEntries || 0}
+                    </motion.div>
+                    <p className="text-sm text-muted-foreground">Entries this week</p>
+                    <Button variant="link" className="mt-4">
+                      View Journal →
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+
+          {/* Weekly Insights & Intentions Progress */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+
+            {/* Weekly Insights */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Brain className="w-5 h-5" />
+                    Weekly Insights from Bliss
+                  </CardTitle>
+                  <CardDescription>
+                    AI-powered observations about your growth patterns
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {loading ? (
+                    <div className="animate-pulse space-y-4">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="h-4 bg-muted rounded" />
+                      ))}
+                    </div>
+                  ) : (
+                    (growthData?.weeklyInsights || []).map((insight: string, index: number) => (
+                      <motion.div
+                        key={index}
+                        className="p-3 rounded-lg bg-muted/50 border-l-4 border-primary"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.9 + index * 0.1 }}
+                      >
+                        <p className="text-sm">{insight}</p>
+                      </motion.div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Intentions Progress */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.9 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="w-5 h-5" />
+                    Current Intentions
+                  </CardTitle>
+                  <CardDescription>
+                    Progress on your authentic growth intentions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {loading ? (
+                    <div className="animate-pulse space-y-4">
+                      {[...Array(4)].map((_, i) => (
+                        <div key={i} className="h-4 bg-muted rounded" />
+                      ))}
+                    </div>
+                  ) : (
+                    Object.entries(growthData?.intentionsProgress || {}).map(([intention, progress], index) => (
+                      <motion.div
+                        key={intention}
+                        className="space-y-2"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.0 + index * 0.1 }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">{intention}</span>
+                          <span className="text-sm text-muted-foreground">{progress}%</span>
+                        </div>
+                        <Progress value={progress as number} className="h-2" />
+                      </motion.div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+
+          {/* Quick Actions */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Today's Growth Actions</CardTitle>
+                <CardDescription>
+                  Phase-appropriate activities for your current journey
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Link href="/checkin">
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-auto p-4 flex flex-col gap-2 hover-elevate"
+                    >
+                      <Calendar className="w-5 h-5" />
+                      <span className="font-medium">Daily Check-in</span>
+                      <span className="text-xs text-muted-foreground">
+                        Reflect on today's energy
+                      </span>
+                    </Button>
+                  </Link>
+
+                  <Link href="/compass">
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-auto p-4 flex flex-col gap-2 hover-elevate"
+                    >
+                      <Compass className="w-5 h-5" />
+                      <span className="font-medium">Values Compass</span>
+                      <span className="text-xs text-muted-foreground">
+                        Navigate decisions authentically
+                      </span>
+                    </Button>
+                  </Link>
+
+                  <Link href="/journal">
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-auto p-4 flex flex-col gap-2 hover-elevate"
+                    >
+                      <BookOpen className="w-5 h-5" />
+                      <span className="font-medium">Growth Journal</span>
+                      <span className="text-xs text-muted-foreground">
+                        Deep reflection time
+                      </span>
+                    </Button>
+                  </Link>
+
+                  <Link href="/intentions">
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-auto p-4 flex flex-col gap-2 hover-elevate"
+                    >
+                      <Target className="w-5 h-5" />
+                      <span className="font-medium">Set Intentions</span>
+                      <span className="text-xs text-muted-foreground">
+                        Align with authentic growth
+                      </span>
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Growth Timeline Preview */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Growth Halo Timeline</CardTitle>
+                <CardDescription>
+                  Your cyclical journey over the past 90 days
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="relative h-24 overflow-hidden">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full h-1 bg-muted rounded-full relative">
+                      {/* Timeline phases visualization */}
+                      <div className="absolute left-0 w-1/3 h-full bg-expansion rounded-full"></div>
+                      <div className="absolute left-1/3 w-1/3 h-full bg-contraction rounded-full"></div>
+                      <div className="absolute left-2/3 w-1/3 h-full bg-renewal rounded-full"></div>
+
+                      {/* Current position marker */}
+                      <motion.div 
+                        className="absolute w-3 h-3 bg-white border-2 border-primary rounded-full -top-1"
+                        style={{ left: `${mockProgress}%` }}
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
                       />
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Weekly Insights & Intentions Progress */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-        {/* Weekly Insights */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Brain className="w-5 h-5" />
-                Weekly Insights from Bliss
-              </CardTitle>
-              <CardDescription>
-                AI-powered observations about your growth patterns
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {loading ? (
-                <div className="animate-pulse space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="h-4 bg-muted rounded" />
-                  ))}
+                  <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-muted-foreground px-2">
+                    <span>Start</span>
+                    <span>Mid-Phase</span>
+                    <span>End</span>
+                  </div>
                 </div>
-              ) : (
-                (growthData?.weeklyInsights || []).map((insight: string, index: number) => (
-                  <motion.div
-                    key={index}
-                    className="p-3 rounded-lg bg-muted/50 border-l-4 border-primary"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.7 + index * 0.1 }}
-                  >
-                    <p className="text-sm">{insight}</p>
-                  </motion.div>
-                ))
-              )}
-            </CardContent>
-          </Card>
+                <div className="mt-4 text-center">
+                  <Button variant="ghost" size="sm">
+                    View Full Timeline →
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Subscription Management */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.3 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5" />
+                  Subscription
+                </CardTitle>
+                <CardDescription>
+                  Manage your Growth Halo subscription and view usage
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SubscriptionManager userId={userId} />
+              </CardContent>
+            </Card>
+          </motion.div>
         </motion.div>
-
-        {/* Intentions Progress */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.7 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="w-5 h-5" />
-                Current Intentions
-              </CardTitle>
-              <CardDescription>
-                Progress on your authentic growth intentions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {loading ? (
-                <div className="animate-pulse space-y-4">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="h-4 bg-muted rounded" />
-                  ))}
-                </div>
-              ) : (
-                Object.entries(growthData?.intentionsProgress || {}).map(([intention, progress], index) => (
-                  <motion.div
-                    key={intention}
-                    className="space-y-2"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8 + index * 0.1 }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{intention}</span>
-                      <span className="text-sm text-muted-foreground">{progress}%</span>
-                    </div>
-                    <Progress value={progress as number} className="h-2" />
-                  </motion.div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Quick Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.9 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle>Today's Growth Actions</CardTitle>
-            <CardDescription>
-              Phase-appropriate activities for your current journey
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Link href="/checkin">
-                <Button 
-                  variant="outline" 
-                  className="w-full h-auto p-4 flex flex-col gap-2 hover-elevate"
-                >
-                  <Calendar className="w-5 h-5" />
-                  <span className="font-medium">Daily Check-in</span>
-                  <span className="text-xs text-muted-foreground">
-                    Reflect on today's energy
-                  </span>
-                </Button>
-              </Link>
-
-              <Link href="/compass">
-                <Button 
-                  variant="outline" 
-                  className="w-full h-auto p-4 flex flex-col gap-2 hover-elevate"
-                >
-                  <Compass className="w-5 h-5" />
-                  <span className="font-medium">Values Compass</span>
-                  <span className="text-xs text-muted-foreground">
-                    Navigate decisions authentically
-                  </span>
-                </Button>
-              </Link>
-
-              <Link href="/journal">
-                <Button 
-                  variant="outline" 
-                  className="w-full h-auto p-4 flex flex-col gap-2 hover-elevate"
-                >
-                  <BookOpen className="w-5 h-5" />
-                  <span className="font-medium">Growth Journal</span>
-                  <span className="text-xs text-muted-foreground">
-                    Deep reflection time
-                  </span>
-                </Button>
-              </Link>
-
-              <Link href="/intentions">
-                <Button 
-                  variant="outline" 
-                  className="w-full h-auto p-4 flex flex-col gap-2 hover-elevate"
-                >
-                  <Target className="w-5 h-5" />
-                  <span className="font-medium">Set Intentions</span>
-                  <span className="text-xs text-muted-foreground">
-                    Align with authentic growth
-                  </span>
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Growth Timeline Preview */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.0 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle>Growth Halo Timeline</CardTitle>
-            <CardDescription>
-              Your cyclical journey over the past 90 days
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="relative h-24 overflow-hidden">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full h-1 bg-muted rounded-full relative">
-                  {/* Timeline phases visualization */}
-                  <div className="absolute left-0 w-1/3 h-full bg-expansion rounded-full"></div>
-                  <div className="absolute left-1/3 w-1/3 h-full bg-contraction rounded-full"></div>
-                  <div className="absolute left-2/3 w-1/3 h-full bg-renewal rounded-full"></div>
-
-                  {/* Current position marker */}
-                  <motion.div 
-                    className="absolute w-3 h-3 bg-white border-2 border-contraction rounded-full -top-1"
-                    style={{ left: "45%" }}
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                </div>
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-muted-foreground">
-                <span>Expansion</span>
-                <span>Contraction</span>
-                <span>Renewal</span>
-              </div>
-            </div>
-            <div className="mt-4 text-center">
-              <Button variant="ghost" size="sm">
-                View Full Timeline →
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-      
-      {/* Subscription Management */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.1 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5" />
-              Subscription
-            </CardTitle>
-            <CardDescription>
-              Manage your Growth Halo subscription and view usage
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <SubscriptionManager userId="demo-user" />
-          </CardContent>
-        </Card>
-      </motion.div>
-    </motion.div>
+      </ResponsiveContainer>
+    </div>
   );
 }

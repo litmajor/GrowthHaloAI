@@ -179,6 +179,22 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  /* Mobile improvements */
+  @media (max-width: 640px) {
+    .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+      --tw-space-y-reverse: 0;
+      margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));
+      margin-bottom: calc(1.5rem * var(--tw-space-y-reverse));
+    }
+  }
+
+  /* Better scrolling on mobile */
+  @supports (-webkit-touch-callout: none) {
+    .min-h-screen {
+      min-height: -webkit-fill-available;
+    }
+  }
 }
 
 /**
@@ -213,6 +229,36 @@
     content: attr(data-placeholder);
     color: hsl(var(--muted-foreground));
     pointer-events: none;
+  }
+
+  /* Better touch targets for mobile */
+  button, 
+  [role="button"], 
+  input, 
+  textarea, 
+  select {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  @media (max-width: 640px) {
+    button, 
+    [role="button"] {
+      min-height: 48px;
+    }
+  }
+
+  /* Dark mode enhancements */
+  .dark {
+    color-scheme: dark;
+  }
+
+  .dark img {
+    opacity: 0.8;
+  }
+
+  .dark img:hover {
+    opacity: 1;
   }
 
   /* .no-default-hover-elevate/no-default-active-elevate is an escape hatch so consumers of
