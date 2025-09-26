@@ -1,25 +1,31 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
+import { Route, Switch } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Navigation from "@/components/Navigation";
-import HomePage from "@/pages/HomePage";
 import Home from "@/pages/Home";
 import ValuesPage from "@/pages/ValuesPage";
 import CheckInPage from "@/pages/CheckInPage";
+import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
+import DashboardPage from "@/pages/DashboardPage";
+import JournalPage from "@/pages/JournalPage";
+import IntentionsPage from "@/pages/IntentionsPage";
 import NotFound from "@/pages/not-found";
+import { queryClient } from "./lib/queryClient";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={HomePage} />
-      <Route path="/dashboard" component={Home} />
+      <Route path="/" component={Home} />
+      <Route path="/dashboard" component={DashboardPage} />
       <Route path="/compass" component={ValuesPage} />
       <Route path="/checkin" component={CheckInPage} />
+      <Route path="/journal" component={JournalPage} />
+      <Route path="/intentions" component={IntentionsPage} />
+      <Route path="/home" component={HomePage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
       <Route component={NotFound} />
@@ -37,7 +43,7 @@ function App() {
       <ThemeProvider defaultTheme="light" storageKey="bliss-theme">
         <TooltipProvider>
           <div className="min-h-screen bg-background text-foreground">
-            <Navigation 
+            <Navigation
               currentPhase={currentPhase}
               phaseConfidence={phaseConfidence}
             />

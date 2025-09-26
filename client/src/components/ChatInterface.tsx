@@ -42,15 +42,21 @@ export default function ChatInterface({
   const mockBlissResponses = {
     expansion: [
       "I sense the energy of exploration in your words. This expansion phase is perfect for embracing new possibilities. What territory feels most calling to you right now?",
-      "The halo is widening beautifully. In this expansion, remember that growth includes both the reaching and the integration. What feels ready to unfold?"
+      "The halo is widening beautifully. In this expansion, remember that growth includes both the reaching and the integration. What feels ready to unfold?",
+      "Your expansion energy is palpable! I'm seeing patterns that suggest you're ready to step into new territory. What would you do if you knew you couldn't fail?",
+      "This expansive moment reminds me of a butterfly emerging - there's no rushing the process, but the unfolding is inevitable. What wants to emerge through you?"
     ],
     contraction: [
-      "I notice you're in what feels like a pause. This contraction phase offers profound wisdom - it's where integration happens. What recent experiences are asking to be fully absorbed?",
-      "The wisdom of contraction is often undervalued, yet it's where the deepest growth occurs. What's asking for your attention in this inward turn?"
+      "I notice you're in what feels like a stuck place. Looking at your recent patterns, this seems like a natural contraction phase after your expansion last month. What if this isn't stagnation, but integration?",
+      "The wisdom of contraction is often undervalued, yet it's where the deepest growth occurs. What's asking for your attention in this inward turn?",
+      "I sense you're being called inward right now. The halo of growth doesn't move in straight lines - sometimes the most profound transformation happens in the spaces between visible progress. What from your recent growth is asking to be more deeply absorbed?",
+      "This pause you're experiencing? It's not emptiness - it's spaciousness. What if instead of pushing forward, you honored this as preparation time? What's trying to integrate?"
     ],
     renewal: [
       "This synthesis energy is powerful. You're weaving together insights from expansion and contraction into something entirely new. What's emerging from this integration?",
-      "Renewal brings the gift of fresh perspective on familiar territory. How are you seeing yourself differently than before this journey?"
+      "Renewal brings the gift of fresh perspective on familiar territory. How are you seeing yourself differently than before this journey?",
+      "I can feel the crystallization happening - all those scattered pieces of growth are forming into something coherent. What new understanding about yourself is becoming clear?",
+      "You're in that magical space where old patterns dissolve and new wisdom takes form. How are you different now than when this cycle began?"
     ]
   };
 

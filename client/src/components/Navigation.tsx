@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { MessageSquare, Compass, Calendar, Sparkles } from "lucide-react";
+import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import HaloProgressRing from "./HaloProgressRing";
@@ -12,8 +12,11 @@ interface NavigationProps {
 
 const navItems = [
   { path: "/", icon: MessageSquare, label: "Chat with Bliss" },
+  { path: "/dashboard", icon: BarChart3, label: "Dashboard" },
   { path: "/compass", icon: Compass, label: "Values Compass" },
   { path: "/checkin", icon: Calendar, label: "Daily Check-in" },
+  { path: "/journal", icon: BookOpen, label: "Growth Journal" },
+  { path: "/intentions", icon: Target, label: "Intentions" },
 ];
 
 export default function Navigation({ 
