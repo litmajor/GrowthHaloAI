@@ -38,28 +38,6 @@ export default function ChatInterface({
     scrollToBottom();
   }, [messages]);
 
-  //todo: remove mock functionality
-  const mockBlissResponses = {
-    expansion: [
-      "I sense the energy of exploration in your words. This expansion phase is perfect for embracing new possibilities. What territory feels most calling to you right now?",
-      "The halo is widening beautifully. In this expansion, remember that growth includes both the reaching and the integration. What feels ready to unfold?",
-      "Your expansion energy is palpable! I'm seeing patterns that suggest you're ready to step into new territory. What would you do if you knew you couldn't fail?",
-      "This expansive moment reminds me of a butterfly emerging - there's no rushing the process, but the unfolding is inevitable. What wants to emerge through you?"
-    ],
-    contraction: [
-      "I notice you're in what feels like a stuck place. Looking at your recent patterns, this seems like a natural contraction phase after your expansion last month. What if this isn't stagnation, but integration?",
-      "The wisdom of contraction is often undervalued, yet it's where the deepest growth occurs. What's asking for your attention in this inward turn?",
-      "I sense you're being called inward right now. The halo of growth doesn't move in straight lines - sometimes the most profound transformation happens in the spaces between visible progress. What from your recent growth is asking to be more deeply absorbed?",
-      "This pause you're experiencing? It's not emptiness - it's spaciousness. What if instead of pushing forward, you honored this as preparation time? What's trying to integrate?"
-    ],
-    renewal: [
-      "This synthesis energy is powerful. You're weaving together insights from expansion and contraction into something entirely new. What's emerging from this integration?",
-      "Renewal brings the gift of fresh perspective on familiar territory. How are you seeing yourself differently than before this journey?",
-      "I can feel the crystallization happening - all those scattered pieces of growth are forming into something coherent. What new understanding about yourself is becoming clear?",
-      "You're in that magical space where old patterns dissolve and new wisdom takes form. How are you different now than when this cycle began?"
-    ]
-  };
-
   const handleSend = async () => {
     if (!inputValue.trim() || isLoading) return;
 
@@ -74,22 +52,56 @@ export default function ChatInterface({
     setInputValue("");
     setIsLoading(true);
 
-    //todo: remove mock functionality - replace with actual API call
-    setTimeout(() => {
-      const responses = mockBlissResponses[currentPhase];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+    try {
+      // Prepare conversation history for API
+      const conversationHistory = messages.slice(-6).map(msg => ({
+        role: msg.isBliss ? 'assistant' as const : 'user' as const,
+        content: msg.content
+      }));
+
+      // Call the real API
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: inputValue,
+          history: conversationHistory
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get response from Bliss');
+      }
+
+      const { message: responseMessage, phase: detectedPhase, confidence } = await response.json();
       
       const blissMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: randomResponse,
+        content: responseMessage,
+        isBliss: true,
+        timestamp: new Date(),
+        phase: detectedPhase
+      };
+
+      setMessages(prev => [...prev, blissMessage]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      
+      // Fallback message in case of error
+      const fallbackMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "I'm experiencing some technical difficulties right now. Please try again in a moment. Remember, even pauses in our conversation can be moments of reflection.",
         isBliss: true,
         timestamp: new Date(),
         phase: currentPhase
       };
 
-      setMessages(prev => [...prev, blissMessage]);
+      setMessages(prev => [...prev, fallbackMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

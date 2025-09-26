@@ -343,7 +343,7 @@ export default function LoginPage() {
                       </Link>
                     </p>
                   </div>
-                )}</div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
