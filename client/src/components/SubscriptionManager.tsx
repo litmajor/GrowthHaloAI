@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CreditCard, Calendar, Star, Crown, Zap, Sparkles, ArrowRight, Check } from 'lucide-react';
+import { CreditCard, Calendar, Star, Crown, Zap, Sparkles, ArrowRight, Check, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -158,6 +158,46 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
   const usagePercentage = subscription.usageStats.blissInteractions.limit > 0
     ? (subscription.usageStats.blissInteractions.used / subscription.usageStats.blissInteractions.limit) * 100
     : 0;
+
+  const tierConfig = {
+    free: {
+      color: "text-muted-foreground",
+      bgColor: "bg-muted/20",
+      icon: Zap
+    },
+    growth: {
+      color: "text-blue-600",
+      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+      icon: TrendingUp
+    },
+    transformation: {
+      color: "text-purple-600",
+      bgColor: "bg-purple-50 dark:bg-purple-900/20",
+      icon: Sparkles
+    },
+    facilitator: {
+      color: "text-amber-600",
+      bgColor: "bg-amber-50 dark:bg-amber-900/20",
+      icon: Crown
+    }
+  };
+
+  if (!subscription) {
+    return (
+      <Card className="p-4 sm:p-6">
+        <div className="text-center text-muted-foreground">
+          Loading subscription information...
+        </div>
+      </Card>
+    );
+  }
+
+  const usagePercentage = subscription.usageStats.blissInteractions.limit > 0
+    ? (subscription.usageStats.blissInteractions.used / subscription.usageStats.blissInteractions.limit) * 100
+    : 0;
+
+  const config = tierConfig[subscription.tier] || tierConfig.free;
+  const TierIcon = config?.icon || Zap;
 
   return (
     <div className="space-y-6">

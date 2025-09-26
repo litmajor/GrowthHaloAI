@@ -37,16 +37,17 @@ interface NavigationProps {
 
 const navItems = [
   { path: "/", icon: MessageSquare, label: "Chat with Bliss" },
+  { path: "/home", icon: Sparkles, label: "Landing" },
   { path: "/dashboard", icon: BarChart3, label: "Dashboard" },
+  { path: "/analytics", icon: BarChart3, label: "Analytics" },
   { path: "/compass", icon: Compass, label: "Values Compass" },
   { path: "/checkin", icon: Calendar, label: "Daily Check-in" },
   { path: "/journal", icon: BookOpen, label: "Growth Journal" },
   { path: "/intentions", icon: Target, label: "Intentions" },
   { path: "/community", icon: Users, label: "Community" },
+  { path: "/events", icon: Calendar, label: "Events" },
+  { path: "/content", icon: BookOpen, label: "Content" },
   { path: "/pricing", icon: CreditCard, label: "Pricing" },
-  { path: "/events", icon: Calendar, label: "Events" }, // Added Events
-  { path: "/content", icon: BookOpen, label: "Content" }, // Added Content
-  { path: "/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
 const secondaryNavItems = [
@@ -62,13 +63,13 @@ export default function Navigation({
 
   return (
     <motion.header
-      className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-50"
+      className="border-b border-border bg-background/80 dark:bg-background/90 backdrop-blur-md sticky top-0 z-50 shadow-sm"
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
       <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between min-h-[60px]">
           {/* Logo and Growth Ring */}
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-3 hover-elevate p-2 rounded-md">

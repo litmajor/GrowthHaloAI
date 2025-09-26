@@ -105,6 +105,93 @@ Always respond in a JSON format like this:
 
 Where phase indicates what growth phase you detect the user is in based on their message, and confidence is 1-100 indicating how confident you are in that assessment.`;
 
+// Context-Sensitive Response Adaptation
+export async function generateAdaptiveBlissResponse(
+  userMessage: string,
+  userId: string,
+  conversationHistory: Array<{ role: 'user' | 'assistant'; content: string; timestamp?: Date }> = [],
+  userProfile?: {
+    communicationStyle?: string;
+    emotionalState?: string;
+    triggerTopics?: string[];
+    preferredActivities?: string[];
+  }
+): Promise<BlissResponse & {
+  adaptationNotes: string;
+  suggestedFollowUp: string;
+  memoryAnchors: string[];
+}> {
+  try {
+    // First analyze patterns for context
+    const patterns = await analyzeUserPatterns(userId, userMessage, {
+      recentEntries: conversationHistory.slice(-5).map(h => h.content),
+      conversationHistory: conversationHistory.map(h => ({ ...h, timestamp: h.timestamp || new Date() }))
+    });
+
+    const adaptivePrompt = `${GROWTH_HALO_SYSTEM_PROMPT}
+
+CONTEXT-SENSITIVE ADAPTATION:
+User Communication Style: ${patterns.personalizationInsights.communicationStyle}
+Emotional Trajectory: ${patterns.emotionalTrajectory.trend} (${patterns.emotionalTrajectory.riskLevel} risk)
+Detected Distortions: ${patterns.cognitiveDistortions.filter(d => d.detected).map(d => d.type).join(', ') || 'None'}
+Current Phase: ${patterns.growthPhase.phase} (${patterns.growthPhase.confidence}% confidence)
+
+ADAPTIVE INSTRUCTIONS:
+- Match the user's preferred communication style
+- Address any cognitive distortions gently
+- Consider their emotional trajectory in your response tone
+- Create memory anchors for future conversations
+- Suggest contextually relevant follow-up questions
+
+Respond with enhanced JSON:
+{
+  "message": "your adapted response",
+  "phase": "detected_phase",
+  "confidence": confidence_number,
+  "adaptationNotes": "how you adapted your response",
+  "suggestedFollowUp": "contextual follow-up question",
+  "memoryAnchors": ["key_insight_1", "emotional_state_2"]
+}`;
+
+    const messages = [
+      { role: 'system' as const, content: adaptivePrompt },
+      ...conversationHistory.slice(-10), // Last 10 messages for context
+      { role: 'user' as const, content: userMessage }
+    ];
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: messages,
+      temperature: 0.7,
+      max_tokens: 1200,
+    });
+
+    const response = completion.choices[0]?.message?.content;
+    if (response) {
+      const parsed = JSON.parse(response);
+      return {
+        message: parsed.message,
+        phase: parsed.phase || patterns.growthPhase.phase,
+        confidence: parsed.confidence || patterns.growthPhase.confidence,
+        adaptationNotes: parsed.adaptationNotes || '',
+        suggestedFollowUp: parsed.suggestedFollowUp || '',
+        memoryAnchors: parsed.memoryAnchors || []
+      };
+    }
+    
+    throw new Error('No adaptive response');
+  } catch (error) {
+    console.error('Adaptive response error:', error);
+    const fallback = await generateBlissResponse(userMessage, conversationHistory);
+    return {
+      ...fallback,
+      adaptationNotes: 'Used fallback response due to analysis error',
+      suggestedFollowUp: 'How are you feeling about our conversation so far?',
+      memoryAnchors: ['conversation_difficulty']
+    };
+  }
+}
+
 export async function generateBlissResponse(
   userMessage: string,
   conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = []
@@ -147,6 +234,108 @@ export async function generateBlissResponse(
   } catch (error) {
     console.error('Error generating Bliss response:', error);
     throw new Error('Failed to generate response');
+  }
+}
+
+// Advanced Pattern Recognition System
+export async function analyzeUserPatterns(
+  userId: string,
+  userMessage: string,
+  context?: {
+    recentEntries?: string[];
+    energyPatterns?: Array<{ mental: number; physical: number; emotional: number; spiritual: number }>;
+    currentPhase?: string;
+    conversationHistory?: Array<{ role: string; content: string; timestamp: Date }>;
+  }
+): Promise<{
+  growthPhase: { phase: "expansion" | "contraction" | "renewal"; confidence: number; insights: string[] };
+  emotionalTrajectory: { trend: 'ascending' | 'descending' | 'stable'; riskLevel: 'low' | 'medium' | 'high'; indicators: string[] };
+  cognitiveDistortions: Array<{ type: string; detected: boolean; suggestion: string }>;
+  personalizationInsights: { communicationStyle: string; preferredActivities: string[]; triggerTopics: string[] };
+}> {
+  try {
+    const analysisPrompt = `
+ADVANCED BLISS AI PATTERN ANALYSIS
+
+User Message: "${userMessage}"
+${context ? `
+Current Phase: ${context.currentPhase || 'unknown'}
+Recent Entries: ${context.recentEntries?.slice(0, 5).join('; ') || 'none'}
+Energy Trends: ${context.energyPatterns ? 'Available for analysis' : 'Not available'}
+Conversation History: ${context.conversationHistory ? `${context.conversationHistory.length} messages` : 'Limited'}
+` : ''}
+
+Perform comprehensive analysis across these dimensions:
+
+1. GROWTH PHASE DETECTION:
+   - Current phase (expansion/contraction/renewal)
+   - Confidence level (1-100)
+   - Supporting insights
+
+2. EMOTIONAL TRAJECTORY TRACKING:
+   - Overall emotional trend
+   - Risk assessment for concerning patterns
+   - Early warning indicators
+
+3. COGNITIVE DISTORTION DETECTION:
+   - All-or-nothing thinking
+   - Overgeneralization
+   - Mental filtering
+   - Personalization
+   - Catastrophizing
+
+4. PERSONALIZATION INSIGHTS:
+   - Preferred communication style
+   - Activity preferences
+   - Trigger topics to approach carefully
+
+Respond in JSON format:
+{
+  "growthPhase": {
+    "phase": "expansion|contraction|renewal",
+    "confidence": 85,
+    "insights": ["insight1", "insight2"]
+  },
+  "emotionalTrajectory": {
+    "trend": "ascending|descending|stable",
+    "riskLevel": "low|medium|high", 
+    "indicators": ["indicator1", "indicator2"]
+  },
+  "cognitiveDistortions": [
+    {
+      "type": "all-or-nothing",
+      "detected": true,
+      "suggestion": "gentle reframe suggestion"
+    }
+  ],
+  "personalizationInsights": {
+    "communicationStyle": "analytical|empathetic|direct|exploratory",
+    "preferredActivities": ["journaling", "reflection"],
+    "triggerTopics": ["perfectionism", "comparison"]
+  }
+}`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: analysisPrompt }],
+      temperature: 0.3,
+      max_tokens: 1500,
+    });
+
+    const response = completion.choices[0]?.message?.content;
+    if (response) {
+      return JSON.parse(response);
+    }
+    
+    throw new Error('No analysis response');
+  } catch (error) {
+    console.error('Advanced pattern analysis error:', error);
+    return {
+      growthPhase: { phase: 'expansion', confidence: 50, insights: [] },
+      emotionalTrajectory: { trend: 'stable', riskLevel: 'low', indicators: [] },
+      cognitiveDistortions: [],
+      personalizationInsights: { communicationStyle: 'empathetic', preferredActivities: [], triggerTopics: [] }
+    };
   }
 }
 

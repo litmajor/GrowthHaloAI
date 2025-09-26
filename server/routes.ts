@@ -9,30 +9,41 @@ import { paymentService } from "./payment-service";
 import { advancedAnalytics } from './analytics-service';
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // AI Chat endpoints
-  app.post("/api/chat", async (req, res) => {
+  // Enhanced chat endpoint with adaptive AI
+  app.post('/api/chat', async (req, res) => {
     try {
-      const { message, history = [], userId } = req.body;
+      const { message, conversationHistory = [], userId = 'demo-user' } = req.body;
 
       if (!message) {
-        return res.status(400).json({ error: "Message is required" });
+        return res.status(400).json({ error: 'Message is required' });
       }
 
-      // Get user context for better responses
-      let userContext = {};
-      if (userId) {
-        try {
-          userContext = await growthTracker.getUserGrowthData(userId);
-        } catch (error) {
-          console.warn('Could not fetch user context:', error);
-        }
-      }
-
-      const response = await generateBlissResponse(message, history);
+      // Use advanced adaptive response
+      const response = await generateAdaptiveBlissResponse(message, userId, conversationHistory);
       res.json(response);
     } catch (error) {
-      console.error("Chat API error:", error);
-      res.status(500).json({ error: "Failed to generate response" });
+      console.error('Chat error:', error);
+      // Fallback to basic response
+      try {
+        const fallbackResponse = await generateBlissResponse(message, conversationHistory);
+        res.json(fallbackResponse);
+      } catch (fallbackError) {
+        res.status(500).json({ error: 'Failed to generate response' });
+      }
+    }
+  });
+
+  // Advanced pattern analysis endpoint
+  app.post('/api/user/:userId/analyze-patterns', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { message, context } = req.body;
+
+      const analysis = await analyzeUserPatterns(userId, message, context);
+      res.json(analysis);
+    } catch (error) {
+      console.error('Pattern analysis error:', error);
+      res.status(500).json({ error: 'Failed to analyze patterns' });
     }
   });
 
