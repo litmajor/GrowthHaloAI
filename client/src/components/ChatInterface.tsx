@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Send, Sparkles } from "lucide-react";
+import { Send, Sparkles, ArrowRight, Target, Heart, Lightbulb, Compass, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import ChatMessage from "./ChatMessage";
 import HaloProgressRing from "./HaloProgressRing";
 import PhaseIndicator from "./PhaseIndicator";
@@ -24,6 +25,70 @@ interface ChatInterfaceProps {
   phaseConfidence?: number;
   onPhaseUpdate?: (phase: string, confidence: number) => void;
 }
+
+// Chat templates organized by growth phase
+const chatTemplates = {
+  expansion: [
+    {
+      icon: Target,
+      title: "Explore New Possibilities",
+      prompt: "I'm feeling ready to expand and try something new, but I'm not sure where to start. Can you help me explore what opportunities might be calling to me right now?",
+      description: "Perfect for when you're feeling energized and ready to grow"
+    },
+    {
+      icon: Lightbulb,
+      title: "Creative Breakthrough",
+      prompt: "I have an idea or dream that keeps coming up, but I feel stuck on how to make it real. Can you help me think through the next steps?",
+      description: "When inspiration strikes but you need guidance"
+    },
+    {
+      icon: ArrowRight,
+      title: "Take Action",
+      prompt: "I know what I want to do, but I keep hesitating. What's holding me back from taking action on my goals?",
+      description: "Ready to move forward but need that extra push"
+    }
+  ],
+  contraction: [
+    {
+      icon: Heart,
+      title: "Process & Reflect",
+      prompt: "I've been through a lot lately and need to make sense of it all. Can you help me process what I've learned and what it means for me?",
+      description: "When you need space to integrate recent experiences"
+    },
+    {
+      icon: Compass,
+      title: "Find Direction",
+      prompt: "I feel a bit lost or unclear about my path right now. Can you help me reconnect with what truly matters to me?",
+      description: "For times when you need to rediscover your compass"
+    },
+    {
+      icon: Sparkles,
+      title: "Inner Wisdom",
+      prompt: "I have a decision to make, but my mind is noisy. Can you help me quiet the external voices and listen to my inner wisdom?",
+      description: "Access your authentic knowing"
+    }
+  ],
+  renewal: [
+    {
+      icon: RefreshCw,
+      title: "Fresh Start",
+      prompt: "I feel like I'm ready for a new chapter in my life. Can you help me envision what this transformation might look like?",
+      description: "When you're ready to begin anew"
+    },
+    {
+      icon: Target,
+      title: "Aligned Action",
+      prompt: "I've gained new clarity about who I am and what I want. How can I translate these insights into meaningful action?",
+      description: "Transform insights into purposeful steps"
+    },
+    {
+      icon: Heart,
+      title: "Integrate & Evolve",
+      prompt: "I feel like I've grown and changed recently. Can you help me understand how to honor both who I was and who I'm becoming?",
+      description: "Bridge your past and future self"
+    }
+  ]
+};
 
 export default function ChatInterface({ 
   currentPhase = "expansion",
@@ -125,6 +190,12 @@ export default function ChatInterface({
     }
   };
 
+  const handleTemplateSelect = (prompt: string) => {
+    setInputValue(prompt);
+    // Optionally auto-send the message
+    // sendMessage();
+  };
+
   return (
     <div className="flex flex-col h-screen max-h-screen bg-background">
       {/* Header */}
@@ -164,24 +235,113 @@ export default function ChatInterface({
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {messages.length === 0 && (
           <motion.div 
-            className="flex flex-col items-center justify-center h-full text-center space-y-4"
+            className="flex flex-col h-full space-y-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <HaloProgressRing 
-              phase={currentPhase} 
-              progress={phaseConfidence} 
-              size="lg" 
-            />
-            <div className="space-y-2">
-              <h2 className="text-xl font-light text-foreground">
-                Welcome to your growth journey
-              </h2>
-              <p className="text-muted-foreground max-w-md">
-                I'm here to support you through all phases of your transformation. 
-                How is your halo expanding today?
-              </p>
+            {/* Welcome Header */}
+            <div className="flex flex-col items-center text-center space-y-4 pt-8">
+              <HaloProgressRing 
+                phase={currentPhase} 
+                progress={phaseConfidence} 
+                size="lg" 
+              />
+              <div className="space-y-2">
+                <h2 className="text-xl font-light text-foreground">
+                  Welcome to your growth journey
+                </h2>
+                <p className="text-muted-foreground max-w-md">
+                  Choose a conversation starter below, or share what's on your mind.
+                </p>
+              </div>
+            </div>
+
+            {/* Chat Templates */}
+            <div className="flex-1 max-w-4xl mx-auto w-full px-4">
+              <div className="space-y-6">
+                {/* Current Phase Templates */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {currentPhase} phase
+                    </Badge>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      Suggested for your current phase
+                    </h3>
+                  </div>
+                  <div className="grid gap-3">
+                    {chatTemplates[currentPhase].map((template, index) => {
+                      const Icon = template.icon;
+                      return (
+                        <motion.button
+                          key={index}
+                          onClick={() => handleTemplateSelect(template.prompt)}
+                          className="text-left p-4 rounded-lg border border-border/50 bg-card/30 hover:bg-card/50 hover:border-border transition-colors group"
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                          data-testid={`template-${currentPhase}-${index}`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                              <Icon className="w-4 h-4 text-primary" />
+                            </div>
+                            <div className="flex-1 space-y-1">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-sm font-medium text-foreground">
+                                  {template.title}
+                                </h4>
+                                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {template.description}
+                              </p>
+                            </div>
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Other Phases */}
+                <div className="space-y-4">
+                  {Object.entries(chatTemplates).map(([phase, templates]) => {
+                    if (phase === currentPhase) return null;
+                    
+                    return (
+                      <div key={phase} className="space-y-2">
+                        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                          {phase} phase
+                        </h4>
+                        <div className="grid gap-2">
+                          {templates.map((template, index) => {
+                            const Icon = template.icon;
+                            return (
+                              <motion.button
+                                key={`${phase}-${index}`}
+                                onClick={() => handleTemplateSelect(template.prompt)}
+                                className="text-left p-3 rounded-md border border-border/30 bg-card/20 hover:bg-card/40 hover:border-border/50 transition-colors group"
+                                whileHover={{ scale: 1.005 }}
+                                whileTap={{ scale: 0.995 }}
+                                data-testid={`template-${phase}-${index}`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Icon className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-colors" />
+                                  <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                                    {template.title}
+                                  </span>
+                                  <ArrowRight className="w-3 h-3 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors ml-auto" />
+                                </div>
+                              </motion.button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
@@ -193,9 +353,6 @@ export default function ChatInterface({
             isBliss={message.isBliss}
             timestamp={message.timestamp}
             phase={message.phase || currentPhase}
-            adaptationNotes={message.adaptationNotes}
-            memoryInsights={message.memoryInsights}
-            contextAdaptation={message.contextAdaptation}
           />
         ))}
 
