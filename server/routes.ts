@@ -5,6 +5,7 @@ import { generateBlissResponse, detectGrowthPhase, generatePersonalizedContent, 
 import { growthTracker } from "./growth-service";
 import { communityIntelligence } from "./community-service";
 import { subscriptionService } from "./subscription-service";
+import { paymentService } from "./payment-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // AI Chat endpoints
@@ -296,6 +297,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Feature access check error:", error);
       res.status(500).json({ error: "Failed to check feature access" });
+    }
+  });
+
+  // Payment Processing endpoints
+  app.post("/api/payment/create-subscription", async (req, res) => {
+    try {
+      const { userId, tier, successUrl, cancelUrl } = req.body;
+      
+      const checkout = await paymentService.createSubscriptionCheckout(
+        userId,
+        tier,
+        successUrl,
+        cancelUrl
+      );
+      
+      res.json(checkout);
+    } catch (error) {
+      console.error("Create subscription error:", error);
+      res.status(500).json({ error: "Failed to create subscription checkout" });
+    }
+  });
+
+  app.post("/api/payment/webhook", async (req, res) => {
+    try {
+      const signature = req.headers['stripe-signature'] as string;
+      const payload = req.body;
+      
+      await paymentService.handleWebhook(signature, payload);
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Webhook error:", error);
+      res.status(400).json({ error: "Webhook handling failed" });
+    }
+  });
+
+  app.post("/api/payment/customer-portal", async (req, res) => {
+    try {
+      const { customerId, returnUrl } = req.body;
+      
+      const portalUrl = await paymentService.createPortalSession(customerId, returnUrl);
+      res.json({ url: portalUrl });
+    } catch (error) {
+      console.error("Customer portal error:", error);
+      res.status(500).json({ error: "Failed to create customer portal session" });
     }
   });
 
