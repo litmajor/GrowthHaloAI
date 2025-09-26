@@ -17,12 +17,15 @@ import IntentionsPage from "./pages/IntentionsPage";
 import PricingPage from "./pages/PricingPage";
 import NotFound from "@/pages/not-found";
 import { queryClient } from "./lib/queryClient";
+import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/dashboard" component={DashboardPage} />
+      <Route path="/compass" component={ValuesPage} />
       <Route path="/values" component={ValuesPage} />
       <Route path="/community" component={CommunityPage} />
       <Route path="/checkin" component={CheckInPage} />
@@ -32,6 +35,8 @@ function Router() {
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
       <Route path="/pricing" component={PricingPage} />
+      <Route path="/settings" component={SettingsPage} />
+      <Route path="/profile" component={ProfilePage} />
       <Route component={NotFound} />
     </Switch>
   );

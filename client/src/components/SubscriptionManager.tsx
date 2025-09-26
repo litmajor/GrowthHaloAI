@@ -252,7 +252,7 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto"
+            className="bg-background border rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-xl font-medium mb-4">Upgrade Your Plan</h3>
@@ -263,7 +263,7 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
                 .map(([tierKey, info]) => (
                   <div
                     key={tierKey}
-                    className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                    className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer"
                     onClick={() => handleUpgrade(tierKey)}
                   >
                     <div className="flex items-center justify-between">
@@ -276,10 +276,10 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
                         </div>
                         <div>
                           <div className="font-medium">{info.name}</div>
-                          <div className="text-sm text-gray-600">${info.price}/month</div>
+                          <div className="text-sm text-muted-foreground">${info.price}/month</div>
                         </div>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-gray-400" />
+                      <ArrowRight className="w-4 h-4 text-muted-foreground" />
                     </div>
                   </div>
                 ))}

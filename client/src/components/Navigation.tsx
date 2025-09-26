@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target, Users, CreditCard } from "lucide-react";
+import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target, Users, CreditCard, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import HaloProgressRing from "./HaloProgressRing";
@@ -21,6 +21,11 @@ const navItems = [
   { path: "/intentions", icon: Target, label: "Intentions" },
   { path: "/community", icon: Users, label: "Community" },
   { path: "/pricing", icon: CreditCard, label: "Pricing" },
+];
+
+const secondaryNavItems = [
+  { path: "/profile", icon: User, label: "Profile" },
+  { path: "/settings", icon: Settings, label: "Settings" },
 ];
 
 export default function Navigation({
@@ -112,7 +117,31 @@ export default function Navigation({
             })}
           </div>
 
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            {secondaryNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location === item.path;
+
+              return (
+                <Link key={item.path} href={item.path}>
+                  <motion.div
+                    className={cn(
+                      "p-2 rounded-md hover-elevate cursor-pointer",
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    data-testid={`nav-${item.path.slice(1)}`}
+                  >
+                    <Icon className="w-5 h-5" />
+                  </motion.div>
+                </Link>
+              );
+            })}
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </motion.header>
