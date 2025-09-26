@@ -1,9 +1,11 @@
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target } from "lucide-react";
+import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import HaloProgressRing from "./HaloProgressRing";
+import { Button } from "@/components/ui/button";
+
 
 interface NavigationProps {
   currentPhase?: "expansion" | "contraction" | "renewal";
@@ -17,16 +19,17 @@ const navItems = [
   { path: "/checkin", icon: Calendar, label: "Daily Check-in" },
   { path: "/journal", icon: BookOpen, label: "Growth Journal" },
   { path: "/intentions", icon: Target, label: "Intentions" },
+  { path: "/community", icon: Users, label: "Community" },
 ];
 
-export default function Navigation({ 
+export default function Navigation({
   currentPhase = "expansion",
-  phaseConfidence = 75 
+  phaseConfidence = 75
 }: NavigationProps) {
   const [location] = useLocation();
 
   return (
-    <motion.header 
+    <motion.header
       className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-50"
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -37,10 +40,10 @@ export default function Navigation({
           {/* Logo and Growth Ring */}
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-3 hover-elevate p-2 rounded-md">
-              <HaloProgressRing 
-                phase={currentPhase} 
-                progress={phaseConfidence} 
-                size="sm" 
+              <HaloProgressRing
+                phase={currentPhase}
+                progress={phaseConfidence}
+                size="sm"
                 showLabel={false}
               />
               <div>
@@ -60,15 +63,15 @@ export default function Navigation({
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location === item.path;
-              
+
               return (
                 <Link key={item.path} href={item.path}>
                   <motion.div
                     className={cn(
                       "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors",
                       "hover-elevate cursor-pointer",
-                      isActive 
-                        ? "bg-primary/10 text-primary" 
+                      isActive
+                        ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                     whileHover={{ scale: 1.02 }}
@@ -88,14 +91,14 @@ export default function Navigation({
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location === item.path;
-              
+
               return (
                 <Link key={item.path} href={item.path}>
                   <motion.div
                     className={cn(
                       "p-2 rounded-md hover-elevate cursor-pointer",
-                      isActive 
-                        ? "bg-primary/10 text-primary" 
+                      isActive
+                        ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                     whileHover={{ scale: 1.05 }}

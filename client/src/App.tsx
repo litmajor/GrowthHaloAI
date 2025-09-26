@@ -5,8 +5,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Navigation from "@/components/Navigation";
 import Home from "@/pages/Home";
-import ValuesPage from "@/pages/ValuesPage";
-import CheckInPage from "@/pages/CheckInPage";
+import ValuesPage from "./pages/ValuesPage";
+import CheckInPage from "./pages/CheckInPage";
+import CommunityPage from "./pages/CommunityPage";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
@@ -21,7 +22,8 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/dashboard" component={DashboardPage} />
-      <Route path="/compass" component={ValuesPage} />
+      <Route path="/values" component={ValuesPage} />
+      <Route path="/community" component={CommunityPage} />
       <Route path="/checkin" component={CheckInPage} />
       <Route path="/journal" component={JournalPage} />
       <Route path="/intentions" component={IntentionsPage} />
