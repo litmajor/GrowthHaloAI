@@ -24,6 +24,7 @@ import EventsPage from './pages/EventsPage';
 import ContentPage from './pages/ContentPage';
 import AnalyticsPage from "./pages/AnalyticsPage";
 import LandingPage from "./pages/LandingPage";
+import SubscriptionPage from "./pages/SubscriptionPage";
 import FAQPage from "./pages/FAQPage";
 
 function Router() {
@@ -47,6 +48,7 @@ function Router() {
       <Route path="/content" component={ContentPage} />
       <Route path="/analytics" component={AnalyticsPage} />
       <Route path="/profile" component={ProfilePage} />
+      <Route path="/subscription" component={SubscriptionPage} />
       <Route path="/faq" component={FAQPage} />
       <Route component={NotFound} />
     </Switch>

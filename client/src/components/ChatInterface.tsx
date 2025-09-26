@@ -205,43 +205,37 @@ export default function ChatInterface({
 
   return (
     <div className="flex flex-col h-screen max-h-screen bg-background">
-      {/* Header */}
-      <motion.div 
-        className="flex items-center justify-between p-4 border-b border-border bg-card/50 backdrop-blur-sm"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="flex items-center gap-4">
-          <HaloProgressRing 
-            phase={currentPhase} 
-            progress={phaseConfidence} 
-            size="sm" 
-            showLabel={false} 
-          />
-          <div>
-            <h1 className="text-lg font-medium flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-              Bliss
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Your Growth Halo companion
-            </p>
-          </div>
-        </div>
-
-        <PhaseIndicator 
-          currentPhase={currentPhase}
-          confidence={phaseConfidence}
-          size="sm"
-          showDescription={false}
-        />
-      </motion.div>
-
       {/* Chat Interface with Tabs */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Tabs defaultValue="chat" className="flex-1 flex flex-col">
           <div className="shrink-0 border-b bg-card/50 backdrop-blur-sm p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
+                <HaloProgressRing 
+                  phase={currentPhase} 
+                  progress={phaseConfidence} 
+                  size="sm" 
+                  showLabel={false} 
+                />
+                <div>
+                  <h1 className="text-lg font-medium flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    Bliss
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    Your Growth Halo companion
+                  </p>
+                </div>
+              </div>
+
+              <PhaseIndicator 
+                currentPhase={currentPhase}
+                confidence={phaseConfidence}
+                size="sm"
+                showDescription={false}
+              />
+            </div>
+            
             <TabsList className="w-full">
               <TabsTrigger value="chat" className="flex-1">
                 Current Chat
