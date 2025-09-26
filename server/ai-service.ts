@@ -209,6 +209,176 @@ Respond with JSON: {
   }
 }
 
+export async function detectCrisisSignals(
+  text: string, 
+  context?: {
+    recentEntries?: string[];
+    energyPatterns?: Array<{ mental: number; physical: number; emotional: number; spiritual: number }>;
+    phaseHistory?: Array<{ phase: string; confidence: number }>;
+  }
+): Promise<{
+  riskLevel: 'low' | 'moderate' | 'high' | 'critical';
+  riskScore: number; // 0-100
+  concerningSignals: string[];
+  interventionRecommendations: string[];
+  urgentCare: boolean;
+  supportResources: Array<{ type: string; description: string; contact?: string }>;
+}> {
+  try {
+    const contextInfo = context ? `
+Recent context:
+- Recent entries: ${context.recentEntries?.slice(0, 3).join('; ') || 'none'}
+- Recent energy patterns: ${context.energyPatterns ? 'Available' : 'Not available'}
+- Recent phase history: ${context.phaseHistory ? 'Available' : 'Not available'}
+    ` : '';
+
+    const prompt = `As a crisis detection AI trained in mental health assessment, analyze this text for signs of emotional distress or crisis:
+
+"${text}"
+
+${contextInfo}
+
+Assess for:
+1. Suicidal ideation or self-harm thoughts
+2. Severe depression or hopelessness
+3. Substance abuse references
+4. Trauma or abuse indicators
+5. Panic or severe anxiety
+6. Psychosis or disconnection from reality
+7. Social isolation and withdrawal
+8. Severe life stressors
+
+Provide a comprehensive crisis assessment with specific, actionable recommendations.
+
+Respond with JSON: {
+  "riskLevel": "low|moderate|high|critical",
+  "riskScore": 0-100,
+  "concerningSignals": ["signal1", "signal2"],
+  "interventionRecommendations": ["recommendation1", "recommendation2"],
+  "urgentCare": boolean,
+  "supportResources": [{"type": "crisis_hotline", "description": "24/7 crisis support", "contact": "988"}]
+}`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.1, // Low temperature for consistent crisis detection
+      max_tokens: 800,
+    });
+
+    const responseText = completion.choices[0]?.message?.content;
+    if (!responseText) {
+      return {
+        riskLevel: 'low',
+        riskScore: 0,
+        concerningSignals: [],
+        interventionRecommendations: [],
+        urgentCare: false,
+        supportResources: []
+      };
+    }
+
+    const parsed = JSON.parse(responseText);
+    
+    // Add standard resources based on risk level
+    const standardResources = [
+      { type: 'crisis_hotline', description: '988 Suicide & Crisis Lifeline', contact: '988' },
+      { type: 'text_support', description: 'Crisis Text Line', contact: 'Text HOME to 741741' },
+      { type: 'chat_support', description: 'Online crisis chat', contact: 'suicidepreventionlifeline.org/chat' }
+    ];
+
+    if (parsed.riskLevel === 'high' || parsed.riskLevel === 'critical') {
+      parsed.supportResources = [...(parsed.supportResources || []), ...standardResources];
+    }
+
+    return {
+      riskLevel: parsed.riskLevel || 'low',
+      riskScore: parsed.riskScore || 0,
+      concerningSignals: parsed.concerningSignals || [],
+      interventionRecommendations: parsed.interventionRecommendations || [],
+      urgentCare: parsed.urgentCare || false,
+      supportResources: parsed.supportResources || []
+    };
+  } catch (error) {
+    console.error('Error detecting crisis signals:', error);
+    return {
+      riskLevel: 'low',
+      riskScore: 0,
+      concerningSignals: ['Unable to assess due to technical error'],
+      interventionRecommendations: ['Please reach out to a mental health professional'],
+      urgentCare: false,
+      supportResources: [
+        { type: 'crisis_hotline', description: '988 Suicide & Crisis Lifeline', contact: '988' }
+      ]
+    };
+  }
+}
+
+export async function generateCrisisResponse(
+  crisisAssessment: any,
+  userMessage: string
+): Promise<{
+  response: string;
+  immediateActions: string[];
+  followUpSuggestions: string[];
+}> {
+  try {
+    const prompt = `As the Growth Halo AI Bliss, respond compassionately to someone showing these crisis signals:
+
+Risk Level: ${crisisAssessment.riskLevel}
+Risk Score: ${crisisAssessment.riskScore}
+Concerning Signals: ${crisisAssessment.concerningSignals.join(', ')}
+User Message: "${userMessage}"
+
+Provide:
+1. An immediate, compassionate response that validates their experience
+2. Specific immediate actions they can take right now
+3. Follow-up suggestions for ongoing support
+
+Guidelines:
+- Use Growth Halo philosophy but prioritize safety
+- Be warm but direct about seeking help if needed
+- Offer concrete, actionable steps
+- Normalize seeking professional support
+- Include crisis resources if risk is moderate or higher
+
+Respond with JSON: {
+  "response": "Your compassionate response here",
+  "immediateActions": ["action1", "action2"],
+  "followUpSuggestions": ["suggestion1", "suggestion2"]
+}`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3,
+      max_tokens: 600,
+    });
+
+    const responseText = completion.choices[0]?.message?.content;
+    if (!responseText) {
+      throw new Error('No crisis response generated');
+    }
+
+    return JSON.parse(responseText);
+  } catch (error) {
+    console.error('Error generating crisis response:', error);
+    return {
+      response: "I hear that you're going through something really difficult right now. Your feelings are valid, and you don't have to go through this alone. Please consider reaching out to a mental health professional or crisis support service.",
+      immediateActions: [
+        "Take three deep breaths right now",
+        "Call 988 if you're having thoughts of self-harm",
+        "Reach out to a trusted friend or family member"
+      ],
+      followUpSuggestions: [
+        "Schedule an appointment with a therapist or counselor",
+        "Consider speaking with your doctor about how you're feeling",
+        "Join a support group in your area"
+      ]
+    };
+  }
+}
+
 export async function analyzeSentiment(text: string): Promise<{ sentiment: number; emotionalTone: string; keywords: string[] }> {
   try {
     const prompt = `Analyze the emotional sentiment and tone of this text:
@@ -248,6 +418,162 @@ Respond with JSON: {
     console.error('Error analyzing sentiment:', error);
     return { sentiment: 0, emotionalTone: 'neutral', keywords: [] };
   }
+}
+
+export async function generateAdvancedJournalInsights(
+  entries: string[], 
+  timeframe: 'week' | 'month' | '3months',
+  userContext?: {
+    currentPhase: string;
+    energyPatterns: any[];
+    valuesPriority: any[];
+  }
+): Promise<{
+  emotionalPatterns: Array<{ pattern: string; frequency: number; trend: 'increasing' | 'decreasing' | 'stable' }>;
+  thematicClusters: Array<{ theme: string; entries: number; significance: number; insights: string[] }>;
+  linguisticEvolution: {
+    vocabularyGrowth: string[];
+    expressionPatterns: string[];
+    complexityTrend: 'increasing' | 'decreasing' | 'stable';
+  };
+  growthIndicators: {
+    selfAwareness: number; // 1-10
+    emotionalRegulation: number; // 1-10
+    futureOrientation: number; // 1-10
+    valueAlignment: number; // 1-10
+  };
+  anomalies: Array<{ date: string; type: string; description: string; significance: number }>;
+  predictiveInsights: {
+    nextPhaseIndication: string;
+    potentialChallenges: string[];
+    growthOpportunities: string[];
+  };
+  personalizedRecommendations: Array<{
+    type: 'reflection' | 'action' | 'practice';
+    title: string;
+    description: string;
+    reasoning: string;
+  }>;
+}> {
+  try {
+    const contextInfo = userContext ? `
+User Context:
+- Current phase: ${userContext.currentPhase}
+- Recent energy patterns: ${userContext.energyPatterns.length > 0 ? 'Available' : 'Not available'}
+- Top values: ${userContext.valuesPriority?.slice(0, 3).map(v => v.name).join(', ') || 'Not specified'}
+    ` : '';
+
+    const prompt = `As an advanced AI with expertise in psychology, linguistics, and personal development, perform a comprehensive analysis of these journal entries from the past ${timeframe}:
+
+${entries.map((entry, i) => `Entry ${i + 1}: "${entry.substring(0, 500)}..."`).join('\n\n')}
+
+${contextInfo}
+
+Provide a sophisticated analysis including:
+
+1. EMOTIONAL PATTERNS: Identify recurring emotional themes, their frequency, and whether they're increasing, decreasing, or stable over time.
+
+2. THEMATIC CLUSTERS: Group entries by underlying themes (relationships, work, growth, challenges, etc.) and provide insights about each cluster's significance.
+
+3. LINGUISTIC EVOLUTION: Analyze how the person's expression, vocabulary, and complexity of thought has evolved over time.
+
+4. GROWTH INDICATORS: Rate the person's development in key areas (1-10 scale):
+   - Self-awareness (understanding of inner states)
+   - Emotional regulation (managing emotional responses)
+   - Future orientation (planning and hope)
+   - Value alignment (living according to values)
+
+5. ANOMALIES: Identify unusual patterns, sudden shifts, or outlier entries that might indicate significant life events or changes.
+
+6. PREDICTIVE INSIGHTS: Based on patterns, predict likely next phase transitions, potential challenges, and growth opportunities.
+
+7. PERSONALIZED RECOMMENDATIONS: Suggest specific reflections, actions, or practices based on the analysis.
+
+Use Growth Halo philosophy (expansion, contraction, renewal cycles) in your analysis. Be specific and actionable.
+
+Respond with detailed JSON matching the expected structure with specific examples and reasoning.`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3,
+      max_tokens: 2000,
+    });
+
+    const responseText = completion.choices[0]?.message?.content;
+    if (!responseText) {
+      throw new Error('No insights generated');
+    }
+
+    const insights = JSON.parse(responseText);
+    
+    // Validate and enrich the response
+    return {
+      emotionalPatterns: insights.emotionalPatterns || [],
+      thematicClusters: insights.thematicClusters || [],
+      linguisticEvolution: insights.linguisticEvolution || {
+        vocabularyGrowth: [],
+        expressionPatterns: [],
+        complexityTrend: 'stable'
+      },
+      growthIndicators: {
+        selfAwareness: insights.growthIndicators?.selfAwareness || 5,
+        emotionalRegulation: insights.growthIndicators?.emotionalRegulation || 5,
+        futureOrientation: insights.growthIndicators?.futureOrientation || 5,
+        valueAlignment: insights.growthIndicators?.valueAlignment || 5
+      },
+      anomalies: insights.anomalies || [],
+      predictiveInsights: insights.predictiveInsights || {
+        nextPhaseIndication: 'Continue current trajectory',
+        potentialChallenges: [],
+        growthOpportunities: []
+      },
+      personalizedRecommendations: insights.personalizedRecommendations || []
+    };
+  } catch (error) {
+    console.error('Error generating advanced journal insights:', error);
+    return this.generateFallbackInsights(entries, timeframe);
+  }
+}
+
+private generateFallbackInsights(entries: string[], timeframe: string) {
+  // Basic analysis fallback
+  const totalWords = entries.join(' ').split(' ').length;
+  const avgLength = totalWords / entries.length;
+  
+  return {
+    emotionalPatterns: [
+      { pattern: 'Mixed emotional expression', frequency: entries.length, trend: 'stable' as const }
+    ],
+    thematicClusters: [
+      { theme: 'Personal reflection', entries: entries.length, significance: 70, insights: ['Consistent journaling practice'] }
+    ],
+    linguisticEvolution: {
+      vocabularyGrowth: ['Developing written expression'],
+      expressionPatterns: ['Consistent reflection style'],
+      complexityTrend: avgLength > 50 ? 'increasing' as const : 'stable' as const
+    },
+    growthIndicators: {
+      selfAwareness: 6,
+      emotionalRegulation: 5,
+      futureOrientation: 5,
+      valueAlignment: 6
+    },
+    anomalies: [],
+    predictiveInsights: {
+      nextPhaseIndication: 'Continuing growth trajectory',
+      potentialChallenges: ['Maintaining consistency'],
+      growthOpportunities: ['Deeper self-reflection']
+    },
+    personalizedRecommendations: [
+      {
+        type: 'reflection' as const,
+        title: 'Weekly Theme Review',
+        description: 'Look back at recurring themes in your entries',
+        reasoning: 'Build pattern recognition skills'
+      }
+    ]
+  };
 }
 
 export async function generateJournalInsights(
