@@ -18,7 +18,11 @@ interface Message {
   timestamp: Date;
   phase?: "expansion" | "contraction" | "renewal";
   adaptationNotes?: string;
-  memoryInsights?: string;
+  memoryInsights?: {
+    associativeRecall?: any;
+    contextAdaptation?: any;
+    memoryAnchors?: string[];
+  };
   contextAdaptation?: any;
 }
 
@@ -155,7 +159,11 @@ export default function ChatInterface({
         timestamp: new Date(),
         phase: data.phase,
         adaptationNotes: data.adaptationNotes,
-        memoryInsights: data.associativeRecall?.bridgeInsights,
+        memoryInsights: {
+          associativeRecall: data.associativeRecall,
+          contextAdaptation: data.contextAdaptation,
+          memoryAnchors: data.memoryAnchors
+        },
         contextAdaptation: data.contextAdaptation
       };
 
@@ -235,7 +243,7 @@ export default function ChatInterface({
                 showDescription={false}
               />
             </div>
-            
+
             <TabsList className="w-full">
               <TabsTrigger value="chat" className="flex-1">
                 Current Chat
@@ -365,13 +373,52 @@ export default function ChatInterface({
               )}
 
               {messages.map((message) => (
-                <ChatMessage
-                  key={message.id}
-                  message={message.content}
-                  isBliss={message.isBliss}
-                  timestamp={message.timestamp}
-                  phase={message.phase || currentPhase}
-                />
+                <div key={message.id} className="space-y-2">
+                  <ChatMessage
+                    message={message.content}
+                    isBliss={message.isBliss}
+                    timestamp={message.timestamp}
+                    phase={message.phase || currentPhase}
+                  />
+
+                  {/* Memory Insights Display */}
+                  {!message.isBliss && message.memoryInsights?.associativeRecall && message.memoryInsights.associativeRecall.memories && message.memoryInsights.associativeRecall.memories.length > 0 && (
+                    <div className="ml-12 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                        <span className="font-medium text-purple-700">Memory Connections</span>
+                        <span className="text-purple-500 text-xs">
+                          ({message.memoryInsights.associativeRecall.memories.length} memories, {message.memoryInsights.associativeRecall.relevanceScore}% relevance)
+                        </span>
+                      </div>
+
+                      {message.memoryInsights.associativeRecall.bridgeInsights?.length > 0 && (
+                        <div className="space-y-1">
+                          {message.memoryInsights.associativeRecall.bridgeInsights.slice(0, 2).map((insight: string, index: number) => (
+                            <div key={index} className="text-purple-600 text-xs italic">
+                              "⟫ {insight}"
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="mt-2 text-xs text-purple-500">
+                        Reasoning: {message.memoryInsights.associativeRecall.reasoning}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Memory Anchors */}
+                  {!message.isBliss && message.memoryInsights?.memoryAnchors && message.memoryInsights.memoryAnchors.length > 0 && (
+                    <div className="ml-12 flex flex-wrap gap-1">
+                      {message.memoryInsights.memoryAnchors.map((anchor: string, index: number) => (
+                        <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                          {anchor}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
 
               {isLoading && (

@@ -10,24 +10,30 @@ import { advancedAnalytics } from './analytics-service';
 import { eventsService } from './events-service';
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Enhanced chat endpoint with adaptive AI
+  // Chat endpoint
   app.post('/api/chat', async (req, res) => {
     try {
-      const { message, conversationHistory = [], userId = 'demo-user' } = req.body;
+      const { message, conversationHistory, userId } = req.body;
 
-      if (!message) {
-        return res.status(400).json({ error: 'Message is required' });
-      }
+      // Use adaptive response with memory features
+      const response = await generateAdaptiveBlissResponse(
+        message,
+        userId || 'anonymous',
+        conversationHistory || []
+      );
 
-      // Use advanced adaptive response
-      const response = await generateAdaptiveBlissResponse(message, userId, conversationHistory);
       res.json(response);
     } catch (error) {
       console.error('Chat error:', error);
       // Fallback to basic response
       try {
         const fallbackResponse = await generateBlissResponse(message, conversationHistory);
-        res.json(fallbackResponse);
+        res.json({
+          ...fallbackResponse,
+          adaptationNotes: 'Used fallback due to memory service error',
+          memoryAnchors: [],
+          associativeRecall: null
+        });
       } catch (fallbackError) {
         res.status(500).json({ error: 'Failed to generate response' });
       }
@@ -651,6 +657,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error generating compatibility matrix:', error);
       res.status(500).json({ error: 'Failed to generate compatibility analysis' });
+    }
+  });
+
+  // Weekly insights endpoint
+  app.post('/api/insights/weekly', async (req, res) => {
+    try {
+      const { entries } = req.body;
+      const insights = await generateJournalInsights(entries, 'week');
+      res.json(insights);
+    } catch (error) {
+      console.error('Weekly insights error:', error);
+      res.status(500).json({ error: 'Failed to generate insights' });
+    }
+  });
+
+  // Memory exploration endpoints
+  app.post('/api/memory/patterns', async (req, res) => {
+    try {
+      const { userId, pattern, timeframe } = req.body;
+      const { advancedMemory } = await import('./memory-service');
+
+      const patterns = await advancedMemory.retrievePatternBasedMemories(
+        userId,
+        pattern,
+        timeframe || 'month'
+      );
+
+      res.json(patterns);
+    } catch (error) {
+      console.error('Memory patterns error:', error);
+      res.status(500).json({ error: 'Failed to retrieve memory patterns' });
+    }
+  });
+
+  app.post('/api/memory/cluster', async (req, res) => {
+    try {
+      const { userId } = req.body;
+      const { advancedMemory } = await import('./memory-service');
+
+      const clustering = await advancedMemory.clusterSemanticMemories(userId);
+
+      res.json(clustering);
+    } catch (error) {
+      console.error('Memory clustering error:', error);
+      res.status(500).json({ error: 'Failed to cluster memories' });
     }
   });
 
