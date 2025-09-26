@@ -13,7 +13,8 @@ import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import DashboardPage from "@/pages/DashboardPage";
 import JournalPage from "@/pages/JournalPage";
-import IntentionsPage from "@/pages/IntentionsPage";
+import IntentionsPage from "./pages/IntentionsPage";
+import PricingPage from "./pages/PricingPage";
 import NotFound from "@/pages/not-found";
 import { queryClient } from "./lib/queryClient";
 
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/home" component={HomePage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
+      <Route path="/pricing" component={PricingPage} />
       <Route component={NotFound} />
     </Switch>
   );

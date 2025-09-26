@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { generateBlissResponse, detectGrowthPhase, generatePersonalizedContent, analyzeValuesAssessment, generateValueBasedGuidance } from "./ai-service";
 import { growthTracker } from "./growth-service";
 import { communityIntelligence } from "./community-service";
+import { subscriptionService } from "./subscription-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // AI Chat endpoints
@@ -231,6 +232,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Update engagement error:", error);
       res.status(500).json({ error: "Failed to update engagement metrics" });
+    }
+  });
+
+  // Subscription Management endpoints
+  app.get("/api/user/:userId/subscription", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const subscription = await subscriptionService.getUserSubscription(userId);
+      const usageStats = await subscriptionService.getUsageStats(userId);
+      
+      res.json({
+        ...subscription,
+        usageStats
+      });
+    } catch (error) {
+      console.error("Get subscription error:", error);
+      res.status(500).json({ error: "Failed to get subscription data" });
+    }
+  });
+
+  app.post("/api/user/:userId/subscription/upgrade", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { tier } = req.body;
+      
+      const success = await subscriptionService.upgradeSubscription(userId, tier);
+      
+      if (success) {
+        res.json({ success: true });
+      } else {
+        res.status(400).json({ error: "Failed to upgrade subscription" });
+      }
+    } catch (error) {
+      console.error("Upgrade subscription error:", error);
+      res.status(500).json({ error: "Failed to upgrade subscription" });
+    }
+  });
+
+  app.post("/api/user/:userId/subscription/cancel", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      const success = await subscriptionService.cancelSubscription(userId);
+      
+      if (success) {
+        res.json({ success: true });
+      } else {
+        res.status(400).json({ error: "Failed to cancel subscription" });
+      }
+    } catch (error) {
+      console.error("Cancel subscription error:", error);
+      res.status(500).json({ error: "Failed to cancel subscription" });
+    }
+  });
+
+  app.get("/api/user/:userId/feature-access/:feature", async (req, res) => {
+    try {
+      const { userId, feature } = req.params;
+      
+      const canUse = await subscriptionService.canUseFeature(userId, feature);
+      res.json({ canUse });
+    } catch (error) {
+      console.error("Feature access check error:", error);
+      res.status(500).json({ error: "Failed to check feature access" });
     }
   });
 

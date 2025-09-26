@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Compass, Brain, Heart, Zap, Users, Target, BarChart3, BookOpen } from "lucide-react";
+import { Calendar, Compass, Brain, Heart, Zap, Users, Target, BarChart3, BookOpen, CreditCard } from "lucide-react";
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import HaloProgressRing from "../components/HaloProgressRing";
 import PhaseIndicator from "../components/PhaseIndicator";
 import WeeklyInsights from "../components/WeeklyInsights";
+import SubscriptionManager from "../components/SubscriptionManager"; // Assuming this component exists
 import { cn } from "@/lib/utils";
 
 type GrowthPhase = "expansion" | "contraction" | "renewal";
@@ -378,6 +379,28 @@ export default function DashboardPage() {
                 View Full Timeline →
               </Button>
             </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+      
+      {/* Subscription Management */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.1 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="w-5 h-5" />
+              Subscription
+            </CardTitle>
+            <CardDescription>
+              Manage your Growth Halo subscription and view usage
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SubscriptionManager userId="demo-user" />
           </CardContent>
         </Card>
       </motion.div>

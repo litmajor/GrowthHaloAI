@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target, Users } from "lucide-react";
+import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target, Users, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import HaloProgressRing from "./HaloProgressRing";
@@ -20,6 +20,7 @@ const navItems = [
   { path: "/journal", icon: BookOpen, label: "Growth Journal" },
   { path: "/intentions", icon: Target, label: "Intentions" },
   { path: "/community", icon: Users, label: "Community" },
+  { path: "/pricing", icon: CreditCard, label: "Pricing" },
 ];
 
 export default function Navigation({
