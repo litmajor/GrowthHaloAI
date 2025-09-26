@@ -16,6 +16,8 @@ interface Value {
 interface ValuesCompassProps {
   values?: Value[];
   onValueUpdate?: (valueId: string, field: 'importance' | 'alignment', value: number) => void;
+  onValuesAssessment?: () => void;
+  onDecisionSupport?: (valueId: string) => void;
 }
 
 const defaultValues: Value[] = [
@@ -31,14 +33,29 @@ const defaultValues: Value[] = [
 
 export default function ValuesCompass({ 
   values = defaultValues,
-  onValueUpdate 
+  onValueUpdate,
+  onValuesAssessment,
+  onDecisionSupport
 }: ValuesCompassProps) {
   const [selectedValue, setSelectedValue] = useState<Value | null>(null);
   const [hoveredValue, setHoveredValue] = useState<string | null>(null);
+  const [showAssessment, setShowAssessment] = useState(false);
+  const [assessmentType, setAssessmentType] = useState<'quick' | 'deep' | null>(null);
 
   const handleValueClick = (value: Value) => {
     setSelectedValue(value);
     console.log('Value selected:', value.name);
+  };
+
+  const handleStartAssessment = (type: 'quick' | 'deep') => {
+    setAssessmentType(type);
+    setShowAssessment(true);
+    onValuesAssessment?.();
+  };
+
+  const handleDecisionSupport = (value: Value) => {
+    onDecisionSupport?.(value.id);
+    console.log('Decision support requested for:', value.name);
   };
 
   const getValuePosition = (angle: number, radius: number) => {
@@ -62,8 +79,26 @@ export default function ValuesCompass({
         </CardTitle>
         <CardDescription>
           Navigate life decisions through your authentic values. 
-          Larger circles represent higher importance.
+          Larger circles represent higher importance. Distance from center shows current alignment.
         </CardDescription>
+        <div className="flex gap-2 mt-4">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => handleStartAssessment('quick')}
+            className="hover-elevate"
+          >
+            Quick Check-in (2 min)
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => handleStartAssessment('deep')}
+            className="hover-elevate"
+          >
+            Deep Assessment (10 min)
+          </Button>
+        </div>
       </CardHeader>
       
       <CardContent className="p-6">
@@ -193,27 +228,51 @@ export default function ValuesCompass({
                     </div>
                   </div>
 
-                  <div className="mt-4 text-sm text-muted-foreground">
-                    {selectedValue.alignment < 6 && 
-                      "This value may need more attention in your daily choices."
-                    }
-                    {selectedValue.alignment >= 6 && selectedValue.alignment < 8 && 
-                      "You're living this value fairly well, with room for deeper alignment."
-                    }
-                    {selectedValue.alignment >= 8 && 
-                      "You're living in strong alignment with this value."
-                    }
+                  <div className="mt-4 p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-medium text-primary">AI Insight</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedValue.alignment < 6 && 
+                        "Bliss notices this value may need more attention. Consider: What small daily action could honor this value more?"
+                      }
+                      {selectedValue.alignment >= 6 && selectedValue.alignment < 8 && 
+                        "You're honoring this value fairly well. Bliss suggests exploring: Where might deeper alignment create more fulfillment?"
+                      }
+                      {selectedValue.alignment >= 8 && 
+                        "Beautiful alignment! Bliss celebrates how you're living this value. Consider sharing your approach with others."
+                      }
+                    </p>
+                  </div>
+
+                  <div className="mt-4 space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Recent Evolution</p>
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="w-2 h-2 rounded-full bg-expansion"></div>
+                      <span>Growing in importance over the past month</span>
+                    </div>
                   </div>
                 </div>
 
-                <Button 
-                  variant="outline" 
-                  onClick={() => console.log('Explore value decisions:', selectedValue.name)}
-                  className="w-full hover-elevate"
-                  data-testid="button-explore-value"
-                >
-                  Explore Decision-Making with {selectedValue.name}
-                </Button>
+                <div className="space-y-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => handleDecisionSupport(selectedValue)}
+                    className="w-full hover-elevate"
+                    data-testid="button-explore-value"
+                  >
+                    Get Decision Support with {selectedValue.name}
+                  </Button>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => console.log('Track value alignment:', selectedValue.name)}
+                    className="w-full text-xs"
+                  >
+                    Track Daily Alignment
+                  </Button>
+                </div>
               </motion.div>
             ) : (
               <div className="p-8 text-center text-muted-foreground">

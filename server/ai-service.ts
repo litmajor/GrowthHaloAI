@@ -339,3 +339,102 @@ Respond with JSON: {
     return { contentSuggestions: [] };
   }
 }
+
+export async function analyzeValuesAssessment(
+  responses: string[],
+  assessmentType: 'quick' | 'deep'
+): Promise<{
+  updatedValues: Array<{ id: string; name: string; newAlignment: number; newImportance: number; evolution: string }>;
+  insights: string;
+  conflictAreas: string[];
+  alignmentScore: number;
+  evolution: { trend: string; significantChanges: string[] };
+}> {
+  try {
+    const prompt = `Analyze these values assessment responses from a Growth Halo perspective:
+
+Assessment Type: ${assessmentType}
+Responses: ${responses.join('\n---\n')}
+
+Based on the Growth Halo philosophy of authentic growth, analyze:
+1. Which values seem most/least aligned with current life
+2. Signs of values evolution or shifts
+3. Areas of potential values conflicts
+4. Overall authenticity alignment score (0-1)
+5. Insights about living more authentically
+
+Respond with JSON: {
+  "updatedValues": [{"id": "1", "name": "Authenticity", "newAlignment": 8, "newImportance": 9, "evolution": "growing stronger"}],
+  "insights": "Key insights about values alignment",
+  "conflictAreas": ["area1", "area2"],
+  "alignmentScore": 0.75,
+  "evolution": {"trend": "expanding authenticity", "significantChanges": ["change1"]}
+}`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.4,
+      max_tokens: 800,
+    });
+
+    const responseText = completion.choices[0]?.message?.content;
+    if (!responseText) {
+      throw new Error('No response from analysis');
+    }
+
+    return JSON.parse(responseText);
+  } catch (error) {
+    console.error('Error analyzing values assessment:', error);
+    return {
+      updatedValues: [],
+      insights: 'Unable to analyze assessment at this time',
+      conflictAreas: [],
+      alignmentScore: 0.5,
+      evolution: { trend: 'stable', significantChanges: [] }
+    };
+  }
+}
+
+export async function generateValueBasedGuidance(
+  decision: string,
+  valueContext: { topValues: Array<{ name: string; importance: number }> }
+): Promise<{ guidance: string; questionsToConsider: string[]; potentialConflicts: string[] }> {
+  try {
+    const prompt = `A user is facing this decision: "${decision}"
+
+Their top values are: ${valueContext.topValues.map(v => `${v.name} (importance: ${v.importance}/10)`).join(', ')}
+
+As the Growth Halo AI Agent, provide:
+1. Values-aligned guidance for this decision
+2. Reflective questions to help them discover their authentic choice
+3. Any potential values conflicts to be aware of
+
+Respond with JSON: {
+  "guidance": "Compassionate guidance from Growth Halo perspective",
+  "questionsToConsider": ["question1", "question2"],
+  "potentialConflicts": ["conflict1"]
+}`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.6,
+      max_tokens: 500,
+    });
+
+    const responseText = completion.choices[0]?.message?.content;
+    if (!responseText) {
+      throw new Error('No guidance generated');
+    }
+
+    return JSON.parse(responseText);
+  } catch (error) {
+    console.error('Error generating value-based guidance:', error);
+    return {
+      guidance: 'Consider how this decision aligns with your deepest values and authentic self.',
+      questionsToConsider: ['What would your wisest self choose?', 'How does each option honor your core values?'],
+      potentialConflicts: []
+    };
+  }
+}

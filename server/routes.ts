@@ -129,6 +129,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Values assessment endpoints
+  app.post("/api/user/:userId/values/assess", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { responses, assessmentType } = req.body;
+      
+      const analysis = await analyzeValuesAssessment(responses, assessmentType);
+      
+      // Save assessment results
+      await storage.execute(`
+        INSERT INTO values_data (user_id, core_values, value_evolution, alignment_score)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id) DO UPDATE SET
+          core_values = $2,
+          value_evolution = $3,
+          alignment_score = $4,
+          last_assessment = NOW()
+      `, [userId, JSON.stringify(analysis.updatedValues), JSON.stringify(analysis.evolution), analysis.alignmentScore]);
+
+      res.json(analysis);
+    } catch (error) {
+      console.error("Values assessment error:", error);
+      res.status(500).json({ error: "Failed to analyze values assessment" });
+    }
+  });
+
+  app.get("/api/user/:userId/values", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      const valuesData = await storage.get(`
+        SELECT * FROM values_data WHERE user_id = $1
+      `, [userId]);
+
+      res.json(valuesData || { coreValues: [], alignmentScore: 0.7 });
+    } catch (error) {
+      console.error("Get values data error:", error);
+      res.status(500).json({ error: "Failed to get values data" });
+    }
+  });
+
+  app.post("/api/user/:userId/values/decision-support", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { decision, valueContext } = req.body;
+      
+      const guidance = await generateValueBasedGuidance(decision, valueContext);
+      res.json(guidance);
+    } catch (error) {
+      console.error("Decision support error:", error);
+      res.status(500).json({ error: "Failed to generate decision support" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
