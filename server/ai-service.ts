@@ -151,37 +151,191 @@ export async function generateBlissResponse(
   }
 }
 
-export async function detectGrowthPhase(userMessage: string): Promise<{ phase: "expansion" | "contraction" | "renewal"; confidence: number }> {
+export async function detectGrowthPhase(
+  userMessage: string, 
+  context?: {
+    recentEntries?: string[];
+    energyPatterns?: Array<{ mental: number; physical: number; emotional: number; spiritual: number }>;
+    currentPhase?: string;
+  }
+): Promise<{ phase: "expansion" | "contraction" | "renewal"; confidence: number; insights: string[] }> {
   try {
-    const prompt = `Based on this message, detect which growth phase this person is experiencing:
+    const contextInfo = context ? `
+Recent context:
+- Current phase: ${context.currentPhase || 'unknown'}
+- Recent entries: ${context.recentEntries?.slice(0, 3).join('; ') || 'none'}
+- Recent energy patterns: ${context.energyPatterns ? 'Available' : 'Not available'}
+    ` : '';
 
-EXPANSION: New experiences, taking risks, pushing boundaries, exploring possibilities, energy focused outward
-CONTRACTION: Reflection, integration, feeling stuck or paused, processing experiences, energy focused inward  
-RENEWAL: Synthesis, new understanding emerging, transformation, fresh perspective, crystallization of insights
+    const prompt = `Based on this message and context, detect which growth phase this person is experiencing:
 
-User message: "${userMessage}"
+EXPANSION: New experiences, taking risks, pushing boundaries, exploring possibilities, energy focused outward, feeling energized about growth
+CONTRACTION: Reflection, integration, feeling stuck or paused, processing experiences, energy focused inward, need for rest and consolidation
+RENEWAL: Synthesis, new understanding emerging, transformation, fresh perspective, crystallization of insights, ready for new cycle
 
-Respond with JSON: {"phase": "expansion|contraction|renewal", "confidence": 1-100}`;
+${contextInfo}
+
+Current message: "${userMessage}"
+
+Consider patterns, emotional tone, language choices, and energy levels. Provide specific insights about what indicates this phase.
+
+Respond with JSON: {
+  "phase": "expansion|contraction|renewal", 
+  "confidence": 1-100,
+  "insights": ["insight1", "insight2", "insight3"]
+}`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3,
-      max_tokens: 100,
+      max_tokens: 300,
     });
 
     const responseText = completion.choices[0]?.message?.content;
     if (!responseText) {
-      return { phase: 'expansion', confidence: 50 };
+      return { phase: 'expansion', confidence: 50, insights: [] };
     }
 
     const parsed = JSON.parse(responseText);
     return {
       phase: parsed.phase || 'expansion',
-      confidence: parsed.confidence || 50
+      confidence: parsed.confidence || 50,
+      insights: parsed.insights || []
     };
   } catch (error) {
     console.error('Error detecting growth phase:', error);
-    return { phase: 'expansion', confidence: 50 };
+    return { phase: 'expansion', confidence: 50, insights: ['Unable to analyze phase due to technical error'] };
+  }
+}
+
+export async function analyzeSentiment(text: string): Promise<{ sentiment: number; emotionalTone: string; keywords: string[] }> {
+  try {
+    const prompt = `Analyze the emotional sentiment and tone of this text:
+
+"${text}"
+
+Provide a detailed analysis including:
+1. Sentiment score from -1 (very negative) to 1 (very positive)
+2. Dominant emotional tone (e.g., hopeful, frustrated, reflective, excited, etc.)
+3. Key emotional keywords or phrases
+
+Respond with JSON: {
+  "sentiment": -1 to 1,
+  "emotionalTone": "description",
+  "keywords": ["keyword1", "keyword2"]
+}`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.2,
+      max_tokens: 200,
+    });
+
+    const responseText = completion.choices[0]?.message?.content;
+    if (!responseText) {
+      return { sentiment: 0, emotionalTone: 'neutral', keywords: [] };
+    }
+
+    const parsed = JSON.parse(responseText);
+    return {
+      sentiment: parsed.sentiment || 0,
+      emotionalTone: parsed.emotionalTone || 'neutral',
+      keywords: parsed.keywords || []
+    };
+  } catch (error) {
+    console.error('Error analyzing sentiment:', error);
+    return { sentiment: 0, emotionalTone: 'neutral', keywords: [] };
+  }
+}
+
+export async function generateJournalInsights(
+  entries: string[], 
+  timeframe: 'week' | 'month' | '3months'
+): Promise<{ patterns: string[]; recommendations: string[]; phaseProgression: string }> {
+  try {
+    const prompt = `Analyze these journal entries from the past ${timeframe} and provide insights:
+
+${entries.join('\n---\n')}
+
+Please identify:
+1. Recurring patterns or themes
+2. Growth recommendations based on the halo philosophy (expansion, contraction, renewal)
+3. Phase progression observations
+
+Respond with JSON: {
+  "patterns": ["pattern1", "pattern2"],
+  "recommendations": ["rec1", "rec2"],
+  "phaseProgression": "description of how the person has moved through phases"
+}`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.4,
+      max_tokens: 500,
+    });
+
+    const responseText = completion.choices[0]?.message?.content;
+    if (!responseText) {
+      return { patterns: [], recommendations: [], phaseProgression: 'Unable to analyze progression' };
+    }
+
+    const parsed = JSON.parse(responseText);
+    return {
+      patterns: parsed.patterns || [],
+      recommendations: parsed.recommendations || [],
+      phaseProgression: parsed.phaseProgression || 'No clear progression detected'
+    };
+  } catch (error) {
+    console.error('Error generating journal insights:', error);
+    return { patterns: [], recommendations: [], phaseProgression: 'Analysis unavailable' };
+  }
+}
+
+export async function generatePersonalizedContent(
+  userProfile: {
+    currentPhase: string;
+    interests: string[];
+    learningStyle: string;
+    recentChallenges: string[];
+  }
+): Promise<{ contentSuggestions: Array<{ title: string; type: string; reason: string }> }> {
+  try {
+    const prompt = `Generate personalized content recommendations for a user with this profile:
+
+Current Phase: ${userProfile.currentPhase}
+Interests: ${userProfile.interests.join(', ')}
+Learning Style: ${userProfile.learningStyle}
+Recent Challenges: ${userProfile.recentChallenges.join(', ')}
+
+Based on the Growth Halo philosophy, suggest 5 pieces of content (articles, practices, reflections) that would be most beneficial right now.
+
+Respond with JSON: {
+  "contentSuggestions": [
+    {"title": "Content Title", "type": "article|practice|reflection", "reason": "Why this is relevant now"}
+  ]
+}`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.6,
+      max_tokens: 600,
+    });
+
+    const responseText = completion.choices[0]?.message?.content;
+    if (!responseText) {
+      return { contentSuggestions: [] };
+    }
+
+    const parsed = JSON.parse(responseText);
+    return {
+      contentSuggestions: parsed.contentSuggestions || []
+    };
+  } catch (error) {
+    console.error('Error generating personalized content:', error);
+    return { contentSuggestions: [] };
   }
 }

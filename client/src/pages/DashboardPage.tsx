@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Compass, Brain, Heart, Zap, Users, Target, BarChart3, BookOpen } from "lucide-react";
 import { Link } from "wouter";
@@ -9,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import HaloProgressRing from "../components/HaloProgressRing";
 import PhaseIndicator from "../components/PhaseIndicator";
+import WeeklyInsights from "../components/WeeklyInsights";
 import { cn } from "@/lib/utils";
 
 type GrowthPhase = "expansion" | "contraction" | "renewal";
@@ -30,28 +30,30 @@ interface DashboardData {
 }
 
 export default function DashboardPage() {
-  const [dashboardData] = useState<DashboardData>({
-    currentPhase: "contraction",
-    phaseConfidence: 73,
-    energyLevels: {
-      mental: 6,
-      physical: 7,
-      emotional: 5,
-      spiritual: 8
-    },
-    weeklyInsights: [
-      "Your reflection time has increased 40% this week - embracing the contraction phase beautifully.",
-      "Energy patterns show deep spiritual connection emerging through this inward turn.",
-      "Decision alignment with core values improved by 25% since last check-in."
-    ],
-    recentJournalEntries: 5,
-    intentionsProgress: {
-      "Deep Self-Reflection": 85,
-      "Mindful Presence": 70,
-      "Authentic Expression": 60,
-      "Holistic Wellness": 75
-    }
-  });
+  const userId = "user123"; // This would come from authentication
+  const [growthData, setGrowthData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchGrowthData = async () => {
+      try {
+        const response = await fetch(`/api/user/${userId}/growth`);
+        if (response.ok) {
+          const data = await response.json();
+          setGrowthData(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch growth data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGrowthData();
+  }, [userId]);
+
+  const currentPhase = growthData?.currentPhase || "expansion";
+  const phaseConfidence = growthData?.phaseConfidence || 75;
 
   const energyIcons = {
     mental: Brain,
@@ -105,14 +107,14 @@ export default function DashboardPage() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.3 }}
       >
-        <Card className={cn("border-2 bg-gradient-to-br", phaseColors[dashboardData.currentPhase])}>
+        <Card className={cn("border-2 bg-gradient-to-br", phaseColors[currentPhase])}>
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="text-center md:text-left">
                 <h2 className="text-2xl font-light mb-2">Current Growth Phase</h2>
                 <PhaseIndicator 
-                  currentPhase={dashboardData.currentPhase}
-                  confidence={dashboardData.phaseConfidence}
+                  currentPhase={currentPhase}
+                  confidence={phaseConfidence}
                   size="lg"
                 />
                 <p className="text-muted-foreground mt-4 max-w-md">
@@ -121,8 +123,8 @@ export default function DashboardPage() {
                 </p>
               </div>
               <HaloProgressRing 
-                phase={dashboardData.currentPhase}
-                progress={dashboardData.phaseConfidence}
+                phase={currentPhase}
+                progress={phaseConfidence}
                 size="lg"
               />
             </div>
@@ -147,35 +149,37 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {Object.entries(dashboardData.energyLevels).map(([type, level]) => {
-                const Icon = energyIcons[type as keyof EnergyLevel];
-                return (
+            {loading ? (
+              <div className="animate-pulse space-y-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-4 bg-muted rounded" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-6">
+                {Object.entries(growthData?.energyLevels || { mental: 5, physical: 5, emotional: 5, spiritual: 5 }).map(([type, level]) => (
                   <div key={type} className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Icon className="w-4 h-4 text-muted-foreground" />
-                        <span className="font-medium capitalize">{type}</span>
-                      </div>
-                      <Badge 
-                        variant="outline"
-                        className={getEnergyColor(level)}
-                      >
-                        {level}/10
-                      </Badge>
+                    <div className="flex justify-between">
+                      <span className="text-sm capitalize">{type}</span>
+                      <span className="text-sm font-medium">{level}/10</span>
                     </div>
-                    <Progress value={level * 10} className="h-2" />
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className="bg-primary h-2 rounded-full transition-all duration-500" 
+                        style={{ width: `${(level as number) * 10}%` }} 
+                      />
+                    </div>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
 
       {/* Weekly Insights & Intentions Progress */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
+
         {/* Weekly Insights */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -193,17 +197,25 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {dashboardData.weeklyInsights.map((insight, index) => (
-                <motion.div
-                  key={index}
-                  className="p-3 rounded-lg bg-muted/50 border-l-4 border-primary"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.7 + index * 0.1 }}
-                >
-                  <p className="text-sm">{insight}</p>
-                </motion.div>
-              ))}
+              {loading ? (
+                <div className="animate-pulse space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="h-4 bg-muted rounded" />
+                  ))}
+                </div>
+              ) : (
+                (growthData?.weeklyInsights || []).map((insight: string, index: number) => (
+                  <motion.div
+                    key={index}
+                    className="p-3 rounded-lg bg-muted/50 border-l-4 border-primary"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.7 + index * 0.1 }}
+                  >
+                    <p className="text-sm">{insight}</p>
+                  </motion.div>
+                ))
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -225,21 +237,29 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {Object.entries(dashboardData.intentionsProgress).map(([intention, progress], index) => (
-                <motion.div
-                  key={intention}
-                  className="space-y-2"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 + index * 0.1 }}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{intention}</span>
-                    <span className="text-sm text-muted-foreground">{progress}%</span>
-                  </div>
-                  <Progress value={progress} className="h-2" />
-                </motion.div>
-              ))}
+              {loading ? (
+                <div className="animate-pulse space-y-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="h-4 bg-muted rounded" />
+                  ))}
+                </div>
+              ) : (
+                Object.entries(growthData?.intentionsProgress || {}).map(([intention, progress], index) => (
+                  <motion.div
+                    key={intention}
+                    className="space-y-2"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 + index * 0.1 }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{intention}</span>
+                      <span className="text-sm text-muted-foreground">{progress}%</span>
+                    </div>
+                    <Progress value={progress as number} className="h-2" />
+                  </motion.div>
+                ))
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -272,7 +292,7 @@ export default function DashboardPage() {
                   </span>
                 </Button>
               </Link>
-              
+
               <Link href="/compass">
                 <Button 
                   variant="outline" 
@@ -285,7 +305,7 @@ export default function DashboardPage() {
                   </span>
                 </Button>
               </Link>
-              
+
               <Link href="/journal">
                 <Button 
                   variant="outline" 
@@ -337,7 +357,7 @@ export default function DashboardPage() {
                   <div className="absolute left-0 w-1/3 h-full bg-expansion rounded-full"></div>
                   <div className="absolute left-1/3 w-1/3 h-full bg-contraction rounded-full"></div>
                   <div className="absolute left-2/3 w-1/3 h-full bg-renewal rounded-full"></div>
-                  
+
                   {/* Current position marker */}
                   <motion.div 
                     className="absolute w-3 h-3 bg-white border-2 border-contraction rounded-full -top-1"
