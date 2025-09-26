@@ -1,4 +1,3 @@
-
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
@@ -125,7 +124,7 @@ export async function generateBlissResponse(
     });
 
     const responseText = completion.choices[0]?.message?.content;
-    
+
     if (!responseText) {
       throw new Error('No response from OpenAI');
     }
@@ -279,7 +278,7 @@ Respond with JSON: {
     }
 
     const parsed = JSON.parse(responseText);
-    
+
     // Add standard resources based on risk level
     const standardResources = [
       { type: 'crisis_hotline', description: '988 Suicide & Crisis Lifeline', contact: '988' },
@@ -506,7 +505,7 @@ Respond with detailed JSON matching the expected structure with specific example
     }
 
     const insights = JSON.parse(responseText);
-    
+
     // Validate and enrich the response
     return {
       emotionalPatterns: insights.emotionalPatterns || [],
@@ -532,15 +531,15 @@ Respond with detailed JSON matching the expected structure with specific example
     };
   } catch (error) {
     console.error('Error generating advanced journal insights:', error);
-    return this.generateFallbackInsights(entries, timeframe);
+    return generateFallbackInsights(entries, timeframe);
   }
 }
 
-  private generateFallbackInsights(entries: string[], timeframe: string) {
+function generateFallbackInsights(entries: string[], timeframe: string) {
   // Basic analysis fallback
   const totalWords = entries.join(' ').split(' ').length;
   const avgLength = totalWords / entries.length;
-  
+
   return {
     emotionalPatterns: [
       { pattern: 'Mixed emotional expression', frequency: entries.length, trend: 'stable' as const }

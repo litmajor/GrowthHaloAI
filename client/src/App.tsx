@@ -21,6 +21,7 @@ import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import EventsPage from './pages/EventsPage';
 import ContentPage from './pages/ContentPage';
+import AnalyticsPage from "./pages/AnalyticsPage";
 
 function Router() {
   return (
@@ -38,9 +39,10 @@ function Router() {
       <Route path="/register" component={RegisterPage} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/settings" component={SettingsPage} />
-      <Route path="/profile" component={ProfilePage} />
       <Route path="/events" component={EventsPage} />
       <Route path="/content" component={ContentPage} />
+      <Route path="/analytics" component={AnalyticsPage} />
+      <Route path="/profile" component={ProfilePage} />
       <Route component={NotFound} />
     </Switch>
   );

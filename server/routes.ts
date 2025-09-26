@@ -6,6 +6,7 @@ import { growthTracker } from "./growth-service";
 import { communityIntelligence } from "./community-service";
 import { subscriptionService } from "./subscription-service";
 import { paymentService } from "./payment-service";
+import { advancedAnalytics } from './analytics-service';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // AI Chat endpoints
@@ -405,6 +406,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Customer portal error:", error);
       res.status(500).json({ error: "Failed to create customer portal session" });
+    }
+  });
+
+  // Events endpoints
+  app.get('/api/events', async (req, res) => {
+    try {
+      const { type, phase, search } = req.query;
+      const events = await eventsService.getEvents({
+        type: type as string,
+        phase: phase as string,
+        search: search as string
+      });
+      res.json(events);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      res.status(500).json({ error: 'Failed to fetch events' });
+    }
+  });
+
+  app.post('/api/events/:eventId/register', async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const { userId } = req.body;
+
+      const result = await eventsService.registerForEvent(eventId, userId);
+      res.json(result);
+    } catch (error) {
+      console.error('Error registering for event:', error);
+      res.status(500).json({ error: 'Failed to register for event' });
+    }
+  });
+
+  // Advanced Analytics endpoints
+  app.get('/api/user/:userId/analytics/timeline', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { timeframe = '6months' } = req.query;
+
+      const timeline = await advancedAnalytics.generateGrowthTimeline(
+        userId, 
+        timeframe as '3months' | '6months' | '1year' | '2years'
+      );
+      res.json(timeline);
+    } catch (error) {
+      console.error('Error generating growth timeline:', error);
+      res.status(500).json({ error: 'Failed to generate timeline' });
+    }
+  });
+
+  app.get('/api/user/:userId/analytics/patterns', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { timeframe = '6months' } = req.query;
+
+      const patterns = await advancedAnalytics.generatePatternVisualization(
+        userId,
+        timeframe as '3months' | '6months' | '1year'
+      );
+      res.json(patterns);
+    } catch (error) {
+      console.error('Error generating pattern visualization:', error);
+      res.status(500).json({ error: 'Failed to generate patterns' });
+    }
+  });
+
+  app.get('/api/user/:userId/analytics/predictions', async (req, res) => {
+    try {
+      const { userId } = req.params;
+
+      const predictions = await advancedAnalytics.generatePredictiveModel(userId);
+      res.json(predictions);
+    } catch (error) {
+      console.error('Error generating predictions:', error);
+      res.status(500).json({ error: 'Failed to generate predictions' });
+    }
+  });
+
+  app.get('/api/user/:userId/analytics/compatibility', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { matches } = req.query;
+
+      const potentialMatches = matches ? (matches as string).split(',') : [];
+      const matrix = await advancedAnalytics.generateCompatibilityMatrix(userId, potentialMatches);
+      res.json(matrix);
+    } catch (error) {
+      console.error('Error generating compatibility matrix:', error);
+      res.status(500).json({ error: 'Failed to generate compatibility analysis' });
     }
   });
 

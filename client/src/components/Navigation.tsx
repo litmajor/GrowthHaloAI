@@ -46,6 +46,7 @@ const navItems = [
   { path: "/pricing", icon: CreditCard, label: "Pricing" },
   { path: "/events", icon: Calendar, label: "Events" }, // Added Events
   { path: "/content", icon: BookOpen, label: "Content" }, // Added Content
+  { path: "/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
 const secondaryNavItems = [
