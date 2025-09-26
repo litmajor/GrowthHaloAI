@@ -536,7 +536,7 @@ Respond with detailed JSON matching the expected structure with specific example
   }
 }
 
-private generateFallbackInsights(entries: string[], timeframe: string) {
+  private generateFallbackInsights(entries: string[], timeframe: string) {
   // Basic analysis fallback
   const totalWords = entries.join(' ').split(' ').length;
   const avgLength = totalWords / entries.length;

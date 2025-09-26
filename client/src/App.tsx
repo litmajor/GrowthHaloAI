@@ -19,6 +19,8 @@ import NotFound from "@/pages/not-found";
 import { queryClient } from "./lib/queryClient";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
+import EventsPage from './pages/EventsPage';
+import ContentPage from './pages/ContentPage';
 
 function Router() {
   return (
@@ -37,6 +39,8 @@ function Router() {
       <Route path="/pricing" component={PricingPage} />
       <Route path="/settings" component={SettingsPage} />
       <Route path="/profile" component={ProfilePage} />
+      <Route path="/events" component={EventsPage} />
+      <Route path="/content" component={ContentPage} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -6,6 +6,29 @@ import { ThemeToggle } from "./ThemeToggle";
 import HaloProgressRing from "./HaloProgressRing";
 import { Button } from "@/components/ui/button";
 
+// Placeholder for ListItem and NavigationMenuContent if they are not defined elsewhere
+// In a real scenario, these would likely be imported from a UI library like shadcn/ui
+const ListItem = ({ className, title, children, href }) => (
+  <li>
+    <Link href={href}>
+      <a
+        className={cn(
+          "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+          className
+        )}
+      >
+        <div className="text-sm font-medium leading-none">{title}</div>
+        <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+          {children}
+        </p>
+      </a>
+    </Link>
+  </li>
+);
+
+const NavigationMenuContent = ({ children }) => <div>{children}</div>;
+const NavigationMenuLink = ({ asChild, children }) => <div>{children}</div>;
+
 
 interface NavigationProps {
   currentPhase?: "expansion" | "contraction" | "renewal";
@@ -21,6 +44,8 @@ const navItems = [
   { path: "/intentions", icon: Target, label: "Intentions" },
   { path: "/community", icon: Users, label: "Community" },
   { path: "/pricing", icon: CreditCard, label: "Pricing" },
+  { path: "/events", icon: Calendar, label: "Events" }, // Added Events
+  { path: "/content", icon: BookOpen, label: "Content" }, // Added Content
 ];
 
 const secondaryNavItems = [
