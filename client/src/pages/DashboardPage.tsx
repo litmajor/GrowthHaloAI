@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import HaloProgressRing from "../components/HaloProgressRing";
 import PhaseIndicator from "../components/PhaseIndicator";
 import WeeklyInsights from "../components/WeeklyInsights";
-import SubscriptionManager from "../components/SubscriptionManager"; // Assuming this component exists
+
 import { ResponsiveContainer } from "@/components/ui/responsive-container";
 import { cn } from "@/lib/utils";
 
@@ -430,27 +430,7 @@ export default function DashboardPage() {
             </Card>
           </motion.div>
 
-          {/* Subscription Management */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5" />
-                  Subscription
-                </CardTitle>
-                <CardDescription>
-                  Manage your Growth Halo subscription and view usage
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <SubscriptionManager userId={userId} />
-              </CardContent>
-            </Card>
-          </motion.div>
+          
         </motion.div>
       </ResponsiveContainer>
     </div>

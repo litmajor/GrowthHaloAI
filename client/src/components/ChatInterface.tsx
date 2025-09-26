@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import ChatMessage from "./ChatMessage";
 import HaloProgressRing from "./HaloProgressRing";
 import PhaseIndicator from "./PhaseIndicator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ChatHistory from './ChatHistory';
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -165,7 +167,7 @@ export default function ChatInterface({
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      
+
       // Fallback message in case of error
       const fallbackMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -194,6 +196,11 @@ export default function ChatInterface({
     setInputValue(prompt);
     // Optionally auto-send the message
     // sendMessage();
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage();
   };
 
   return (
@@ -231,201 +238,229 @@ export default function ChatInterface({
         />
       </motion.div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {messages.length === 0 && (
-          <motion.div 
-            className="flex flex-col h-full space-y-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            {/* Welcome Header */}
-            <div className="flex flex-col items-center text-center space-y-4 pt-8">
-              <HaloProgressRing 
-                phase={currentPhase} 
-                progress={phaseConfidence} 
-                size="lg" 
-              />
-              <div className="space-y-2">
-                <h2 className="text-xl font-light text-foreground">
-                  Welcome to your growth journey
-                </h2>
-                <p className="text-muted-foreground max-w-md">
-                  Choose a conversation starter below, or share what's on your mind.
-                </p>
-              </div>
-            </div>
+      {/* Chat Interface with Tabs */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Tabs defaultValue="chat" className="flex-1 flex flex-col">
+          <div className="shrink-0 border-b bg-card/50 backdrop-blur-sm p-4">
+            <TabsList className="w-full">
+              <TabsTrigger value="chat" className="flex-1">
+                Current Chat
+                <Badge variant="outline" className="ml-2 text-xs">
+                  {messages.length > 1 ? `${messages.length - 1}` : '0'}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger value="history" className="flex-1">
+                Chat History
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-            {/* Chat Templates */}
-            <div className="flex-1 max-w-4xl mx-auto w-full px-4">
-              <div className="space-y-6">
-                {/* Current Phase Templates */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {currentPhase} phase
-                    </Badge>
-                    <h3 className="text-sm font-medium text-muted-foreground">
-                      Suggested for your current phase
-                    </h3>
+          <TabsContent value="chat" className="flex-1 flex flex-col mt-0">
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              {messages.length === 0 && (
+                <motion.div 
+                  className="flex flex-col h-full space-y-6"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  {/* Welcome Header */}
+                  <div className="flex flex-col items-center text-center space-y-4 pt-8">
+                    <HaloProgressRing 
+                      phase={currentPhase} 
+                      progress={phaseConfidence} 
+                      size="lg" 
+                    />
+                    <div className="space-y-2">
+                      <h2 className="text-xl font-light text-foreground">
+                        Welcome to your growth journey
+                      </h2>
+                      <p className="text-muted-foreground max-w-md">
+                        Choose a conversation starter below, or share what's on your mind.
+                      </p>
+                    </div>
                   </div>
-                  <div className="grid gap-3">
-                    {chatTemplates[currentPhase].map((template, index) => {
-                      const Icon = template.icon;
-                      return (
-                        <motion.button
-                          key={index}
-                          onClick={() => handleTemplateSelect(template.prompt)}
-                          className="text-left p-4 rounded-lg border border-border/50 bg-card/30 hover:bg-card/50 hover:border-border transition-colors group"
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.99 }}
-                          data-testid={`template-${currentPhase}-${index}`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                              <Icon className="w-4 h-4 text-primary" />
-                            </div>
-                            <div className="flex-1 space-y-1">
-                              <div className="flex items-center justify-between">
-                                <h4 className="text-sm font-medium text-foreground">
-                                  {template.title}
-                                </h4>
-                                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                              </div>
-                              <p className="text-xs text-muted-foreground">
-                                {template.description}
-                              </p>
-                            </div>
-                          </div>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </div>
 
-                {/* Other Phases */}
-                <div className="space-y-4">
-                  {Object.entries(chatTemplates).map(([phase, templates]) => {
-                    if (phase === currentPhase) return null;
-                    
-                    return (
-                      <div key={phase} className="space-y-2">
-                        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                          {phase} phase
-                        </h4>
-                        <div className="grid gap-2">
-                          {templates.map((template, index) => {
+                  {/* Chat Templates */}
+                  <div className="flex-1 max-w-4xl mx-auto w-full px-4">
+                    <div className="space-y-6">
+                      {/* Current Phase Templates */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {currentPhase} phase
+                          </Badge>
+                          <h3 className="text-sm font-medium text-muted-foreground">
+                            Suggested for your current phase
+                          </h3>
+                        </div>
+                        <div className="grid gap-3">
+                          {chatTemplates[currentPhase].map((template, index) => {
                             const Icon = template.icon;
                             return (
                               <motion.button
-                                key={`${phase}-${index}`}
+                                key={index}
                                 onClick={() => handleTemplateSelect(template.prompt)}
-                                className="text-left p-3 rounded-md border border-border/30 bg-card/20 hover:bg-card/40 hover:border-border/50 transition-colors group"
-                                whileHover={{ scale: 1.005 }}
-                                whileTap={{ scale: 0.995 }}
-                                data-testid={`template-${phase}-${index}`}
+                                className="text-left p-4 rounded-lg border border-border/50 bg-card/30 hover:bg-card/50 hover:border-border transition-colors group"
+                                whileHover={{ scale: 1.01 }}
+                                whileTap={{ scale: 0.99 }}
+                                data-testid={`template-${currentPhase}-${index}`}
                               >
-                                <div className="flex items-center gap-2">
-                                  <Icon className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-colors" />
-                                  <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-                                    {template.title}
-                                  </span>
-                                  <ArrowRight className="w-3 h-3 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors ml-auto" />
+                                <div className="flex items-start gap-3">
+                                  <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                                    <Icon className="w-4 h-4 text-primary" />
+                                  </div>
+                                  <div className="flex-1 space-y-1">
+                                    <div className="flex items-center justify-between">
+                                      <h4 className="text-sm font-medium text-foreground">
+                                        {template.title}
+                                      </h4>
+                                      <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                      {template.description}
+                                    </p>
+                                  </div>
                                 </div>
                               </motion.button>
                             );
                           })}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
 
-        {messages.map((message) => (
-          <ChatMessage
-            key={message.id}
-            message={message.content}
-            isBliss={message.isBliss}
-            timestamp={message.timestamp}
-            phase={message.phase || currentPhase}
-          />
-        ))}
+                      {/* Other Phases */}
+                      <div className="space-y-4">
+                        {Object.entries(chatTemplates).map(([phase, templates]) => {
+                          if (phase === currentPhase) return null;
 
-        {isLoading && (
-          <motion.div 
-            className="flex gap-3 max-w-4xl mx-auto"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-              <span className="text-xs font-medium text-primary">B</span>
-            </div>
-            <div className="flex-1 max-w-2xl">
-              <div className="rounded-lg p-4 border bg-card/50 border-card-border">
-                <div className="flex space-x-1">
-                  {[0, 1, 2].map((i) => (
-                    <motion.div
-                      key={i}
-                      className="w-2 h-2 bg-primary/40 rounded-full"
-                      animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.5, 1, 0.5]
-                      }}
-                      transition={{
-                        duration: 1,
-                        repeat: Infinity,
-                        delay: i * 0.2,
-                        ease: "easeInOut"
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input */}
-      <motion.div 
-        className="p-4 border-t border-border bg-card/30 backdrop-blur-sm"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      >
-        <div className="flex gap-3 max-w-4xl mx-auto">
-          <div className="flex-1">
-            <Textarea
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Share what's on your mind..."
-              className={cn(
-                "min-h-[44px] max-h-32 resize-none border-input/50",
-                "focus-visible:ring-1 focus-visible:ring-primary/30",
-                "placeholder:text-muted-foreground/60"
+                          return (
+                            <div key={phase} className="space-y-2">
+                              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                {phase} phase
+                              </h4>
+                              <div className="grid gap-2">
+                                {templates.map((template, index) => {
+                                  const Icon = template.icon;
+                                  return (
+                                    <motion.button
+                                      key={`${phase}-${index}`}
+                                      onClick={() => handleTemplateSelect(template.prompt)}
+                                      className="text-left p-3 rounded-md border border-border/30 bg-card/20 hover:bg-card/40 hover:border-border/50 transition-colors group"
+                                      whileHover={{ scale: 1.005 }}
+                                      whileTap={{ scale: 0.995 }}
+                                      data-testid={`template-${phase}-${index}`}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <Icon className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-colors" />
+                                        <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                                          {template.title}
+                                        </span>
+                                        <ArrowRight className="w-3 h-3 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors ml-auto" />
+                                      </div>
+                                    </motion.button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               )}
-              data-testid="input-message"
-            />
-          </div>
-          <Button 
-            onClick={sendMessage} // Use the new sendMessage function name
-            disabled={!inputValue.trim() || isLoading}
-            size="default"
-            className="px-4 hover-elevate active-elevate-2"
-            data-testid="button-send"
-          >
-            <Send className="w-4 h-4" />
-          </Button>
-        </div>
-      </motion.div>
+
+              {messages.map((message) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message.content}
+                  isBliss={message.isBliss}
+                  timestamp={message.timestamp}
+                  phase={message.phase || currentPhase}
+                />
+              ))}
+
+              {isLoading && (
+                <motion.div 
+                  className="flex gap-3 max-w-4xl mx-auto"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                    <span className="text-xs font-medium text-primary">B</span>
+                  </div>
+                  <div className="flex-1 max-w-2xl">
+                    <div className="rounded-lg p-4 border bg-card/50 border-card-border">
+                      <div className="flex space-x-1">
+                        {[0, 1, 2].map((i) => (
+                          <motion.div
+                            key={i}
+                            className="w-2 h-2 bg-primary/40 rounded-full"
+                            animate={{
+                              scale: [1, 1.2, 1],
+                              opacity: [0.5, 1, 0.5]
+                            }}
+                            transition={{
+                              duration: 1,
+                              repeat: Infinity,
+                              delay: i * 0.2,
+                              ease: "easeInOut"
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Area */}
+            <div className="shrink-0 border-t border-border bg-card/30 p-4">
+              <div className="flex gap-3 max-w-4xl mx-auto">
+                <div className="flex-1">
+                  <Textarea
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Share what's on your mind..."
+                    className={cn(
+                      "min-h-[44px] max-h-32 resize-none border-input/50",
+                      "focus-visible:ring-1 focus-visible:ring-primary/30",
+                      "placeholder:text-muted-foreground/60"
+                    )}
+                    data-testid="input-message"
+                  />
+                </div>
+                <Button 
+                  onClick={sendMessage} 
+                  disabled={!inputValue.trim() || isLoading}
+                  size="default"
+                  className="px-4 hover-elevate active-elevate-2"
+                  data-testid="button-send"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="history" className="flex-1 mt-0">
+            <div className="p-4 max-w-4xl mx-auto">
+              <ChatHistory 
+                userId="demo-user" 
+                onSelectSession={(sessionId) => {
+                  console.log('Selected session:', sessionId);
+                  // Logic to load and display the selected chat session would go here
+                  // For now, we just log it.
+                }}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

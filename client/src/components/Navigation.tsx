@@ -25,6 +25,7 @@ const navItems = [
   { path: "/events", icon: Calendar, label: "Events" },
   { path: "/content", icon: BookOpen, label: "Content" },
   { path: "/pricing", icon: CreditCard, label: "Pricing" },
+  { path: "/subscription", icon: CreditCard, label: "Subscription" }, // Added Subscription page link
 ];
 
 const secondaryNavItems = [
@@ -158,7 +159,7 @@ export default function Navigation({
               </Link>
             );
           })}
-          
+
           {/* Theme Toggle */}
           <div className={cn("flex", isCollapsed ? "justify-center" : "justify-start")}>
             <ThemeToggle />

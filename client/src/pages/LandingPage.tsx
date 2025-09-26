@@ -31,41 +31,7 @@ export default function LandingPage() {
     }
   ];
 
-  const tiers = [
-    {
-      id: 'free',
-      name: 'First Steps',
-      icon: <Sparkles className="w-5 h-5" />,
-      price: 'Free',
-      description: 'Perfect for exploring your growth journey',
-      features: ['Basic Bliss conversations', 'Growth phase tracking', 'Daily check-ins', '1 community circle access']
-    },
-    {
-      id: 'growth',
-      name: 'Growth',
-      icon: <Zap className="w-5 h-5" />,
-      price: '$19/month',
-      description: 'Accelerate your personal development',
-      features: ['Unlimited Bliss conversations', 'Advanced analytics', 'Growth journal', '5 community circles', 'Values compass'],
-      popular: true
-    },
-    {
-      id: 'transformation',
-      name: 'Transformation',
-      icon: <Star className="w-5 h-5" />,
-      price: '$39/month',
-      description: 'Deep transformation with expert guidance',
-      features: ['Everything in Growth', 'Monthly coaching sessions', '8 community circles', 'Priority support', 'Advanced insights']
-    },
-    {
-      id: 'facilitator',
-      name: 'Facilitator',
-      icon: <Crown className="w-5 h-5" />,
-      price: '$99/month',
-      description: 'Tools for coaches and facilitators',
-      features: ['Everything in Transformation', 'Client management tools', 'White-label options', 'Facilitator training', 'Analytics dashboard']
-    }
-  ];
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -109,9 +75,9 @@ export default function LandingPage() {
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
-            <Link href="/dashboard">
+            <Link href="/pricing">
               <Button size="lg" variant="outline" className="text-lg px-8">
-                View Demo
+                View Pricing
               </Button>
             </Link>
           </div>
@@ -156,65 +122,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Choose Your Growth Path
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Start free and upgrade as your journey deepens. All plans include our core AI companion.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {tiers.map((tier, index) => (
-            <motion.div
-              key={tier.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="relative"
-            >
-              {tier.popular && (
-                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
-                  Most Popular
-                </Badge>
-              )}
-              <Card className={`h-full ${tier.popular ? 'ring-2 ring-primary shadow-xl' : 'hover:shadow-lg'} transition-all`}>
-                <CardHeader className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 mx-auto">
-                    {tier.icon}
-                  </div>
-                  <CardTitle className="text-xl">{tier.name}</CardTitle>
-                  <div className="text-3xl font-bold text-primary">{tier.price}</div>
-                  <CardDescription>{tier.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <ul className="space-y-2">
-                    {tier.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center gap-2 text-sm">
-                        <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
-                          <div className="w-2 h-2 rounded-full bg-primary" />
-                        </div>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/register">
-                    <Button 
-                      className="w-full" 
-                      variant={tier.popular ? 'default' : 'outline'}
-                    >
-                      {tier.id === 'free' ? 'Start Free' : 'Choose Plan'}
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+      
 
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20 text-center">

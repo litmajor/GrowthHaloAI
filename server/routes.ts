@@ -97,8 +97,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (userId && phaseDetection.confidence > 75) {
         try {
           await growthTracker.trackPhaseTransition(
-            userId, 
-            phaseDetection.phase, 
+            userId,
+            phaseDetection.phase,
             phaseDetection.confidence,
             'user_message'
           );
@@ -305,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { circleType, limit = 5 } = req.query;
 
       const compatibleMembers = await communityIntelligence.findCompatibleMembers(
-        userId, 
+        userId,
         circleType as string,
         parseInt(limit as string)
       );
@@ -560,7 +560,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { timeframe = '6months' } = req.query;
 
       const timeline = await advancedAnalytics.generateGrowthTimeline(
-        userId, 
+        userId,
         timeframe as '3months' | '6months' | '1year' | '2years'
       );
       res.json(timeline);
@@ -586,15 +586,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/user/:userId/analytics/predictions', async (req, res) => {
+  app.get("/api/user/:userId/analytics/predictions", async (req, res) => {
     try {
       const { userId } = req.params;
-
       const predictions = await advancedAnalytics.generatePredictiveModel(userId);
       res.json(predictions);
     } catch (error) {
-      console.error('Error generating predictions:', error);
-      res.status(500).json({ error: 'Failed to generate predictions' });
+      console.error("Predictions error:", error);
+      res.status(500).json({ error: "Failed to generate predictions" });
+    }
+  });
+
+  // Chat History endpoint
+  app.get("/api/user/:userId/chat-history", async (req, res) => {
+    try {
+      const { userId } = req.params;
+
+      // For now, return mock data - in production this would query the database
+      const mockHistory = [
+        {
+          id: '1',
+          title: 'Exploring Career Transition',
+          date: new Date('2024-01-15'),
+          messageCount: 12,
+          phase: 'contraction',
+          preview: 'Discussed feeling stuck in current role and exploring new possibilities...',
+          tags: ['career', 'transition', 'purpose']
+        },
+        {
+          id: '2',
+          title: 'Values Alignment Session',
+          date: new Date('2024-01-12'),
+          messageCount: 8,
+          phase: 'expansion',
+          preview: 'Deep dive into core values and how they relate to daily decisions...',
+          tags: ['values', 'alignment', 'authenticity']
+        },
+        {
+          id: '3',
+          title: 'Morning Reflection',
+          date: new Date('2024-01-10'),
+          messageCount: 5,
+          phase: 'renewal',
+          preview: 'Gentle check-in about energy levels and intention setting...',
+          tags: ['morning', 'reflection', 'intentions']
+        }
+      ];
+
+      res.json(mockHistory);
+    } catch (error) {
+      console.error("Chat history error:", error);
+      res.status(500).json({ error: "Failed to fetch chat history" });
     }
   });
 
