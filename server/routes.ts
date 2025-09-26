@@ -1,12 +1,13 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { generateBlissResponse, detectGrowthPhase, generatePersonalizedContent, analyzeValuesAssessment, generateValueBasedGuidance } from "./ai-service";
+import { generateBlissResponse, generateAdaptiveBlissResponse, analyzeUserPatterns, detectGrowthPhase, generatePersonalizedContent, analyzeValuesAssessment, generateValueBasedGuidance } from "./ai-service";
 import { growthTracker } from "./growth-service";
 import { communityIntelligence } from "./community-service";
 import { subscriptionService } from "./subscription-service";
 import { paymentService } from "./payment-service";
 import { advancedAnalytics } from './analytics-service';
+import { eventsService } from './events-service';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced chat endpoint with adaptive AI

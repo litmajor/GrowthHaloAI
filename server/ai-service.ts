@@ -1,9 +1,20 @@
 import OpenAI from 'openai';
 import { advancedMemory } from './memory-service';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Create OpenAI client conditionally to avoid startup errors when API key is not set
+let openai: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable.');
+    }
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
 export interface BlissResponse {
   message: string;
@@ -191,7 +202,7 @@ Respond with enhanced JSON:
       { role: 'user' as const, content: userMessage }
     ];
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4',
       messages: messages,
       temperature: 0.7,
@@ -241,7 +252,7 @@ export async function generateBlissResponse(
       { role: 'user' as const, content: userMessage }
     ];
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4',
       messages: messages,
       temperature: 0.7,
@@ -353,7 +364,7 @@ Respond in JSON format:
   }
 }`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: analysisPrompt }],
       temperature: 0.3,
@@ -411,7 +422,7 @@ Respond with JSON: {
   "insights": ["insight1", "insight2", "insight3"]
 }`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3,
@@ -485,7 +496,7 @@ Respond with JSON: {
   "supportResources": [{"type": "crisis_hotline", "description": "24/7 crisis support", "contact": "988"}]
 }`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1, // Low temperature for consistent crisis detection
@@ -574,7 +585,7 @@ Respond with JSON: {
   "followUpSuggestions": ["suggestion1", "suggestion2"]
 }`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3,
@@ -622,7 +633,7 @@ Respond with JSON: {
   "keywords": ["keyword1", "keyword2"]
 }`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.2,
@@ -719,7 +730,7 @@ Use Growth Halo philosophy (expansion, contraction, renewal cycles) in your anal
 
 Respond with detailed JSON matching the expected structure with specific examples and reasoning.`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3,
@@ -822,7 +833,7 @@ Respond with JSON: {
   "phaseProgression": "description of how the person has moved through phases"
 }`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.4,
@@ -870,7 +881,7 @@ Respond with JSON: {
   ]
 }`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.6,
@@ -923,7 +934,7 @@ Respond with JSON: {
   "evolution": {"trend": "expanding authenticity", "significantChanges": ["change1"]}
 }`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.4,
@@ -968,7 +979,7 @@ Respond with JSON: {
   "potentialConflicts": ["conflict1"]
 }`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.6,

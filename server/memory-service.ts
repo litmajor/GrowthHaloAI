@@ -1,9 +1,20 @@
 
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Create OpenAI client conditionally to avoid startup errors when API key is not set
+let openai: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable.');
+    }
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
 interface MemoryCluster {
   id: string;
@@ -138,7 +149,7 @@ Provide adapted response with reasoning in JSON:
   "personalityAdjustments": ["adjustment1", "adjustment2"]
 }`;
 
-      const completion = await openai.chat.completions.create({
+      const completion = await getOpenAIClient().chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: adaptationPrompt }],
         temperature: 0.4,
@@ -255,7 +266,7 @@ Provide adapted response with reasoning in JSON:
   private async extractConcepts(text: string): Promise<string[]> {
     try {
       const prompt = `Extract key concepts from this text. Return as JSON array: "${text}"`;
-      const completion = await openai.chat.completions.create({
+      const completion = await getOpenAIClient().chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.2,
@@ -378,7 +389,7 @@ Provide 2-3 bridge insights that connect patterns across these memories to the c
 Return as JSON array of strings.
       `;
 
-      const completion = await openai.chat.completions.create({
+      const completion = await getOpenAIClient().chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.6,
