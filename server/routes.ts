@@ -33,6 +33,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API endpoint for the original chat functionality (kept for backward compatibility if needed)
+  app.post("/api/bliss/chat", async (req, res) => {
+    try {
+      const { message, conversationHistory = [], userId } = req.body;
+
+      const { generateBlissResponse } = await import("./ai-service");
+      const response = await generateBlissResponse(message, conversationHistory);
+
+      res.json(response);
+    } catch (error) {
+      console.error("Chat error:", error);
+      res.status(500).json({ error: "Failed to generate response" });
+    }
+  });
+
+  // New adaptive chat endpoint
+  app.post("/api/bliss/adaptive-chat", async (req, res) => {
+    try {
+      const { message, conversationHistory = [], userId, userProfile } = req.body;
+
+      const { generateAdaptiveBlissResponse } = await import("./ai-service");
+      const response = await generateAdaptiveBlissResponse(
+        message,
+        userId,
+        conversationHistory,
+        userProfile
+      );
+
+      res.json(response);
+    } catch (error) {
+      console.error("Adaptive chat error:", error);
+      res.status(500).json({ error: "Failed to generate adaptive response" });
+    }
+  });
+
   // Advanced pattern analysis endpoint
   app.post('/api/user/:userId/analyze-patterns', async (req, res) => {
     try {

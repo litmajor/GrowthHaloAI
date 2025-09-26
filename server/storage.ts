@@ -1,4 +1,3 @@
-
 import { type User, type InsertUser } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -23,7 +22,7 @@ export class MemStorage implements IStorage {
   constructor() {
     this.users = new Map();
     this.mockTables = new Map();
-    
+
     // Initialize mock tables
     this.mockTables.set('user_subscriptions', new Map());
     this.mockTables.set('growth_data', new Map());
@@ -57,7 +56,7 @@ export class MemStorage implements IStorage {
     // Simple mock query parser for development
     const tableName = this.extractTableName(query);
     const table = this.mockTables.get(tableName);
-    
+
     if (!table) return null;
 
     // For SELECT queries, try to find by first parameter (usually ID)
@@ -72,16 +71,35 @@ export class MemStorage implements IStorage {
   async getAll(query: string, params: any[] = []): Promise<DatabaseRow[]> {
     const tableName = this.extractTableName(query);
     const table = this.mockTables.get(tableName);
-    
+
     if (!table) return [];
-    
-    return Array.from(table.values());
+
+    console.log('Storage.all called with query:', query.substring(0, 100));
+    // Mock implementation with sample data
+    if (query.includes('phase_history')) {
+      return [
+        { user_id: params[0], phase: 'expansion', confidence: 85, start_date: new Date(), triggers: '["new_project"]' },
+        { user_id: params[0], phase: 'contraction', confidence: 78, start_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), triggers: '["reflection"]' }
+      ];
+    }
+    if (query.includes('energy_patterns')) {
+      return [
+        { user_id: params[0], date: new Date(), mental_energy: 7, physical_energy: 6, emotional_energy: 8, spiritual_energy: 5, overall_mood: 7 },
+        { user_id: params[0], date: new Date(Date.now() - 24 * 60 * 60 * 1000), mental_energy: 6, physical_energy: 7, emotional_energy: 6, spiritual_energy: 6, overall_mood: 6 }
+      ];
+    }
+    if (query.includes('journal_entries')) {
+      return [
+        { content: 'Today was a breakthrough day...', ai_insights: '{"sentimentAnalysis":{"sentiment":0.8}}', detected_phase: 'expansion', sentiment: 0.8, created_at: new Date() }
+      ];
+    }
+    return [];
   }
 
   async execute(query: string, params: any[] = []): Promise<void> {
     const tableName = this.extractTableName(query);
     const table = this.mockTables.get(tableName);
-    
+
     if (!table) return;
 
     if (query.toLowerCase().includes('insert')) {
@@ -105,7 +123,7 @@ export class MemStorage implements IStorage {
 
   private createMockRecord(tableName: string, params: any[]): DatabaseRow {
     const now = new Date().toISOString();
-    
+
     switch (tableName) {
       case 'user_subscriptions':
         return {

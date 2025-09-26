@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { advancedMemory } from './memory-service';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -120,6 +121,8 @@ export async function generateAdaptiveBlissResponse(
   adaptationNotes: string;
   suggestedFollowUp: string;
   memoryAnchors: string[];
+  associativeRecall?: any;
+  contextAdaptation?: any;
 }> {
   try {
     // First analyze patterns for context
@@ -128,6 +131,26 @@ export async function generateAdaptiveBlissResponse(
       conversationHistory: conversationHistory.map(h => ({ ...h, timestamp: h.timestamp || new Date() }))
     });
 
+    // Perform associative recall to surface relevant past memories
+    const emotionalContext = patterns.emotionalTrajectory.trend === 'ascending' ? 0.5 : 
+                            patterns.emotionalTrajectory.trend === 'descending' ? -0.5 : 0;
+    
+    const associativeRecall = await advancedMemory.recallAssociativeMemories(
+      userId,
+      userMessage,
+      emotionalContext,
+      patterns.growthPhase.phase,
+      3
+    );
+
+    // Store this conversation for future memory building
+    await advancedMemory.storeConversationMemory(
+      userId,
+      userMessage,
+      emotionalContext,
+      patterns.growthPhase.phase
+    );
+
     const adaptivePrompt = `${GROWTH_HALO_SYSTEM_PROMPT}
 
 CONTEXT-SENSITIVE ADAPTATION:
@@ -135,6 +158,15 @@ User Communication Style: ${patterns.personalizationInsights.communicationStyle}
 Emotional Trajectory: ${patterns.emotionalTrajectory.trend} (${patterns.emotionalTrajectory.riskLevel} risk)
 Detected Distortions: ${patterns.cognitiveDistortions.filter(d => d.detected).map(d => d.type).join(', ') || 'None'}
 Current Phase: ${patterns.growthPhase.phase} (${patterns.growthPhase.confidence}% confidence)
+
+ASSOCIATIVE MEMORY CONTEXT:
+${associativeRecall.memories.length > 0 ? `
+Relevant Past Memories (${associativeRecall.relevanceScore}% relevance):
+${associativeRecall.memories.map((m, i) => `${i + 1}. ${m.content.substring(0, 150)}... (${m.phase} phase, emotional: ${m.emotionalState})`).join('\n')}
+
+Memory Recall Reasoning: ${associativeRecall.reasoning}
+Bridge Insights: ${associativeRecall.bridgeInsights.join('; ')}
+` : 'No significant past memories recalled for this context.'}
 
 ADAPTIVE INSTRUCTIONS:
 - Match the user's preferred communication style
@@ -175,7 +207,13 @@ Respond with enhanced JSON:
         confidence: parsed.confidence || patterns.growthPhase.confidence,
         adaptationNotes: parsed.adaptationNotes || '',
         suggestedFollowUp: parsed.suggestedFollowUp || '',
-        memoryAnchors: parsed.memoryAnchors || []
+        memoryAnchors: parsed.memoryAnchors || [],
+        associativeRecall,
+        contextAdaptation: {
+          emotionalContext,
+          memoryBridges: associativeRecall.bridgeInsights,
+          recallStrength: associativeRecall.relevanceScore
+        }
       };
     }
     

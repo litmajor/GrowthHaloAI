@@ -14,16 +14,21 @@ interface Message {
   isBliss: boolean;
   timestamp: Date;
   phase?: "expansion" | "contraction" | "renewal";
+  adaptationNotes?: string;
+  memoryInsights?: string;
+  contextAdaptation?: any;
 }
 
 interface ChatInterfaceProps {
   currentPhase?: "expansion" | "contraction" | "renewal";
   phaseConfidence?: number;
+  onPhaseUpdate?: (phase: string, confidence: number) => void;
 }
 
 export default function ChatInterface({ 
   currentPhase = "expansion",
-  phaseConfidence = 75 
+  phaseConfidence = 75,
+  onPhaseUpdate
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -38,8 +43,8 @@ export default function ChatInterface({
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!inputValue.trim() || isLoading) return;
+  const sendMessage = async () => {
+    if (!inputValue.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -53,49 +58,57 @@ export default function ChatInterface({
     setIsLoading(true);
 
     try {
-      // Prepare conversation history for API
-      const conversationHistory = messages.slice(-6).map(msg => ({
-        role: msg.isBliss ? 'assistant' as const : 'user' as const,
-        content: msg.content
-      }));
-
-      // Call the real API
-      const response = await fetch('/api/chat', {
+      // Use the enhanced adaptive response endpoint
+      const response = await fetch('/api/bliss/adaptive-chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: inputValue,
-          history: conversationHistory
+          conversationHistory: messages.slice(-10), // Keep a reasonable history
+          userId: 'demo-user', // Replace with actual user ID
+          userProfile: {
+            communicationStyle: 'empathetic', // Example: could be dynamically determined
+            emotionalState: 'neutral',       // Example: could be dynamically detected
+            triggerTopics: [],                // Example: could be populated from past interactions
+            preferredActivities: ['reflection', 'journaling'] // Example: user preferences
+          }
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response from Bliss');
+        throw new Error('Network response was not ok');
       }
 
-      const { message: responseMessage, phase: detectedPhase, confidence } = await response.json();
-      
+      const data = await response.json();
+
       const blissMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: responseMessage,
+        content: data.message,
         isBliss: true,
         timestamp: new Date(),
-        phase: detectedPhase
+        phase: data.phase,
+        adaptationNotes: data.adaptationNotes,
+        memoryInsights: data.associativeRecall?.bridgeInsights,
+        contextAdaptation: data.contextAdaptation
       };
 
       setMessages(prev => [...prev, blissMessage]);
+
+      // Call the onPhaseUpdate callback if provided
+      if (onPhaseUpdate) {
+        onPhaseUpdate(data.phase, data.confidence);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       
       // Fallback message in case of error
       const fallbackMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "I'm experiencing some technical difficulties right now. Please try again in a moment. Remember, even pauses in our conversation can be moments of reflection.",
+        content: "I'm having trouble connecting right now. Please try again in a moment.",
         isBliss: true,
         timestamp: new Date(),
-        phase: currentPhase
+        phase: currentPhase,
+        // No confidence provided for fallback, or a default low value
       };
 
       setMessages(prev => [...prev, fallbackMessage]);
@@ -104,10 +117,11 @@ export default function ChatInterface({
     }
   };
 
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      sendMessage(); // Use the new sendMessage function name
     }
   };
 
@@ -137,7 +151,7 @@ export default function ChatInterface({
             </p>
           </div>
         </div>
-        
+
         <PhaseIndicator 
           currentPhase={currentPhase}
           confidence={phaseConfidence}
@@ -179,6 +193,9 @@ export default function ChatInterface({
             isBliss={message.isBliss}
             timestamp={message.timestamp}
             phase={message.phase || currentPhase}
+            adaptationNotes={message.adaptationNotes}
+            memoryInsights={message.memoryInsights}
+            contextAdaptation={message.contextAdaptation}
           />
         ))}
 
@@ -242,7 +259,7 @@ export default function ChatInterface({
             />
           </div>
           <Button 
-            onClick={handleSend}
+            onClick={sendMessage} // Use the new sendMessage function name
             disabled={!inputValue.trim() || isLoading}
             size="default"
             className="px-4 hover-elevate active-elevate-2"
