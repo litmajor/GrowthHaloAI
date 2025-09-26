@@ -13,6 +13,13 @@ export interface IStorage {
   get(query: string, params?: any[]): Promise<DatabaseRow | null>;
   execute(query: string, params?: any[]): Promise<void>;
   getAll(query: string, params?: any[]): Promise<DatabaseRow[]>;
+  
+  // Follow operations
+  followUser(followerId: string, followingId: string): Promise<void>;
+  unfollowUser(followerId: string, followingId: string): Promise<void>;
+  getFollowers(userId: string): Promise<Array<{ id: string; username: string; followedAt: Date }>>;
+  getFollowing(userId: string): Promise<Array<{ id: string; username: string; followedAt: Date }>>;
+  isFollowing(followerId: string, followingId: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -33,6 +40,7 @@ export class MemStorage implements IStorage {
     this.mockTables.set('coaching_sessions', new Map());
     this.mockTables.set('community_profiles', new Map());
     this.mockTables.set('community_members', new Map());
+    this.mockTables.set('user_follows', new Map());
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -159,6 +167,94 @@ export class MemStorage implements IStorage {
           updated_at: now
         };
     }
+  }
+
+  // Follow operations implementation
+  async followUser(followerId: string, followingId: string): Promise<void> {
+    const followsTable = this.mockTables.get('user_follows');
+    if (!followsTable) return;
+
+    const followId = randomUUID();
+    const follow = {
+      id: followId,
+      follower_id: followerId,
+      following_id: followingId,
+      created_at: new Date(),
+    };
+    
+    followsTable.set(followId, follow);
+  }
+
+  async unfollowUser(followerId: string, followingId: string): Promise<void> {
+    const followsTable = this.mockTables.get('user_follows');
+    if (!followsTable) return;
+
+    // Find and remove the follow relationship
+    for (const id of followsTable.keys()) {
+      const follow = followsTable.get(id);
+      if (follow && follow.follower_id === followerId && follow.following_id === followingId) {
+        followsTable.delete(id);
+        break;
+      }
+    }
+  }
+
+  async getFollowers(userId: string): Promise<Array<{ id: string; username: string; followedAt: Date }>> {
+    const followsTable = this.mockTables.get('user_follows');
+    if (!followsTable) return [];
+
+    const followers = [];
+    for (const id of followsTable.keys()) {
+      const follow = followsTable.get(id);
+      if (follow && follow.following_id === userId) {
+        const followerUser = this.users.get(follow.follower_id);
+        if (followerUser) {
+          followers.push({
+            id: followerUser.id,
+            username: followerUser.username,
+            followedAt: follow.created_at,
+          });
+        }
+      }
+    }
+    
+    return followers;
+  }
+
+  async getFollowing(userId: string): Promise<Array<{ id: string; username: string; followedAt: Date }>> {
+    const followsTable = this.mockTables.get('user_follows');
+    if (!followsTable) return [];
+
+    const following = [];
+    for (const id of followsTable.keys()) {
+      const follow = followsTable.get(id);
+      if (follow && follow.follower_id === userId) {
+        const followedUser = this.users.get(follow.following_id);
+        if (followedUser) {
+          following.push({
+            id: followedUser.id,
+            username: followedUser.username,
+            followedAt: follow.created_at,
+          });
+        }
+      }
+    }
+    
+    return following;
+  }
+
+  async isFollowing(followerId: string, followingId: string): Promise<boolean> {
+    const followsTable = this.mockTables.get('user_follows');
+    if (!followsTable) return false;
+
+    for (const id of followsTable.keys()) {
+      const follow = followsTable.get(id);
+      if (follow && follow.follower_id === followerId && follow.following_id === followingId) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 }
 

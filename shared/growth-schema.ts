@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, timestamp, integer, jsonb, boolean, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { users } from "./schema";
 
 // User Profile with Growth Journey Data
 export const userProfiles = pgTable("user_profiles", {
@@ -73,6 +74,13 @@ export const communityEngagement = pgTable("community_engagement", {
   lastActiveAt: timestamp("last_active_at").defaultNow(),
 });
 
+export const userFollows = pgTable("user_follows", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  followerId: varchar("follower_id").notNull().references(() => users.id),
+  followingId: varchar("following_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Learning Progress
 export const learningProgress = pgTable("learning_progress", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -108,8 +116,19 @@ export const valuesData = pgTable("values_data", {
 export const insertUserProfileSchema = createInsertSchema(userProfiles);
 export const insertJournalEntrySchema = createInsertSchema(journalEntries);
 export const insertEnergyPatternSchema = createInsertSchema(energyPatterns);
+export const insertCommunityEngagementSchema = createInsertSchema(communityEngagement).omit({
+  id: true,
+});
+export const insertUserFollowSchema = createInsertSchema(userFollows).omit({
+  id: true,
+  createdAt: true,
+});
 
 export type UserProfile = typeof userProfiles.$inferSelect;
 export type PhaseHistory = typeof phaseHistory.$inferSelect;
 export type EnergyPattern = typeof energyPatterns.$inferSelect;
 export type JournalEntry = typeof journalEntries.$inferSelect;
+export type InsertCommunityEngagement = z.infer<typeof insertCommunityEngagementSchema>;
+export type CommunityEngagement = typeof communityEngagement.$inferSelect;
+export type InsertUserFollow = z.infer<typeof insertUserFollowSchema>;
+export type UserFollow = typeof userFollows.$inferSelect;

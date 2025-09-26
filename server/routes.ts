@@ -347,6 +347,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User Follow endpoints
+  app.post("/api/user/:userId/follow", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { followingId } = req.body;
+
+      if (userId === followingId) {
+        return res.status(400).json({ error: "Cannot follow yourself" });
+      }
+
+      const isAlreadyFollowing = await storage.isFollowing(userId, followingId);
+      if (isAlreadyFollowing) {
+        return res.status(400).json({ error: "Already following this user" });
+      }
+
+      await storage.followUser(userId, followingId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Follow user error:", error);
+      res.status(500).json({ error: "Failed to follow user" });
+    }
+  });
+
+  app.delete("/api/user/:userId/follow/:followingId", async (req, res) => {
+    try {
+      const { userId, followingId } = req.params;
+
+      await storage.unfollowUser(userId, followingId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Unfollow user error:", error);
+      res.status(500).json({ error: "Failed to unfollow user" });
+    }
+  });
+
+  app.get("/api/user/:userId/followers", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const followers = await storage.getFollowers(userId);
+      res.json(followers);
+    } catch (error) {
+      console.error("Get followers error:", error);
+      res.status(500).json({ error: "Failed to get followers" });
+    }
+  });
+
+  app.get("/api/user/:userId/following", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const following = await storage.getFollowing(userId);
+      res.json(following);
+    } catch (error) {
+      console.error("Get following error:", error);
+      res.status(500).json({ error: "Failed to get following" });
+    }
+  });
+
+  app.get("/api/user/:userId/following/:targetUserId", async (req, res) => {
+    try {
+      const { userId, targetUserId } = req.params;
+      const isFollowing = await storage.isFollowing(userId, targetUserId);
+      res.json({ isFollowing });
+    } catch (error) {
+      console.error("Check following status error:", error);
+      res.status(500).json({ error: "Failed to check following status" });
+    }
+  });
+
   // Subscription Management endpoints
   app.get("/api/user/:userId/subscription", async (req, res) => {
     try {
