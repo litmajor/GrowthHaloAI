@@ -63,7 +63,10 @@ function App() {
               currentPhase={currentPhase}
               phaseConfidence={phaseConfidence}
             />
-            <Router />
+            {/* Main content area with left margin for sidebar */}
+            <main className="pl-64 transition-all duration-300">
+              <Router />
+            </main>
           </div>
           <Toaster />
         </TooltipProvider>

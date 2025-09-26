@@ -1,33 +1,11 @@
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target, Users, CreditCard, Settings, User } from "lucide-react";
+import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target, Users, CreditCard, Settings, User, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import HaloProgressRing from "./HaloProgressRing";
 import { Button } from "@/components/ui/button";
-
-// Placeholder for ListItem and NavigationMenuContent if they are not defined elsewhere
-// In a real scenario, these would likely be imported from a UI library like shadcn/ui
-const ListItem = ({ className, title, children, href }) => (
-  <li>
-    <Link href={href}>
-      <a
-        className={cn(
-          "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-          className
-        )}
-      >
-        <div className="text-sm font-medium leading-none">{title}</div>
-        <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-          {children}
-        </p>
-      </a>
-    </Link>
-  </li>
-);
-
-const NavigationMenuContent = ({ children }) => <div>{children}</div>;
-const NavigationMenuLink = ({ asChild, children }) => <div>{children}</div>;
+import { useState } from "react";
 
 
 interface NavigationProps {
@@ -60,117 +38,134 @@ export default function Navigation({
   phaseConfidence = 75
 }: NavigationProps) {
   const [location] = useLocation();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <motion.header
-      className="border-b border-border bg-background/80 dark:bg-background/90 backdrop-blur-md sticky top-0 z-50 shadow-sm"
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <motion.aside
+      className={cn(
+        "fixed left-0 top-0 z-50 h-screen bg-background/95 backdrop-blur-md border-r border-border transition-all duration-300",
+        isCollapsed ? "w-16" : "w-64"
+      )}
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between min-h-[60px]">
-          {/* Logo and Growth Ring */}
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-3 hover-elevate p-2 rounded-md">
-              <HaloProgressRing
-                phase={currentPhase}
-                progress={phaseConfidence}
-                size="sm"
-                showLabel={false}
-              />
-              <div>
-                <h1 className="text-lg font-medium flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  Bliss AI
-                </h1>
-                <p className="text-xs text-muted-foreground">
-                  Growth Halo Companion
-                </p>
-              </div>
-            </Link>
+      <div className="flex flex-col h-full">
+        {/* Logo and Toggle */}
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center justify-between">
+            {!isCollapsed && (
+              <Link href="/" className="flex items-center gap-3 hover-elevate p-2 rounded-md">
+                <HaloProgressRing
+                  phase={currentPhase}
+                  progress={phaseConfidence}
+                  size="sm"
+                  showLabel={false}
+                />
+                <div>
+                  <h1 className="text-lg font-medium flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    Bliss AI
+                  </h1>
+                  <p className="text-xs text-muted-foreground">
+                    Growth Halo Companion
+                  </p>
+                </div>
+              </Link>
+            )}
+            {isCollapsed && (
+              <Link href="/" className="flex items-center justify-center hover-elevate p-2 rounded-md">
+                <HaloProgressRing
+                  phase={currentPhase}
+                  progress={phaseConfidence}
+                  size="sm"
+                  showLabel={false}
+                />
+              </Link>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="ml-auto"
+              data-testid="nav-toggle"
+            >
+              {isCollapsed ? (
+                <ChevronRight className="w-4 h-4" />
+              ) : (
+                <ChevronLeft className="w-4 h-4" />
+              )}
+            </Button>
           </div>
+        </div>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location === item.path;
+        {/* Main Navigation */}
+        <nav className="flex-1 p-4 space-y-2">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location === item.path;
 
-              return (
-                <Link key={item.path} href={item.path}>
-                  <motion.div
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors",
-                      "hover-elevate cursor-pointer",
-                      isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    data-testid={`nav-${item.path === '/' ? 'chat' : item.path.slice(1)}`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {item.label}
-                  </motion.div>
-                </Link>
-              );
-            })}
-          </nav>
+            return (
+              <Link key={item.path} href={item.path}>
+                <motion.div
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "hover-elevate cursor-pointer",
+                    isActive
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                    isCollapsed ? "justify-center" : ""
+                  )}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  data-testid={`nav-${item.path === '/' ? 'chat' : item.path.slice(1)}`}
+                >
+                  <Icon className="w-5 h-5" />
+                  {!isCollapsed && (
+                    <span className="text-sm">{item.label}</span>
+                  )}
+                </motion.div>
+              </Link>
+            );
+          })}
+        </nav>
 
-          {/* Mobile Navigation */}
-          <div className="flex md:hidden items-center gap-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location === item.path;
+        {/* Secondary Navigation */}
+        <div className="p-4 border-t border-border space-y-2">
+          {secondaryNavItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location === item.path;
 
-              return (
-                <Link key={item.path} href={item.path}>
-                  <motion.div
-                    className={cn(
-                      "p-2 rounded-md hover-elevate cursor-pointer",
-                      isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Icon className="w-5 h-5" />
-                  </motion.div>
-                </Link>
-              );
-            })}
-          </div>
-
-          <div className="flex items-center gap-2">
-            {secondaryNavItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location === item.path;
-
-              return (
-                <Link key={item.path} href={item.path}>
-                  <motion.div
-                    className={cn(
-                      "p-2 rounded-md hover-elevate cursor-pointer",
-                      isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    data-testid={`nav-${item.path.slice(1)}`}
-                  >
-                    <Icon className="w-5 h-5" />
-                  </motion.div>
-                </Link>
-              );
-            })}
+            return (
+              <Link key={item.path} href={item.path}>
+                <motion.div
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "hover-elevate cursor-pointer",
+                    isActive
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                    isCollapsed ? "justify-center" : ""
+                  )}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  data-testid={`nav-${item.path.slice(1)}`}
+                >
+                  <Icon className="w-5 h-5" />
+                  {!isCollapsed && (
+                    <span className="text-sm">{item.label}</span>
+                  )}
+                </motion.div>
+              </Link>
+            );
+          })}
+          
+          {/* Theme Toggle */}
+          <div className={cn("flex", isCollapsed ? "justify-center" : "justify-start")}>
             <ThemeToggle />
           </div>
         </div>
       </div>
-    </motion.header>
+    </motion.aside>
   );
 }

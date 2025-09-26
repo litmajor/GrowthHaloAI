@@ -182,7 +182,7 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
     ? (subscription.usageStats.blissInteractions.used / subscription.usageStats.blissInteractions.limit) * 100
     : 0;
 
-  const config = tierConfig[subscription.tier] || tierConfig.free;
+  const config = tierConfig[subscription.tier as keyof typeof tierConfig] || tierConfig.free;
   const TierIcon = config?.icon || Zap;
 
   return (
