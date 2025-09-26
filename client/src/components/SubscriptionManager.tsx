@@ -128,7 +128,7 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
 
   if (!subscription) return null;
 
-  const currentTier = tierInfo[subscription.tier];
+  const currentTier = tierInfo[subscription.tier] || tierInfo.free;
   const usagePercentage = subscription.usageStats.blissInteractions.limit > 0 
     ? (subscription.usageStats.blissInteractions.used / subscription.usageStats.blissInteractions.limit) * 100
     : 0;
