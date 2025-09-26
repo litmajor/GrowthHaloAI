@@ -14,8 +14,7 @@ interface NavigationProps {
 }
 
 const navItems = [
-  { path: "/", icon: MessageSquare, label: "Chat with Bliss" },
-  { path: "/home", icon: Sparkles, label: "Landing" },
+  { path: "/chat", icon: MessageSquare, label: "Chat with Bliss" },
   { path: "/dashboard", icon: BarChart3, label: "Dashboard" },
   { path: "/analytics", icon: BarChart3, label: "Analytics" },
   { path: "/compass", icon: Compass, label: "Values Compass" },
@@ -55,7 +54,7 @@ export default function Navigation({
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between">
             {!isCollapsed && (
-              <Link href="/" className="flex items-center gap-3 hover-elevate p-2 rounded-md">
+              <Link href="/chat" className="flex items-center gap-3 hover-elevate p-2 rounded-md">
                 <HaloProgressRing
                   phase={currentPhase}
                   progress={phaseConfidence}
@@ -74,7 +73,7 @@ export default function Navigation({
               </Link>
             )}
             {isCollapsed && (
-              <Link href="/" className="flex items-center justify-center hover-elevate p-2 rounded-md">
+              <Link href="/chat" className="flex items-center justify-center hover-elevate p-2 rounded-md">
                 <HaloProgressRing
                   phase={currentPhase}
                   progress={phaseConfidence}
