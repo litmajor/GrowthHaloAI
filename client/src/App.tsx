@@ -8,6 +8,7 @@ import Navigation from "@/components/Navigation";
 import Home from "@/pages/Home";
 import ValuesPage from "@/pages/ValuesPage";
 import CheckInPage from "@/pages/CheckInPage";
+import LoginPage from "@/pages/LoginPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/compass" component={ValuesPage} />
       <Route path="/checkin" component={CheckInPage} />
+      <Route path="/login" component={LoginPage} />
       <Route component={NotFound} />
     </Switch>
   );
