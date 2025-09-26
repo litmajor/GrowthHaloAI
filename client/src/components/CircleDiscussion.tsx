@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import PhaseIndicator from './PhaseIndicator';
+import BlissGuidance from './BlissGuidance';
 
 type GrowthPhase = "expansion" | "contraction" | "renewal";
 
@@ -32,6 +33,9 @@ interface Discussion {
 
 interface CircleDiscussionProps {
   discussion: Discussion;
+  circleId?: string;
+  recentMessages?: Array<{ content: string; authorPhase: string; timestamp: Date }>;
+  participantPhases?: string[];
   onLike?: (discussionId: string) => void;
   onReply?: (discussionId: string, content: string) => void;
   onShare?: (discussionId: string) => void;
@@ -39,12 +43,16 @@ interface CircleDiscussionProps {
 
 export default function CircleDiscussion({ 
   discussion, 
+  circleId = 'default',
+  recentMessages = [],
+  participantPhases = [],
   onLike, 
   onReply, 
   onShare 
 }: CircleDiscussionProps) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState("");
+  const [showBlissGuidance, setShowBlissGuidance] = useState(false);
 
   const handleReply = () => {
     if (replyContent.trim() && onReply) {
@@ -155,13 +163,35 @@ export default function CircleDiscussion({
             </Button>
             
             {discussion.hasBlissGuidance && (
-              <Badge variant="outline" className="text-xs ml-auto">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowBlissGuidance(!showBlissGuidance)}
+                className="text-xs ml-auto"
+              >
                 <Sparkles className="w-3 h-3 mr-1" />
-                Bliss Insights Available
-              </Badge>
+                Bliss Insights
+              </Button>
             )}
           </div>
           
+          {/* Bliss Guidance */}
+          {(showBlissGuidance || discussion.hasBlissGuidance) && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="pt-3 border-t border-border"
+            >
+              <BlissGuidance
+                circleId={circleId}
+                discussionContent={discussion.content}
+                recentMessages={recentMessages}
+                participantPhases={participantPhases}
+              />
+            </motion.div>
+          )}
+
           {/* Reply Form */}
           {showReplyForm && (
             <motion.div

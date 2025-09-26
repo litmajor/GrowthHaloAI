@@ -1,8 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { generateBlissResponse, detectGrowthPhase, generatePersonalizedContent } from "./ai-service";
+import { generateBlissResponse, detectGrowthPhase, generatePersonalizedContent, analyzeValuesAssessment, generateValueBasedGuidance } from "./ai-service";
 import { growthTracker } from "./growth-service";
+import { communityIntelligence } from "./community-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // AI Chat endpoints
@@ -180,6 +181,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Decision support error:", error);
       res.status(500).json({ error: "Failed to generate decision support" });
+    }
+  });
+
+  // Community Intelligence endpoints
+  app.get("/api/user/:userId/community/compatible-members", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { circleType, limit = 5 } = req.query;
+      
+      const compatibleMembers = await communityIntelligence.findCompatibleMembers(
+        userId, 
+        circleType as string,
+        parseInt(limit as string)
+      );
+      
+      res.json(compatibleMembers);
+    } catch (error) {
+      console.error("Compatible members error:", error);
+      res.status(500).json({ error: "Failed to find compatible members" });
+    }
+  });
+
+  app.post("/api/community/discussion-guidance", async (req, res) => {
+    try {
+      const { circleId, discussionContent, recentMessages, participantPhases } = req.body;
+      
+      const guidance = await communityIntelligence.generateDiscussionGuidance(
+        circleId,
+        discussionContent,
+        recentMessages,
+        participantPhases
+      );
+      
+      res.json(guidance);
+    } catch (error) {
+      console.error("Discussion guidance error:", error);
+      res.status(500).json({ error: "Failed to generate discussion guidance" });
+    }
+  });
+
+  app.post("/api/user/:userId/community/engagement", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { action, metadata } = req.body;
+      
+      await communityIntelligence.updateEngagementMetrics(userId, action, metadata);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Update engagement error:", error);
+      res.status(500).json({ error: "Failed to update engagement metrics" });
     }
   });
 

@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import HaloProgressRing from '../components/HaloProgressRing';
 import PhaseIndicator from '../components/PhaseIndicator';
+import SmartMatching from '../components/SmartMatching';
 
 type GrowthPhase = "expansion" | "contraction" | "renewal";
 type CircleType = "phase" | "theme" | "practice" | "transition";
@@ -300,6 +301,18 @@ export default function CommunityPage() {
             <TabsTrigger value="transition">Transition</TabsTrigger>
           </TabsList>
         </Tabs>
+      </motion.div>
+
+      {/* Smart Matching */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
+        <SmartMatching 
+          currentUserId="current-user-id" // Replace with actual user ID
+          onConnect={(userId) => console.log('Connect with:', userId)}
+        />
       </motion.div>
 
       {/* Current Phase Recommendation */}
