@@ -5,19 +5,23 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Navigation from "@/components/Navigation";
+import HomePage from "@/pages/HomePage";
 import Home from "@/pages/Home";
 import ValuesPage from "@/pages/ValuesPage";
 import CheckInPage from "@/pages/CheckInPage";
 import LoginPage from "@/pages/LoginPage";
+import RegisterPage from "@/pages/RegisterPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
+      <Route path="/" component={HomePage} />
+      <Route path="/dashboard" component={Home} />
       <Route path="/compass" component={ValuesPage} />
       <Route path="/checkin" component={CheckInPage} />
       <Route path="/login" component={LoginPage} />
+      <Route path="/register" component={RegisterPage} />
       <Route component={NotFound} />
     </Switch>
   );

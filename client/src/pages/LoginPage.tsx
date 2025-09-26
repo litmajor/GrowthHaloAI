@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Sparkles } from 'lucide-react';
+import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -110,18 +111,20 @@ export default function LoginPage() {
             transition={{ duration: 0.8 }}
             className="text-center mb-8"
           >
-            <div className="flex items-center justify-center mb-4">
-              <motion.div
-                className="w-12 h-12 border-2 border-white/40 rounded-full mr-3 flex items-center justify-center"
-                whileHover={{ scale: 1.1, rotate: 180 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Sparkles className="w-5 h-5 text-white/80" />
-              </motion.div>
-              <h1 className="text-2xl font-light text-white tracking-wide">
-                The Growth Halo
-              </h1>
-            </div>
+            <Link href="/">
+              <div className="flex items-center justify-center mb-4 cursor-pointer">
+                <motion.div
+                  className="w-12 h-12 border-2 border-white/40 rounded-full mr-3 flex items-center justify-center"
+                  whileHover={{ scale: 1.1, rotate: 180 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Sparkles className="w-5 h-5 text-white/80" />
+                </motion.div>
+                <h1 className="text-2xl font-light text-white tracking-wide">
+                  The Growth Halo
+                </h1>
+              </div>
+            </Link>
             <p className="text-white/80 font-light">
               {isLogin ? 'Welcome back to your journey' : 'Begin your transformation'}
             </p>
@@ -328,6 +331,20 @@ export default function LoginPage() {
                     Continue with Apple
                   </Button>
                 </div>
+
+                {/* Register Link */}
+                {isLogin && (
+                  <div className="mt-6 text-center">
+                    <p className="text-white/70 text-sm">
+                      New to The Growth Halo?{' '}
+                      <Link href="/register">
+                        <span className="text-white hover:text-white/80 font-medium cursor-pointer">
+                          Create an account
+                        </span>
+                      </Link>
+                    </p>
+                  </div>
+                )}</div>
               </CardContent>
             </Card>
           </motion.div>
