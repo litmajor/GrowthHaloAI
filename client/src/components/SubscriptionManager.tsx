@@ -145,20 +145,6 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
   // Get current tier info with fallback to free tier if subscription is null or tier is not found
   const currentTier = subscriptionTiers.find(tier => tier.id === subscription?.tier) || subscriptionTiers[0];
 
-  if (!subscription) {
-    return (
-      <Card className="p-4 sm:p-6">
-        <div className="text-center text-muted-foreground">
-          Loading subscription information...
-        </div>
-      </Card>
-    );
-  }
-
-  const usagePercentage = subscription.usageStats.blissInteractions.limit > 0
-    ? (subscription.usageStats.blissInteractions.used / subscription.usageStats.blissInteractions.limit) * 100
-    : 0;
-
   const tierConfig = {
     free: {
       color: "text-muted-foreground",
@@ -208,9 +194,10 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <div className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center",
-                `bg-${currentTier.color}-100 text-${currentTier.color}-600`
+                config.bgColor,
+                config.color
               )}>
-                {currentTier.icon}
+                <TierIcon className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <CardTitle className="flex items-center gap-2 truncate">

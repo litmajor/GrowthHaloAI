@@ -22,6 +22,7 @@ import SettingsPage from "./pages/SettingsPage";
 import EventsPage from './pages/EventsPage';
 import ContentPage from './pages/ContentPage';
 import AnalyticsPage from "./pages/AnalyticsPage";
+import LandingPage from "./pages/LandingPage";
 
 function Router() {
   return (
