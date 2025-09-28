@@ -1,0 +1,25 @@
+
+> rest-express@1.0.0 dev
+3:03:47 PM [express] serving on port 5000s
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+Advanced pattern analysis error: Error: OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable.
+    at getOpenAIClient (/home/runner/workspace/server/ai-service.ts:10:13)
+    at analyzeUserPatterns (/home/runner/workspace/server/ai-service.ts:447:30)
+    at generateAdaptiveBlissResponse (/home/runner/workspace/server/ai-service.ts:140:28)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:64:30)
+Contradiction detection error: Error: OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable.
+    at getOpenAIClient (/home/runner/workspace/server/ai-service.ts:10:13)
+    at detectContradictionsAndBelief (/home/runner/workspace/server/ai-service.ts:1224:30)
+    at generateAdaptiveBlissResponse (/home/runner/workspace/server/ai-service.ts:146:41)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:64:24)
+Adaptive response error: Error: OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable.
+    at getOpenAIClient (/home/runner/workspace/server/ai-service.ts:10:13)
+    at generateAdaptiveBlissResponse (/home/runner/workspace/server/ai-service.ts:237:30)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:64:24)
+Error generating Bliss response: Error: OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable.
+    at getOpenAIClient (/home/runner/workspace/server/ai-service.ts:10:13)
+    at generateBlissResponse (/home/runner/workspace/server/ai-service.ts:290:30)
+    at generateAdaptiveBlissResponse (/home/runner/workspace/server/ai-service.ts:269:28)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:64:24)
+3:04:28 PM [express] POST /api/bliss/adaptive-chat 200 in 21ms :: {"message":"I'm having trouble con…
