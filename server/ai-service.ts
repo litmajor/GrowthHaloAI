@@ -142,6 +142,17 @@ export async function generateAdaptiveBlissResponse(
       conversationHistory: conversationHistory.map(h => ({ ...h, timestamp: h.timestamp || new Date() }))
     });
 
+    // Perform contradiction detection and belief revision analysis
+    const contradictionAnalysis = await detectContradictionsAndBelief(
+      userId,
+      userMessage,
+      conversationHistory.slice(-20).map(h => ({ 
+        content: h.content, 
+        timestamp: h.timestamp || new Date(),
+        phase: undefined // Could be enriched with phase data if available
+      }))
+    );
+
     // Perform associative recall to surface relevant past memories
     const emotionalContext = patterns.emotionalTrajectory.trend === 'ascending' ? 0.5 : 
                             patterns.emotionalTrajectory.trend === 'descending' ? -0.5 : 0;
@@ -179,12 +190,33 @@ Memory Recall Reasoning: ${associativeRecall.reasoning}
 Bridge Insights: ${associativeRecall.bridgeInsights.join('; ')}
 ` : 'No significant past memories recalled for this context.'}
 
+CONTRADICTION & BELIEF REVISION CONTEXT:
+${contradictionAnalysis.contradictions.length > 0 ? `
+Contradictions Detected:
+${contradictionAnalysis.contradictions.map(c => `- ${c.currentStatement} vs ${c.conflictingStatement} (${c.gentlePointing})`).join('\n')}
+` : 'No significant contradictions detected.'}
+
+${contradictionAnalysis.cognitiveDistortions.length > 0 ? `
+Cognitive Patterns to Address Gently:
+${contradictionAnalysis.cognitiveDistortions.map(d => `- ${d.type}: ${d.gentleCorrection}`).join('\n')}
+` : 'No cognitive distortions requiring attention.'}
+
+${contradictionAnalysis.selfPerceptionPatterns.recurringNegativeViews.length > 0 ? `
+Self-Perception Patterns:
+- Negative views: ${contradictionAnalysis.selfPerceptionPatterns.recurringNegativeViews.join(', ')}
+- Evidence against these views: ${contradictionAnalysis.selfPerceptionPatterns.evidenceAgainstViews.join(', ')}
+- Undervalued strengths: ${contradictionAnalysis.selfPerceptionPatterns.strengthsUndervalued.join(', ')}
+` : 'Healthy self-perception patterns observed.'}
+
 ADAPTIVE INSTRUCTIONS:
 - Match the user's preferred communication style
-- Address any cognitive distortions gently
+- Address any cognitive distortions gently using Growth Halo philosophy
+- Point out contradictions with curiosity and support, not judgment
+- Highlight evidence that contradicts negative self-perceptions
 - Consider their emotional trajectory in your response tone
 - Create memory anchors for future conversations
 - Suggest contextually relevant follow-up questions
+- If contradictions exist, weave gentle exploration into your response naturally
 
 Respond with enhanced JSON:
 {
@@ -220,10 +252,13 @@ Respond with enhanced JSON:
         suggestedFollowUp: parsed.suggestedFollowUp || '',
         memoryAnchors: parsed.memoryAnchors || [],
         associativeRecall,
+        contradictionAnalysis,
         contextAdaptation: {
           emotionalContext,
           memoryBridges: associativeRecall.bridgeInsights,
-          recallStrength: associativeRecall.relevanceScore
+          recallStrength: associativeRecall.relevanceScore,
+          contradictionsDetected: contradictionAnalysis.contradictions.length,
+          beliefRevisionsAvailable: contradictionAnalysis.beliefRevisions.length
         }
       };
     }
@@ -301,6 +336,11 @@ export async function analyzeUserPatterns(
   emotionalTrajectory: { trend: 'ascending' | 'descending' | 'stable'; riskLevel: 'low' | 'medium' | 'high'; indicators: string[] };
   cognitiveDistortions: Array<{ type: string; detected: boolean; suggestion: string }>;
   personalizationInsights: { communicationStyle: string; preferredActivities: string[]; triggerTopics: string[] };
+  contradictionAnalysis: {
+    beliefsIdentified: Array<{ belief: string; confidence: number; context: string }>;
+    contradictions: Array<{ belief1: string; belief2: string; contradictionType: string; severity: number }>;
+    revisionSuggestions: Array<{ targetBelief: string; gentleReframe: string; supportingEvidence: string[] }>;
+  };
 }> {
   try {
     const analysisPrompt = `
@@ -338,6 +378,12 @@ Perform comprehensive analysis across these dimensions:
    - Activity preferences
    - Trigger topics to approach carefully
 
+5. CONTRADICTION DETECTION & BELIEF REVISION:
+   - Identify underlying beliefs expressed or implied
+   - Detect contradictions between current and past statements
+   - Analyze self-perception patterns for gentle correction opportunities
+   - Suggest progressive belief updates aligned with Growth Halo philosophy
+
 Respond in JSON format:
 {
   "growthPhase": {
@@ -361,6 +407,30 @@ Respond in JSON format:
     "communicationStyle": "analytical|empathetic|direct|exploratory",
     "preferredActivities": ["journaling", "reflection"],
     "triggerTopics": ["perfectionism", "comparison"]
+  },
+  "contradictionAnalysis": {
+    "beliefsIdentified": [
+      {
+        "belief": "I must be perfect to be worthy",
+        "confidence": 85,
+        "context": "perfectionism pattern"
+      }
+    ],
+    "contradictions": [
+      {
+        "belief1": "I'm not good enough",
+        "belief2": "I've accomplished meaningful things",
+        "contradictionType": "self-worth_vs_evidence",
+        "severity": 7
+      }
+    ],
+    "revisionSuggestions": [
+      {
+        "targetBelief": "I must be perfect",
+        "gentleReframe": "Growth includes both successes and learning moments",
+        "supportingEvidence": ["past resilience", "recent progress"]
+      }
+    ]
   }
 }`;
 
@@ -373,7 +443,15 @@ Respond in JSON format:
 
     const response = completion.choices[0]?.message?.content;
     if (response) {
-      return JSON.parse(response);
+      const parsed = JSON.parse(response);
+      return {
+        ...parsed,
+        contradictionAnalysis: parsed.contradictionAnalysis || {
+          beliefsIdentified: [],
+          contradictions: [],
+          revisionSuggestions: []
+        }
+      };
     }
     
     throw new Error('No analysis response');
@@ -383,7 +461,12 @@ Respond in JSON format:
       growthPhase: { phase: 'expansion', confidence: 50, insights: [] },
       emotionalTrajectory: { trend: 'stable', riskLevel: 'low', indicators: [] },
       cognitiveDistortions: [],
-      personalizationInsights: { communicationStyle: 'empathetic', preferredActivities: [], triggerTopics: [] }
+      personalizationInsights: { communicationStyle: 'empathetic', preferredActivities: [], triggerTopics: [] },
+      contradictionAnalysis: {
+        beliefsIdentified: [],
+        contradictions: [],
+        revisionSuggestions: []
+      }
     };
   }
 }
@@ -998,6 +1081,239 @@ Respond with JSON: {
       guidance: 'Consider how this decision aligns with your deepest values and authentic self.',
       questionsToConsider: ['What would your wisest self choose?', 'How does each option honor your core values?'],
       potentialConflicts: []
+    };
+  }
+}
+
+
+// Contradiction Detection & Belief Revision System
+export async function detectContradictionsAndBelief(
+  userId: string,
+  currentMessage: string,
+  historicalMessages: Array<{ content: string; timestamp: Date; phase?: string }>,
+  userBeliefs?: Array<{ belief: string; confidence: number; lastUpdated: Date }>
+): Promise<{
+  contradictions: Array<{
+    currentStatement: string;
+    conflictingStatement: string;
+    contradictionType: 'temporal' | 'logical' | 'self_perception' | 'values_based';
+    severity: number; // 1-10
+    timeSpan: string;
+    gentlePointing: string;
+  }>;
+  beliefRevisions: Array<{
+    oldBelief: string;
+    revisedBelief: string;
+    evidence: string[];
+    revisionType: 'expansion' | 'refinement' | 'transformation';
+    confidence: number;
+  }>;
+  cognitiveDistortions: Array<{
+    type: 'all_or_nothing' | 'overgeneralization' | 'mental_filter' | 'personalization' | 'catastrophizing' | 'mind_reading' | 'fortune_telling';
+    evidence: string;
+    gentleCorrection: string;
+    alternativePerspective: string;
+  }>;
+  selfPerceptionPatterns: {
+    recurringNegativeViews: string[];
+    evidenceAgainstViews: string[];
+    strengthsUndervalued: string[];
+    growthNotAcknowledged: string[];
+  };
+}> {
+  try {
+    const detectionPrompt = `
+CONTRADICTION DETECTION & BELIEF REVISION ANALYSIS
+
+As an expert in Growth Halo philosophy and cognitive psychology, analyze the following for contradictions and belief revision opportunities:
+
+CURRENT MESSAGE: "${currentMessage}"
+
+HISTORICAL CONTEXT:
+${historicalMessages.slice(-10).map((msg, i) => `
+Message ${i + 1} (${msg.phase || 'unknown'} phase, ${msg.timestamp.toDateString()}): "${msg.content.substring(0, 200)}..."
+`).join('\n')}
+
+EXISTING BELIEFS (if available):
+${userBeliefs?.map(b => `"${b.belief}" (confidence: ${b.confidence}%, last updated: ${b.lastUpdated.toDateString()})`).join('\n') || 'No previous beliefs tracked'}
+
+ANALYSIS REQUIREMENTS:
+
+1. CONTRADICTION DETECTION:
+   - Compare current statements with historical patterns
+   - Identify temporal contradictions (then vs now)
+   - Spot logical inconsistencies
+   - Detect self-perception contradictions
+   - Note values-based conflicts
+
+2. COGNITIVE DISTORTION IDENTIFICATION:
+   - All-or-nothing thinking patterns
+   - Overgeneralization tendencies
+   - Mental filtering (focusing only on negatives)
+   - Personalization (taking inappropriate responsibility)
+   - Catastrophizing (worst-case scenario thinking)
+   - Mind reading (assuming others' thoughts)
+   - Fortune telling (predicting negative outcomes)
+
+3. BELIEF REVISION OPPORTUNITIES:
+   - Outdated beliefs contradicted by growth evidence
+   - Self-limiting beliefs unsupported by reality
+   - Negative self-perceptions contradicted by actions
+
+4. SELF-PERCEPTION PATTERN ANALYSIS:
+   - Recurring negative self-views
+   - Evidence that contradicts these views
+   - Undervalued strengths and accomplishments
+   - Growth not being acknowledged
+
+GUIDANCE PRINCIPLES:
+- Use Growth Halo philosophy (growth is cyclical, contraction has value)
+- Be extremely gentle and supportive
+- Frame contradictions as growth opportunities
+- Honor the person's wisdom while expanding perspective
+- Suggest rather than dictate
+- Acknowledge the validity of their experience while offering alternatives
+
+Respond with detailed JSON analysis:
+{
+  "contradictions": [
+    {
+      "currentStatement": "I never finish anything",
+      "conflictingStatement": "I completed my certification last month",
+      "contradictionType": "self_perception",
+      "severity": 7,
+      "timeSpan": "past month",
+      "gentlePointing": "I notice you mentioned not finishing things, yet you recently completed something meaningful. What if both experiences are part of your growth pattern?"
+    }
+  ],
+  "beliefRevisions": [
+    {
+      "oldBelief": "I'm not capable of change",
+      "revisedBelief": "I'm someone who changes and grows through cycles",
+      "evidence": ["recent reflection practice", "willingness to explore"],
+      "revisionType": "transformation",
+      "confidence": 85
+    }
+  ],
+  "cognitiveDistortions": [
+    {
+      "type": "all_or_nothing",
+      "evidence": "Using absolute terms like 'never' and 'always'",
+      "gentleCorrection": "Growth often happens in gradual ways that are hard to see in the moment",
+      "alternativePerspective": "What if progress includes both advances and pauses, and both have value?"
+    }
+  ],
+  "selfPerceptionPatterns": {
+    "recurringNegativeViews": ["I'm not disciplined", "I always quit"],
+    "evidenceAgainstViews": ["Shows up to conversations", "Reflects on growth"],
+    "strengthsUndervalued": ["Self-awareness", "Honesty about struggles"],
+    "growthNotAcknowledged": ["Increased emotional vocabulary", "Willingness to examine patterns"]
+  }
+}`;
+
+    const completion = await getOpenAIClient().chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: detectionPrompt }],
+      temperature: 0.3, // Lower temperature for more consistent analysis
+      max_tokens: 2000,
+    });
+
+    const response = completion.choices[0]?.message?.content;
+    if (!response) {
+      throw new Error('No contradiction analysis response');
+    }
+
+    return JSON.parse(response);
+  } catch (error) {
+    console.error('Contradiction detection error:', error);
+    return {
+      contradictions: [],
+      beliefRevisions: [],
+      cognitiveDistortions: [],
+      selfPerceptionPatterns: {
+        recurringNegativeViews: [],
+        evidenceAgainstViews: [],
+        strengthsUndervalued: [],
+        growthNotAcknowledged: []
+      }
+    };
+  }
+}
+
+export async function generateBeliefRevisionGuidance(
+  contradictions: any[],
+  cognitiveDistortions: any[],
+  selfPerceptionPatterns: any,
+  currentPhase: string
+): Promise<{
+  guidanceMessage: string;
+  reflectiveQuestions: string[];
+  gentleChallenge: string;
+  affirmingObservations: string[];
+  suggestedReframes: Array<{ original: string; reframe: string; reasoning: string }>;
+}> {
+  try {
+    const guidancePrompt = `
+BELIEF REVISION GUIDANCE GENERATION
+
+Based on this analysis, generate supportive guidance that helps the user gently examine and possibly revise limiting beliefs:
+
+CONTRADICTIONS FOUND:
+${contradictions.map(c => `- ${c.currentStatement} vs ${c.conflictingStatement} (${c.contradictionType})`).join('\n')}
+
+COGNITIVE DISTORTIONS:
+${cognitiveDistortions.map(d => `- ${d.type}: ${d.evidence}`).join('\n')}
+
+SELF-PERCEPTION PATTERNS:
+- Negative views: ${selfPerceptionPatterns.recurringNegativeViews?.join(', ')}
+- Evidence against: ${selfPerceptionPatterns.evidenceAgainstViews?.join(', ')}
+- Undervalued strengths: ${selfPerceptionPatterns.strengthsUndervalued?.join(', ')}
+
+CURRENT GROWTH PHASE: ${currentPhase}
+
+Generate guidance that:
+1. Validates their experience while gently expanding perspective
+2. Uses Growth Halo philosophy appropriately for their phase
+3. Offers specific, gentle reframes
+4. Includes reflective questions that promote self-discovery
+5. Affirms their existing strengths and growth
+
+Respond in JSON:
+{
+  "guidanceMessage": "A compassionate message that addresses the contradictions gently",
+  "reflectiveQuestions": ["Question that helps them examine their beliefs"],
+  "gentleChallenge": "A loving challenge to consider alternative perspectives",
+  "affirmingObservations": ["Specific strengths or growth they might not be seeing"],
+  "suggestedReframes": [
+    {
+      "original": "Original limiting belief",
+      "reframe": "More balanced perspective",
+      "reasoning": "Why this reframe honors both their experience and growth"
+    }
+  ]
+}`;
+
+    const completion = await getOpenAIClient().chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: guidancePrompt }],
+      temperature: 0.4,
+      max_tokens: 1000,
+    });
+
+    const response = completion.choices[0]?.message?.content;
+    if (!response) {
+      throw new Error('No guidance response');
+    }
+
+    return JSON.parse(response);
+  } catch (error) {
+    console.error('Belief revision guidance error:', error);
+    return {
+      guidanceMessage: 'I notice some interesting patterns in what you\'ve shared. Sometimes our perspective on ourselves can be both true and incomplete at the same time.',
+      reflectiveQuestions: ['What evidence exists that might expand this view of yourself?'],
+      gentleChallenge: 'I wonder if there might be parts of your story that deserve more recognition than you\'re giving them.',
+      affirmingObservations: ['Your willingness to reflect shows genuine courage'],
+      suggestedReframes: []
     };
   }
 }

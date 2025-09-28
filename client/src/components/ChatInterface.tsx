@@ -24,6 +24,12 @@ interface Message {
     memoryAnchors?: string[];
   };
   contextAdaptation?: any;
+  contradictionAnalysis?: {
+    contradictions: any[];
+    beliefRevisions: any[];
+    cognitiveDistortions: any[];
+    selfPerceptionPatterns: any;
+  };
 }
 
 interface ChatInterfaceProps {
@@ -164,7 +170,8 @@ export default function ChatInterface({
           contextAdaptation: data.contextAdaptation,
           memoryAnchors: data.memoryAnchors
         },
-        contextAdaptation: data.contextAdaptation
+        contextAdaptation: data.contextAdaptation,
+        contradictionAnalysis: data.contradictionAnalysis
       };
 
       setMessages(prev => [...prev, blissMessage]);
@@ -404,6 +411,22 @@ export default function ChatInterface({
 
                       <div className="mt-2 text-xs text-purple-500">
                         Reasoning: {message.memoryInsights.associativeRecall.reasoning}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Contradiction Analysis Display */}
+                  {message.isBliss && message.contextAdaptation?.contradictionsDetected > 0 && (
+                    <div className="ml-12 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                        <span className="font-medium text-amber-700">Pattern Recognition</span>
+                        <span className="text-amber-500 text-xs">
+                          ({message.contextAdaptation.contradictionsDetected} patterns noticed)
+                        </span>
+                      </div>
+                      <div className="text-amber-600 text-xs italic">
+                        "I notice some interesting patterns in what you've shared that might offer new perspectives..."
                       </div>
                     </div>
                   )}

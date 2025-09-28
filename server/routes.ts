@@ -97,6 +97,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Message is required" });
       }
 
+
+
+  // Contradiction Detection & Belief Revision endpoint
+  app.post('/api/user/:userId/contradiction-analysis', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { currentMessage, historicalMessages, userBeliefs } = req.body;
+
+      const { detectContradictionsAndBelief } = await import('./ai-service');
+      const analysis = await detectContradictionsAndBelief(
+        userId,
+        currentMessage,
+        historicalMessages || [],
+        userBeliefs || []
+      );
+
+      res.json(analysis);
+    } catch (error) {
+      console.error('Contradiction analysis error:', error);
+      res.status(500).json({ error: 'Failed to analyze contradictions' });
+    }
+  });
+
+  app.post('/api/user/:userId/belief-revision-guidance', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { contradictions, cognitiveDistortions, selfPerceptionPatterns, currentPhase } = req.body;
+
+      const { generateBeliefRevisionGuidance } = await import('./ai-service');
+      const guidance = await generateBeliefRevisionGuidance(
+        contradictions || [],
+        cognitiveDistortions || [],
+        selfPerceptionPatterns || {},
+        currentPhase || 'expansion'
+      );
+
+      res.json(guidance);
+    } catch (error) {
+      console.error('Belief revision guidance error:', error);
+      res.status(500).json({ error: 'Failed to generate belief revision guidance' });
+    }
+  });
+
+
       const phaseDetection = await detectGrowthPhase(message, context);
 
       // If userId provided, update their phase if confidence is high
