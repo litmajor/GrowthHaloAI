@@ -21,10 +21,11 @@ const navItems = [
   { path: "/checkin", icon: Calendar, label: "Daily Check-in" },
   { path: "/journal", icon: BookOpen, label: "Growth Journal" },
   { path: "/intentions", icon: Target, label: "Intentions" },
+  { path: "/goals", icon: Target, label: "Goals Journey" },
   { path: "/community", icon: Users, label: "Community" },
   { path: "/events", icon: Calendar, label: "Events" },
   { path: "/content", icon: BookOpen, label: "Content" },
-  { path: "/subscription", icon: CreditCard, label: "Subscription" }, // Added Subscription page link
+  { path: "/subscription", icon: CreditCard, label: "Subscription" },
 ];
 
 const secondaryNavItems = [

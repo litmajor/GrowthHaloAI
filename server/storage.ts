@@ -1,4 +1,14 @@
 import { type User, type InsertUser } from "@shared/schema";
+import { 
+  type Goal, 
+  type InsertGoal, 
+  type GoalProgress, 
+  type InsertGoalProgress,
+  type GoalRelationship,
+  type InsertGoalRelationship,
+  type ConversationGoalLink,
+  type InsertConversationGoalLink 
+} from "@shared/growth-schema";
 import { randomUUID } from "crypto";
 
 // Mock database storage for development
@@ -20,6 +30,15 @@ export interface IStorage {
   getFollowers(userId: string): Promise<Array<{ id: string; username: string; followedAt: Date }>>;
   getFollowing(userId: string): Promise<Array<{ id: string; username: string; followedAt: Date }>>;
   isFollowing(followerId: string, followingId: string): Promise<boolean>;
+  
+  // Goal management operations
+  getGoalsByUserId(userId: string): Promise<Goal[]>;
+  createGoal(goal: InsertGoal): Promise<Goal>;
+  updateGoalProgress(goalId: string, progress: number): Promise<void>;
+  createGoalProgress(progress: InsertGoalProgress): Promise<GoalProgress>;
+  getRecentGoalProgress(userId: string, days: number): Promise<GoalProgress[]>;
+  createGoalRelationship(relationship: InsertGoalRelationship): Promise<GoalRelationship>;
+  createConversationGoalLink(link: InsertConversationGoalLink): Promise<ConversationGoalLink>;
 }
 
 export class MemStorage implements IStorage {
@@ -41,6 +60,12 @@ export class MemStorage implements IStorage {
     this.mockTables.set('community_profiles', new Map());
     this.mockTables.set('community_members', new Map());
     this.mockTables.set('user_follows', new Map());
+    
+    // Goal management tables
+    this.mockTables.set('goals', new Map());
+    this.mockTables.set('goal_progress', new Map());
+    this.mockTables.set('goal_relationships', new Map());
+    this.mockTables.set('conversation_goal_links', new Map());
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -247,7 +272,7 @@ export class MemStorage implements IStorage {
     const followsTable = this.mockTables.get('user_follows');
     if (!followsTable) return false;
 
-    for (const id of followsTable.keys()) {
+    for (const id of Array.from(followsTable.keys())) {
       const follow = followsTable.get(id);
       if (follow && follow.follower_id === followerId && follow.following_id === followingId) {
         return true;
@@ -255,6 +280,144 @@ export class MemStorage implements IStorage {
     }
     
     return false;
+  }
+
+  // Goal management methods
+  async getGoalsByUserId(userId: string): Promise<Goal[]> {
+    const goalsTable = this.mockTables.get('goals');
+    if (!goalsTable) return [];
+
+    const goals: Goal[] = [];
+    for (const id of Array.from(goalsTable.keys())) {
+      const goal = goalsTable.get(id);
+      if (goal && goal.userId === userId) {
+        goals.push({
+          id: goal.id,
+          userId: goal.userId,
+          title: goal.title,
+          description: goal.description,
+          category: goal.category,
+          priority: goal.priority,
+          status: goal.status,
+          progress: goal.progress,
+          detectedFromConversation: goal.detectedFromConversation,
+          emotionalInvestment: goal.emotionalInvestment,
+          urgency: goal.urgency,
+          targetDate: goal.targetDate,
+          completedAt: goal.completedAt,
+          lastMentioned: goal.lastMentioned,
+          aiInsights: goal.aiInsights,
+          conversationContext: goal.conversationContext,
+          createdAt: goal.createdAt,
+          updatedAt: goal.updatedAt,
+        });
+      }
+    }
+    
+    return goals;
+  }
+
+  async createGoal(goalData: InsertGoal): Promise<Goal> {
+    const id = randomUUID();
+    const now = new Date();
+    const goal: Goal = {
+      id,
+      ...goalData,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    const goalsTable = this.mockTables.get('goals');
+    goalsTable?.set(id, goal);
+    
+    return goal;
+  }
+
+  async updateGoalProgress(goalId: string, progress: number): Promise<void> {
+    const goalsTable = this.mockTables.get('goals');
+    if (!goalsTable) return;
+
+    const goal = goalsTable.get(goalId);
+    if (goal) {
+      goal.progress = progress;
+      goal.updatedAt = new Date();
+      goalsTable.set(goalId, goal);
+    }
+  }
+
+  async createGoalProgress(progressData: InsertGoalProgress): Promise<GoalProgress> {
+    const id = randomUUID();
+    const now = new Date();
+    const progress: GoalProgress = {
+      id,
+      ...progressData,
+      createdAt: now,
+    };
+    
+    const progressTable = this.mockTables.get('goal_progress');
+    progressTable?.set(id, progress);
+    
+    return progress;
+  }
+
+  async getRecentGoalProgress(userId: string, days: number): Promise<GoalProgress[]> {
+    const progressTable = this.mockTables.get('goal_progress');
+    if (!progressTable) return [];
+
+    const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const recentProgress: GoalProgress[] = [];
+    
+    for (const id of Array.from(progressTable.keys())) {
+      const progress = progressTable.get(id);
+      if (progress && 
+          progress.userId === userId && 
+          new Date(progress.createdAt) >= cutoffDate) {
+        recentProgress.push({
+          id: progress.id,
+          goalId: progress.goalId,
+          userId: progress.userId,
+          progressPercentage: progress.progressPercentage,
+          detectedActivity: progress.detectedActivity,
+          conversationExcerpt: progress.conversationExcerpt,
+          aiConfidence: progress.aiConfidence,
+          momentum: progress.momentum,
+          obstacles: progress.obstacles,
+          createdAt: progress.createdAt,
+        });
+      }
+    }
+    
+    return recentProgress.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async createGoalRelationship(relationshipData: InsertGoalRelationship): Promise<GoalRelationship> {
+    const id = randomUUID();
+    const now = new Date();
+    const relationship: GoalRelationship = {
+      id,
+      ...relationshipData,
+      createdAt: now,
+    };
+    
+    const relationshipsTable = this.mockTables.get('goal_relationships');
+    relationshipsTable?.set(id, relationship);
+    
+    return relationship;
+  }
+
+  async createConversationGoalLink(linkData: InsertConversationGoalLink): Promise<ConversationGoalLink> {
+    const id = randomUUID();
+    const now = new Date();
+    const link: ConversationGoalLink = {
+      id,
+      ...linkData,
+      createdAt: now,
+    };
+    
+    const linksTable = this.mockTables.get('conversation_goal_links');
+    linksTable?.set(id, link);
+    
+    return link;
   }
 }
 

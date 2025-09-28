@@ -112,6 +112,92 @@ export const valuesData = pgTable("values_data", {
   lastAssessment: timestamp("last_assessment").defaultNow(),
 });
 
+// Goal Management & Progress Intelligence
+export const goals = pgTable("goals", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  category: text("category", { 
+    enum: ["career", "health", "learning", "relationships", "financial", "personal", "spiritual", "creative"]
+  }).notNull(),
+  priority: integer("priority").default(5), // 1-10 scale
+  status: text("status", { 
+    enum: ["active", "completed", "paused", "cancelled"]
+  }).default("active"),
+  progress: integer("progress").default(0), // 0-100 percentage
+  detectedFromConversation: boolean("detected_from_conversation").default(true),
+  emotionalInvestment: integer("emotional_investment").default(5), // 1-10 scale
+  urgency: integer("urgency").default(5), // 1-10 scale
+  targetDate: timestamp("target_date"),
+  completedAt: timestamp("completed_at"),
+  lastMentioned: timestamp("last_mentioned").defaultNow(),
+  aiInsights: jsonb("ai_insights"), // AI-generated insights about the goal
+  conversationContext: jsonb("conversation_context"), // Where it was first detected
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Goal Progress Tracking (conversation-based updates)
+export const goalProgress = pgTable("goal_progress", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  goalId: varchar("goal_id").notNull().references(() => goals.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  progressPercentage: integer("progress_percentage").notNull(), // 0-100
+  detectedActivity: text("detected_activity"), // What activity was mentioned
+  conversationExcerpt: text("conversation_excerpt"), // What the user said
+  aiConfidence: real("ai_confidence").default(0.8), // How confident AI is about this progress
+  momentum: text("momentum", { enum: ["accelerating", "steady", "slowing", "stalled"] }).default("steady"),
+  obstacles: jsonb("obstacles"), // Detected obstacles
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Goal Relationships and Influence Mapping
+export const goalRelationships = pgTable("goal_relationships", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  primaryGoalId: varchar("primary_goal_id").notNull().references(() => goals.id),
+  relatedGoalId: varchar("related_goal_id").notNull().references(() => goals.id),
+  relationshipType: text("relationship_type", { 
+    enum: ["supports", "conflicts", "depends_on", "enables", "competes_with"]
+  }).notNull(),
+  strength: real("strength").default(0.5), // 0-1 how strong the relationship is
+  aiDetected: boolean("ai_detected").default(true),
+  userConfirmed: boolean("user_confirmed").default(false),
+  impact: text("impact"), // Description of how they influence each other
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Conversation Topic to Goal Linking
+export const conversationGoalLinks = pgTable("conversation_goal_links", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  goalId: varchar("goal_id").notNull().references(() => goals.id),
+  conversationSnippet: text("conversation_snippet").notNull(),
+  linkType: text("link_type", { 
+    enum: ["progress_update", "obstacle_mention", "motivation_change", "strategy_discussion", "completion"]
+  }).notNull(),
+  sentiment: real("sentiment"), // -1 to 1
+  confidence: real("confidence").default(0.8),
+  extractedInsight: text("extracted_insight"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Enhanced Milestone Tracking (builds on existing milestones table)
+export const goalMilestones = pgTable("goal_milestones", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  goalId: varchar("goal_id").notNull().references(() => goals.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  targetDate: timestamp("target_date"),
+  completed: boolean("completed").default(false),
+  completedAt: timestamp("completed_at"),
+  celebrationSuggestion: text("celebration_suggestion"), // AI-suggested way to celebrate
+  progressImpact: integer("progress_impact").default(10), // How much this milestone contributes to overall goal (%)
+  autoDetected: boolean("auto_detected").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Schemas for validation
 export const insertUserProfileSchema = createInsertSchema(userProfiles);
 export const insertJournalEntrySchema = createInsertSchema(journalEntries);
@@ -124,6 +210,29 @@ export const insertUserFollowSchema = createInsertSchema(userFollows).omit({
   createdAt: true,
 });
 
+// Goal management schemas
+export const insertGoalSchema = createInsertSchema(goals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertGoalProgressSchema = createInsertSchema(goalProgress).omit({
+  id: true,
+  createdAt: true,
+});
+export const insertGoalRelationshipSchema = createInsertSchema(goalRelationships).omit({
+  id: true,
+  createdAt: true,
+});
+export const insertConversationGoalLinkSchema = createInsertSchema(conversationGoalLinks).omit({
+  id: true,
+  createdAt: true,
+});
+export const insertGoalMilestoneSchema = createInsertSchema(goalMilestones).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type UserProfile = typeof userProfiles.$inferSelect;
 export type PhaseHistory = typeof phaseHistory.$inferSelect;
 export type EnergyPattern = typeof energyPatterns.$inferSelect;
@@ -132,3 +241,15 @@ export type InsertCommunityEngagement = z.infer<typeof insertCommunityEngagement
 export type CommunityEngagement = typeof communityEngagement.$inferSelect;
 export type InsertUserFollow = z.infer<typeof insertUserFollowSchema>;
 export type UserFollow = typeof userFollows.$inferSelect;
+
+// Goal management types
+export type Goal = typeof goals.$inferSelect;
+export type InsertGoal = z.infer<typeof insertGoalSchema>;
+export type GoalProgress = typeof goalProgress.$inferSelect;
+export type InsertGoalProgress = z.infer<typeof insertGoalProgressSchema>;
+export type GoalRelationship = typeof goalRelationships.$inferSelect;
+export type InsertGoalRelationship = z.infer<typeof insertGoalRelationshipSchema>;
+export type ConversationGoalLink = typeof conversationGoalLinks.$inferSelect;
+export type InsertConversationGoalLink = z.infer<typeof insertConversationGoalLinkSchema>;
+export type GoalMilestone = typeof goalMilestones.$inferSelect;
+export type InsertGoalMilestone = z.infer<typeof insertGoalMilestoneSchema>;

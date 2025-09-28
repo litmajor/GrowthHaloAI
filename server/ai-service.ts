@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { advancedMemory } from './memory-service';
+import { goalIntelligence } from './goal-intelligence-service';
 
 // Create OpenAI client conditionally to avoid startup errors when API key is not set
 let openai: OpenAI | null = null;
@@ -173,6 +174,30 @@ export async function generateAdaptiveBlissResponse(
       patterns.growthPhase.phase
     );
 
+    // GOAL INTELLIGENCE INTEGRATION
+    // Detect new goals from conversation
+    const detectedGoals = await goalIntelligence.detectGoalsFromConversation(
+      userId,
+      userMessage,
+      conversationHistory
+    );
+
+    // Get existing goals and detect progress updates
+    const existingGoals = await goalIntelligence.getUserGoals(userId);
+    const progressUpdates = await goalIntelligence.detectProgressUpdates(
+      userId,
+      userMessage,
+      existingGoals
+    );
+
+    // Analyze goal relationships if multiple goals exist
+    if (existingGoals.length >= 2) {
+      await goalIntelligence.analyzeGoalRelationships(userId, existingGoals);
+    }
+
+    // Get goal insights for AI context
+    const goalInsights = await goalIntelligence.getGoalInsightsForAI(userId);
+
     const adaptivePrompt = `${GROWTH_HALO_SYSTEM_PROMPT}
 
 CONTEXT-SENSITIVE ADAPTATION:
@@ -189,6 +214,32 @@ ${associativeRecall.memories.map((m, i) => `${i + 1}. ${m.content.substring(0, 1
 Memory Recall Reasoning: ${associativeRecall.reasoning}
 Bridge Insights: ${associativeRecall.bridgeInsights.join('; ')}
 ` : 'No significant past memories recalled for this context.'}
+
+GOAL INTELLIGENCE CONTEXT:
+${goalInsights ? `
+Active Goals Overview:
+- Total Active Goals: ${goalInsights.activeGoalsCount}
+- Overall Progress Trend: ${goalInsights.progressTrend}
+${goalInsights.primaryGoals.length > 0 ? `
+Primary Goals:
+${goalInsights.primaryGoals.map((goal: any, i: number) => 
+  `${i + 1}. "${goal.title}" (${goal.category}, ${goal.progress}% progress, momentum: ${goal.momentum})`
+).join('\n')}` : ''}
+${goalInsights.stagnantGoals.length > 0 ? `
+Stagnant Goals (haven't been mentioned recently): ${goalInsights.stagnantGoals.join(', ')}` : ''}
+${detectedGoals.length > 0 ? `
+NEW GOALS DETECTED in this conversation:
+${detectedGoals.map((goal: any, i: number) => 
+  `${i + 1}. "${goal.title}" (${goal.category}, confidence: ${Math.round(goal.confidence * 100)}%)`
+).join('\n')}` : ''}
+${progressUpdates.length > 0 ? `
+PROGRESS UPDATES detected in this conversation:
+${progressUpdates.map((update: any, i: number) => 
+  `${i + 1}. Goal progress update: ${update.detectedActivity} (${update.progressPercentage}% complete, momentum: ${update.momentum})`
+).join('\n')}` : ''}
+` : 'No active goals or goal insights available.'}
+
+IMPORTANT: Use this goal information naturally in your response. If new goals were detected or progress was made, acknowledge this organically without explicitly mentioning "goal detection" or making it obvious this is automated. Focus on celebrating progress and offering relevant guidance based on their aspirations.
 
 CONTRADICTION & BELIEF REVISION CONTEXT:
 ${contradictionAnalysis.contradictions.length > 0 ? `
