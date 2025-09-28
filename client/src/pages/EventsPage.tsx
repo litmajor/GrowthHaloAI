@@ -247,6 +247,29 @@ export default function EventsPage() {
                     <SelectItem value="renewal">Renewal</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select value="all" onValueChange={() => {}}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Locations</SelectItem>
+                    <SelectItem value="virtual">Virtual</SelectItem>
+                    <SelectItem value="local">Local</SelectItem>
+                    <SelectItem value="hybrid">Hybrid</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value="all" onValueChange={() => {}}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Price Range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Prices</SelectItem>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="under50">Under $50</SelectItem>
+                    <SelectItem value="50to200">$50 - $200</SelectItem>
+                    <SelectItem value="over200">Over $200</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button variant="outline" onClick={() => {
                   setSearchTerm('');
                   setFilterType('all');

@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, Sparkles, Calendar, Search, Filter } from "lucide-react";
+import { BookOpen, Sparkles, Calendar, Search, Filter, Upload, FileText } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -86,6 +86,7 @@ export default function GrowthJournal({ currentPhase }: GrowthJournalProps) {
   const [currentEntry, setCurrentEntry] = useState("");
   const [selectedPrompt, setSelectedPrompt] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const prompts = phasePrompts[currentPhase];
   const colors = phaseColors[currentPhase];
@@ -114,6 +115,34 @@ export default function GrowthJournal({ currentPhase }: GrowthJournalProps) {
       ['growth', 'fear', 'joy', 'anger', 'love', 'peace', 'anxiety', 'hope', 'gratitude', 'confusion'].includes(word)
     );
     return [...new Set(emotionWords)];
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const textFiles = files.filter(file => 
+      file.type === 'text/plain' || 
+      file.type === 'application/pdf' ||
+      file.name.endsWith('.txt') ||
+      file.name.endsWith('.md')
+    );
+    
+    setUploadedFiles(prev => [...prev, ...textFiles]);
+    
+    // Process files to extract text content
+    textFiles.forEach(file => {
+      if (file.type === 'text/plain' || file.name.endsWith('.txt') || file.name.endsWith('.md')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const content = e.target?.result as string;
+          setCurrentEntry(prev => prev + '\n\n' + `[Uploaded from ${file.name}]\n${content}`);
+        };
+        reader.readAsText(file);
+      }
+    });
+  };
+
+  const removeUploadedFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const filteredEntries = entries.filter(entry =>
@@ -181,17 +210,61 @@ export default function GrowthJournal({ currentPhase }: GrowthJournalProps) {
               </div>
             </div>
 
+            {/* File Upload Section */}
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
+              <div className="text-center">
+                <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  Upload your written journal entries
+                </p>
+                <input
+                  type="file"
+                  multiple
+                  accept=".txt,.md,.pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="journal-upload"
+                />
+                <Button variant="outline" asChild>
+                  <label htmlFor="journal-upload" className="cursor-pointer">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Choose Files
+                  </label>
+                </Button>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Supports .txt, .md, and .pdf files
+                </p>
+              </div>
+              
+              {uploadedFiles.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-sm font-medium">Uploaded Files:</p>
+                  {uploadedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-2 rounded">
+                      <span className="text-sm">{file.name}</span>
+                      <Button variant="ghost" size="sm" onClick={() => removeUploadedFile(index)}>
+                        ×
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Writing Area */}
             <Textarea
               value={currentEntry}
               onChange={(e) => setCurrentEntry(e.target.value)}
-              placeholder="Let your thoughts flow..."
+              placeholder="Let your thoughts flow... or upload your written journal entries above"
               className="min-h-32 resize-none"
             />
 
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setCurrentEntry("")}>
-                Clear
+              <Button variant="ghost" onClick={() => {
+                setCurrentEntry("");
+                setUploadedFiles([]);
+              }}>
+                Clear All
               </Button>
               <Button onClick={handleSaveEntry} disabled={!currentEntry.trim()}>
                 Save Entry

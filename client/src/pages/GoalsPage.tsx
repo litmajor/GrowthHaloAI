@@ -26,6 +26,14 @@ interface Goal {
 export default function GoalsPage() {
   const [activeTab, setActiveTab] = useState('active');
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [newGoal, setNewGoal] = useState({
+    title: '',
+    description: '',
+    category: 'personal',
+    priority: 5,
+    targetDate: ''
+  });
 
   // Mock data for development - will be replaced with real API call
   const mockGoals: Goal[] = [
@@ -242,14 +250,24 @@ export default function GoalsPage() {
               </TabsTrigger>
             </TabsList>
             
-            <Button 
-              onClick={() => window.location.href = '/chat'}
-              className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700"
-              data-testid="add-new-goal-button"
-            >
-              <Target className="w-4 h-4 mr-2" />
-              Set New Goal with Bliss
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowGoalModal(true)}
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700"
+                data-testid="add-new-goal-button"
+              >
+                <Target className="w-4 h-4 mr-2" />
+                Add New Goal
+              </Button>
+              <Button 
+                onClick={() => window.location.href = '/chat'}
+                variant="outline"
+                className="border-indigo-500 text-indigo-600 hover:bg-indigo-50"
+              >
+                <Target className="w-4 h-4 mr-2" />
+                Set Goal with Bliss
+              </Button>
+            </div>
           </div>
 
           <TabsContent value="active" className="mt-6">
@@ -458,6 +476,132 @@ export default function GoalsPage() {
               <p className="text-gray-600 mb-4">{selectedGoal.description}</p>
               <div className="flex justify-end">
                 <Button onClick={() => setSelectedGoal(null)}>Close</Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Goal Creation Modal */}
+      <AnimatePresence>
+        {showGoalModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            onClick={() => setShowGoalModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Create New Goal</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowGoalModal(false)}>
+                  <span className="sr-only">Close</span>
+                  ✕
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Goal Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={newGoal.title}
+                    onChange={(e) => setNewGoal({...newGoal, title: e.target.value})}
+                    placeholder="e.g., Learn Spanish, Get fit, Start a business"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={newGoal.description}
+                    onChange={(e) => setNewGoal({...newGoal, description: e.target.value})}
+                    placeholder="Describe what you want to achieve and why it matters to you..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Category
+                    </label>
+                    <select
+                      value={newGoal.category}
+                      onChange={(e) => setNewGoal({...newGoal, category: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200"
+                    >
+                      <option value="health">Health & Fitness</option>
+                      <option value="career">Career & Work</option>
+                      <option value="relationships">Relationships</option>
+                      <option value="learning">Learning & Skills</option>
+                      <option value="financial">Financial</option>
+                      <option value="personal">Personal Growth</option>
+                      <option value="spiritual">Spiritual</option>
+                      <option value="creative">Creative</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Priority (1-10)
+                    </label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={newGoal.priority}
+                      onChange={(e) => setNewGoal({...newGoal, priority: parseInt(e.target.value)})}
+                      className="w-full"
+                    />
+                    <div className="text-center text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {newGoal.priority}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Target Date (Optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={newGoal.targetDate}
+                    onChange={(e) => setNewGoal({...newGoal, targetDate: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button variant="outline" onClick={() => setShowGoalModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      // Here you would save the goal
+                      console.log('Creating goal:', newGoal);
+                      setShowGoalModal(false);
+                      setNewGoal({title: '', description: '', category: 'personal', priority: 5, targetDate: ''});
+                    }}
+                    disabled={!newGoal.title.trim()}
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white"
+                  >
+                    Create Goal
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </motion.div>

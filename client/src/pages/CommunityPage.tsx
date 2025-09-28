@@ -12,6 +12,7 @@ import HaloProgressRing from '../components/HaloProgressRing';
 import PhaseIndicator from '../components/PhaseIndicator';
 import SmartMatching from '../components/SmartMatching';
 import { ResponsiveContainer } from "@/components/ui/responsive-container";
+import CommunityGroupModal from '../components/CommunityGroupModal';
 
 type GrowthPhase = "expansion" | "contraction" | "renewal";
 type CircleType = "phase" | "theme" | "practice" | "transition";
@@ -230,6 +231,10 @@ export default function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<CircleType | "all">("all");
   const [currentUserPhase] = useState<GrowthPhase>("expansion");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [selectedPersonality, setSelectedPersonality] = useState("all");
+  const [selectedPrivacy, setSelectedPrivacy] = useState("all");
 
   const filteredCircles = allCircles.filter(circle => {
     const matchesSearch = circle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -279,29 +284,73 @@ export default function CommunityPage() {
 
         {/* Search and Filter */}
         <motion.div
-          className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto mt-8"
+          className="space-y-4 max-w-4xl mx-auto mt-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search circles by name, theme, or tag..."
-              className="pl-10"
-            />
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search circles by name, theme, or tag..."
+                className="pl-10"
+              />
+            </div>
+            <Button 
+              onClick={() => setShowCreateModal(true)}
+              className="bg-gradient-to-r from-primary to-accent text-white"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Create Circle
+            </Button>
           </div>
-          <Tabs value={selectedType} onValueChange={(value) => setSelectedType(value as CircleType | "all")}>
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="phase">Phase</TabsTrigger>
-              <TabsTrigger value="theme">Theme</TabsTrigger>
-              <TabsTrigger value="practice">Practice</TabsTrigger>
-              <TabsTrigger value="transition">Transition</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Tabs value={selectedType} onValueChange={(value) => setSelectedType(value as CircleType | "all")}>
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="phase">Phase</TabsTrigger>
+                <TabsTrigger value="theme">Theme</TabsTrigger>
+                <TabsTrigger value="practice">Practice</TabsTrigger>
+                <TabsTrigger value="transition">Transition</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            
+            <select
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className="px-3 py-2 border border-input rounded-md bg-background text-foreground"
+            >
+              <option value="all">All Locations</option>
+              <option value="virtual">Virtual</option>
+              <option value="local">Local</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+            
+            <select
+              value={selectedPersonality}
+              onChange={(e) => setSelectedPersonality(e.target.value)}
+              className="px-3 py-2 border border-input rounded-md bg-background text-foreground"
+            >
+              <option value="all">All Personalities</option>
+              <option value="introvert">Introvert-Friendly</option>
+              <option value="extrovert">Extrovert-Friendly</option>
+              <option value="mixed">Mixed</option>
+            </select>
+            
+            <select
+              value={selectedPrivacy}
+              onChange={(e) => setSelectedPrivacy(e.target.value)}
+              className="px-3 py-2 border border-input rounded-md bg-background text-foreground"
+            >
+              <option value="all">All Privacy</option>
+              <option value="public">Public</option>
+              <option value="private">Private</option>
+            </select>
+          </div>
         </motion.div>
 
         {/* Smart Matching */}
@@ -601,6 +650,16 @@ export default function CommunityPage() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Community Group Creation Modal */}
+        <CommunityGroupModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onCreateGroup={(groupData) => {
+            console.log('Creating group:', groupData);
+            // Here you would call the API to create the group
+          }}
+        />
       </ResponsiveContainer>
     </div>
   );

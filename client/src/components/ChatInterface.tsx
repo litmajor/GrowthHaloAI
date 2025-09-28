@@ -243,12 +243,26 @@ export default function ChatInterface({
                 </div>
               </div>
 
-              <PhaseIndicator 
-                currentPhase={currentPhase}
-                confidence={phaseConfidence}
-                size="sm"
-                showDescription={false}
-              />
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setMessages([]);
+                    setInputValue("");
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <div className="w-4 h-4 rounded border border-current" />
+                  New Chat
+                </Button>
+                <PhaseIndicator 
+                  currentPhase={currentPhase}
+                  confidence={phaseConfidence}
+                  size="sm"
+                  showDescription={false}
+                />
+              </div>
             </div>
 
             <TabsList className="w-full">
