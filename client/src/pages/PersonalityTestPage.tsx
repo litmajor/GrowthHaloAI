@@ -118,7 +118,7 @@ export default function PersonalityTestPage() {
     setAnswers(prev => ({ ...prev, [questionId]: value }));
   };
 
-  const calculateScores = () => {
+  const calculateScores = async () => {
     const scores: TraitScore = {
       openness: 0,
       conscientiousness: 0,
@@ -151,6 +151,20 @@ export default function PersonalityTestPage() {
         scores[key] = Math.round(((scores[key] / traitCounts[key]) - 1) * 25);
       }
     });
+
+    // Send results to server for AI integration
+    try {
+      await fetch('/api/personality-test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          results: scores,
+          userId: 'anonymous', // Replace with actual user ID when auth is implemented
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to save personality results:', error);
+    }
 
     setTraitScores(scores);
     setShowResults(true);
@@ -194,6 +208,15 @@ export default function PersonalityTestPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {Object.entries(traitScores).map(([trait, score], index) => {
               const traitInfo = traitDescriptions[trait as keyof typeof traitDescriptions];
+              const traitColors = {
+                openness: { icon: 'text-purple-600 dark:text-purple-400', progress: 'bg-purple-600', bg: 'bg-purple-50 dark:bg-purple-900/20' },
+                conscientiousness: { icon: 'text-blue-600 dark:text-blue-400', progress: 'bg-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+                extraversion: { icon: 'text-orange-600 dark:text-orange-400', progress: 'bg-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20' },
+                agreeableness: { icon: 'text-green-600 dark:text-green-400', progress: 'bg-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
+                neuroticism: { icon: 'text-red-600 dark:text-red-400', progress: 'bg-red-600', bg: 'bg-red-50 dark:bg-red-900/20' }
+              };
+              const colors = traitColors[trait as keyof typeof traitColors];
+              
               return (
                 <motion.div
                   key={trait}
@@ -201,25 +224,31 @@ export default function PersonalityTestPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+                  <Card className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-l-4 ${colors.bg}`} 
+                        style={{ borderLeftColor: colors.progress.replace('bg-', '').replace('-600', '') }}>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <BarChart3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                        {traitInfo.name}
+                        <BarChart3 className={`w-5 h-5 ${colors.icon}`} />
+                        <span className="text-gray-800 dark:text-gray-200">{traitInfo.name}</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="mb-4">
                         <div className="flex justify-between mb-2">
-                          <span className="text-sm font-medium">Score</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">{score}%</span>
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Score</span>
+                          <span className="text-sm font-semibold" style={{ color: colors.icon.includes('purple') ? '#9333ea' : colors.icon.includes('blue') ? '#2563eb' : colors.icon.includes('orange') ? '#ea580c' : colors.icon.includes('green') ? '#16a34a' : '#dc2626' }}>{score}%</span>
                         </div>
-                        <Progress value={score} className="h-3" />
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                          <div 
+                            className={`h-3 rounded-full transition-all duration-500 ${colors.progress}`}
+                            style={{ width: `${score}%` }}
+                          />
+                        </div>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                         {traitInfo.description}
                       </p>
-                      <p className="text-sm font-medium">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {score >= 50 ? traitInfo.high : traitInfo.low}
                       </p>
                     </CardContent>
@@ -300,9 +329,13 @@ export default function PersonalityTestPage() {
                   { value: '4', label: 'Agree' },
                   { value: '5', label: 'Strongly Agree' }
                 ].map((option) => (
-                  <div key={option.value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option.value} id={option.value} />
-                    <Label htmlFor={option.value} className="cursor-pointer">
+                  <div key={option.value} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <RadioGroupItem 
+                      value={option.value} 
+                      id={option.value}
+                      className="border-2 border-gray-300 dark:border-gray-600 text-indigo-600 dark:text-indigo-400"
+                    />
+                    <Label htmlFor={option.value} className="cursor-pointer flex-1 text-gray-700 dark:text-gray-300">
                       {option.label}
                     </Label>
                   </div>

@@ -749,6 +749,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Store personality test results
+  app.post("/api/personality-test", async (req, res) => {
+    try {
+      const { results, userId } = req.body;
+
+      // Store personality data for Bliss AI context
+      await storage.storePersonalityProfile(userId || 'anonymous', {
+        traits: results,
+        completedAt: new Date(),
+        insights: generatePersonalityInsights(results)
+      });
+
+      res.json({ success: true, message: "Personality test results saved" });
+    } catch (error) {
+      console.error("Error saving personality test results:", error);
+      res.status(500).json({ error: "Failed to save personality test results" });
+    }
+  });
+
+  // Get personality profile for AI context
+  app.get("/api/personality-profile/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const profile = await storage.getPersonalityProfile(userId);
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching personality profile:", error);
+      res.status(500).json({ error: "Failed to fetch personality profile" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

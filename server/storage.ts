@@ -23,14 +23,14 @@ export interface IStorage {
   get(query: string, params?: any[]): Promise<DatabaseRow | null>;
   execute(query: string, params?: any[]): Promise<void>;
   getAll(query: string, params?: any[]): Promise<DatabaseRow[]>;
-  
+
   // Follow operations
   followUser(followerId: string, followingId: string): Promise<void>;
   unfollowUser(followerId: string, followingId: string): Promise<void>;
   getFollowers(userId: string): Promise<Array<{ id: string; username: string; followedAt: Date }>>;
   getFollowing(userId: string): Promise<Array<{ id: string; username: string; followedAt: Date }>>;
   isFollowing(followerId: string, followingId: string): Promise<boolean>;
-  
+
   // Goal management operations
   getGoalsByUserId(userId: string): Promise<Goal[]>;
   createGoal(goal: InsertGoal): Promise<Goal>;
@@ -39,6 +39,10 @@ export interface IStorage {
   getRecentGoalProgress(userId: string, days: number): Promise<GoalProgress[]>;
   createGoalRelationship(relationship: InsertGoalRelationship): Promise<GoalRelationship>;
   createConversationGoalLink(link: InsertConversationGoalLink): Promise<ConversationGoalLink>;
+
+  // Personality profile operations
+  storePersonalityProfile(userId: string, profile: any): Promise<void>;
+  getPersonalityProfile(userId: string): Promise<any>;
 }
 
 export class MemStorage implements IStorage {
@@ -60,7 +64,8 @@ export class MemStorage implements IStorage {
     this.mockTables.set('community_profiles', new Map());
     this.mockTables.set('community_members', new Map());
     this.mockTables.set('user_follows', new Map());
-    
+    this.mockTables.set('personality_profiles', new Map()); // Added for personality profiles
+
     // Goal management tables
     this.mockTables.set('goals', new Map());
     this.mockTables.set('goal_progress', new Map());
@@ -185,6 +190,13 @@ export class MemStorage implements IStorage {
           is_user: params[2] || true,
           created_at: now
         };
+      case 'personality_profiles': // Mock record for personality profiles
+        return {
+          user_id: params[0],
+          profile_data: params[1] || {},
+          created_at: now,
+          updated_at: now
+        };
       default:
         return {
           id: randomUUID(),
@@ -206,7 +218,7 @@ export class MemStorage implements IStorage {
       following_id: followingId,
       created_at: new Date(),
     };
-    
+
     followsTable.set(followId, follow);
   }
 
@@ -242,7 +254,7 @@ export class MemStorage implements IStorage {
         }
       }
     }
-    
+
     return followers;
   }
 
@@ -264,7 +276,7 @@ export class MemStorage implements IStorage {
         }
       }
     }
-    
+
     return following;
   }
 
@@ -278,7 +290,7 @@ export class MemStorage implements IStorage {
         return true;
       }
     }
-    
+
     return false;
   }
 
@@ -313,7 +325,7 @@ export class MemStorage implements IStorage {
         });
       }
     }
-    
+
     return goals;
   }
 
@@ -326,10 +338,10 @@ export class MemStorage implements IStorage {
       createdAt: now,
       updatedAt: now,
     };
-    
+
     const goalsTable = this.mockTables.get('goals');
     goalsTable?.set(id, goal);
-    
+
     return goal;
   }
 
@@ -353,10 +365,10 @@ export class MemStorage implements IStorage {
       ...progressData,
       createdAt: now,
     };
-    
+
     const progressTable = this.mockTables.get('goal_progress');
     progressTable?.set(id, progress);
-    
+
     return progress;
   }
 
@@ -366,7 +378,7 @@ export class MemStorage implements IStorage {
 
     const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     const recentProgress: GoalProgress[] = [];
-    
+
     for (const id of Array.from(progressTable.keys())) {
       const progress = progressTable.get(id);
       if (progress && 
@@ -386,7 +398,7 @@ export class MemStorage implements IStorage {
         });
       }
     }
-    
+
     return recentProgress.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
@@ -398,10 +410,10 @@ export class MemStorage implements IStorage {
       ...relationshipData,
       createdAt: now,
     };
-    
+
     const relationshipsTable = this.mockTables.get('goal_relationships');
     relationshipsTable?.set(id, relationship);
-    
+
     return relationship;
   }
 
@@ -413,11 +425,51 @@ export class MemStorage implements IStorage {
       ...linkData,
       createdAt: now,
     };
-    
+
     const linksTable = this.mockTables.get('conversation_goal_links');
     linksTable?.set(id, link);
-    
+
     return link;
+  }
+
+  // Store personality profile
+  async storePersonalityProfile(userId: string, profile: any): Promise<void> {
+    // Store personality test results for AI context
+    // In a real implementation, this would save to database
+    console.log(`Storing personality profile for user ${userId}:`, profile);
+    const profilesTable = this.mockTables.get('personality_profiles');
+    if (!profilesTable) return;
+
+    const existingProfile = Array.from(profilesTable.values()).find(p => p.user_id === userId);
+
+    if (existingProfile) {
+      // Update existing profile
+      Object.assign(existingProfile, { profile_data: profile, updated_at: new Date() });
+      profilesTable.set(existingProfile.id, existingProfile);
+    } else {
+      // Create new profile
+      const id = randomUUID();
+      const now = new Date();
+      profilesTable.set(id, {
+        id,
+        user_id: userId,
+        profile_data: profile,
+        created_at: now,
+        updated_at: now
+      });
+    }
+  }
+
+  // Get personality profile
+  async getPersonalityProfile(userId: string): Promise<any> {
+    // Retrieve personality profile for AI context
+    // In a real implementation, this would fetch from database
+    console.log(`Retrieving personality profile for user ${userId}`);
+    const profilesTable = this.mockTables.get('personality_profiles');
+    if (!profilesTable) return null;
+
+    const profile = Array.from(profilesTable.values()).find(p => p.user_id === userId);
+    return profile ? profile.profile_data : null;
   }
 }
 

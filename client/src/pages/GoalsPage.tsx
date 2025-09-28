@@ -169,8 +169,8 @@ export default function GoalsPage() {
               <Target className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-light text-gray-800">Your Growth Journey</h1>
-              <p className="text-gray-600">Tracking your aspirations through the halo of growth</p>
+              <h1 className="text-3xl font-light text-gray-800 dark:text-gray-200">Your Growth Journey</h1>
+              <p className="text-gray-600 dark:text-gray-400">Tracking your aspirations through the halo of growth</p>
             </div>
           </div>
 
@@ -181,48 +181,48 @@ export default function GoalsPage() {
                 <div className="flex items-center gap-2">
                   <Target className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   <div>
-                    <p className="text-2xl font-semibold text-gray-800">{activeGoals.length}</p>
-                    <p className="text-sm text-gray-600">Active Goals</p>
+                    <p className="text-2xl font-semibold text-gray-800 dark:text-gray-200">{activeGoals.length}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Active Goals</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 bg-white/70 backdrop-blur-sm">
+            <Card className="border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
                   <div>
-                    <p className="text-2xl font-semibold text-gray-800">{completedGoals.length}</p>
-                    <p className="text-sm text-gray-600">Completed</p>
+                    <p className="text-2xl font-semibold text-gray-800 dark:text-gray-200">{completedGoals.length}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Completed</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 bg-white/70 backdrop-blur-sm">
+            <Card className="border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-emerald-600" />
+                  <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   <div>
-                    <p className="text-2xl font-semibold text-gray-800">
+                    <p className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
                       {Math.round(activeGoals.reduce((acc, g) => acc + g.progress, 0) / activeGoals.length || 0)}%
                     </p>
-                    <p className="text-sm text-gray-600">Avg Progress</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Avg Progress</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 bg-white/70 backdrop-blur-sm">
+            <Card className="border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-purple-600" />
+                  <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   <div>
-                    <p className="text-2xl font-semibold text-gray-800">
+                    <p className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
                       {activeGoals.filter(g => g.momentum === 'accelerating').length}
                     </p>
-                    <p className="text-sm text-gray-600">Accelerating</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Accelerating</p>
                   </div>
                 </div>
               </CardContent>
@@ -232,14 +232,25 @@ export default function GoalsPage() {
 
         {/* Goals Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-white/70 backdrop-blur-sm">
-            <TabsTrigger value="active" className="data-[state=active]:bg-white">
-              Active Goals ({activeGoals.length})
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="data-[state=active]:bg-white">
-              Completed ({completedGoals.length})
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between mb-6">
+            <TabsList className="grid grid-cols-2 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
+              <TabsTrigger value="active" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+                Active Goals ({activeGoals.length})
+              </TabsTrigger>
+              <TabsTrigger value="completed" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+                Completed ({completedGoals.length})
+              </TabsTrigger>
+            </TabsList>
+            
+            <Button 
+              onClick={() => window.location.href = '/chat'}
+              className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700"
+              data-testid="add-new-goal-button"
+            >
+              <Target className="w-4 h-4 mr-2" />
+              Set New Goal with Bliss
+            </Button>
+          </div>
 
           <TabsContent value="active" className="mt-6">
             <motion.div
@@ -270,7 +281,7 @@ export default function GoalsPage() {
                             </Badge>
                             {getMomentumIcon(goal.momentum)}
                           </div>
-                          <CardTitle className="text-lg font-medium text-gray-800 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                          <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
                             {goal.title}
                           </CardTitle>
                         </div>
@@ -288,8 +299,8 @@ export default function GoalsPage() {
                       {/* Progress Bar */}
                       <div className="mb-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-gray-700">Progress</span>
-                          <span className="text-sm text-gray-600">{goal.progress}%</span>
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">{goal.progress}%</span>
                         </div>
                         <Progress 
                           value={goal.progress} 
@@ -299,7 +310,7 @@ export default function GoalsPage() {
                       </div>
 
                       {/* Meta Information */}
-                      <div className="flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                         <div className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           <span>Last mentioned {getTimeAgo(goal.lastMentioned)}</span>
@@ -325,7 +336,7 @@ export default function GoalsPage() {
                               />
                             ))}
                           </div>
-                          <span className="text-xs text-gray-500">Priority</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">Priority</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <div className="flex gap-1">
@@ -333,12 +344,12 @@ export default function GoalsPage() {
                               <div
                                 key={i}
                                 className={`w-1.5 h-1.5 rounded-full ${
-                                  i < Math.ceil(goal.emotionalInvestment / 2) ? 'bg-pink-400' : 'bg-gray-200'
+                                  i < Math.ceil(goal.emotionalInvestment / 2) ? 'bg-pink-400' : 'bg-gray-200 dark:bg-gray-600'
                                 }`}
                               />
                             ))}
                           </div>
-                          <span className="text-xs text-gray-500">Investment</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">Investment</span>
                         </div>
                       </div>
                     </CardContent>

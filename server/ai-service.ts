@@ -128,6 +128,7 @@ export async function generateAdaptiveBlissResponse(
     emotionalState?: string;
     triggerTopics?: string[];
     preferredActivities?: string[];
+    personalityTraits?: any;
   }
 ): Promise<BlissResponse & {
   adaptationNotes: string;
@@ -205,6 +206,23 @@ User Communication Style: ${patterns.personalizationInsights.communicationStyle}
 Emotional Trajectory: ${patterns.emotionalTrajectory.trend} (${patterns.emotionalTrajectory.riskLevel} risk)
 Detected Distortions: ${patterns.cognitiveDistortions.filter(d => d.detected).map(d => d.type).join(', ') || 'None'}
 Current Phase: ${patterns.growthPhase.phase} (${patterns.growthPhase.confidence}% confidence)
+
+PERSONALITY PROFILE:
+${userProfile?.personalityTraits ? `
+Big Five Traits:
+- Openness: ${userProfile.personalityTraits.openness}% (${userProfile.personalityTraits.openness >= 50 ? 'High - enjoys variety and new experiences' : 'Low - prefers familiar approaches'})
+- Conscientiousness: ${userProfile.personalityTraits.conscientiousness}% (${userProfile.personalityTraits.conscientiousness >= 50 ? 'High - organized and goal-oriented' : 'Low - prefers flexibility and spontaneity'})
+- Extraversion: ${userProfile.personalityTraits.extraversion}% (${userProfile.personalityTraits.extraversion >= 50 ? 'High - gains energy from social interaction' : 'Low - gains energy from solitude'})
+- Agreeableness: ${userProfile.personalityTraits.agreeableness}% (${userProfile.personalityTraits.agreeableness >= 50 ? 'High - cooperative and empathetic' : 'Low - more competitive and direct'})
+- Emotional Stability: ${100 - userProfile.personalityTraits.neuroticism}% (${userProfile.personalityTraits.neuroticism <= 50 ? 'High - emotionally stable and calm' : 'Low - may experience stress more intensely'})
+
+IMPORTANT: Use this personality information to tailor your communication style, suggestions, and approach. For example:
+- High openness: Offer creative, novel approaches
+- High conscientiousness: Provide structured, step-by-step guidance
+- High extraversion: Suggest social activities and external processing
+- High agreeableness: Use gentle, harmonious language
+- High neuroticism: Be extra supportive and reassuring
+` : 'No personality profile available - use general approach'}
 
 ASSOCIATIVE MEMORY CONTEXT:
 ${associativeRecall.memories.length > 0 ? `
