@@ -155,7 +155,7 @@ export default function GoalsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900/20 p-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -176,10 +176,10 @@ export default function GoalsPage() {
 
           {/* Summary Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card className="border-0 bg-white/70 backdrop-blur-sm">
+            <Card className="border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-indigo-600" />
+                  <Target className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   <div>
                     <p className="text-2xl font-semibold text-gray-800">{activeGoals.length}</p>
                     <p className="text-sm text-gray-600">Active Goals</p>
@@ -259,7 +259,7 @@ export default function GoalsPage() {
                   onClick={() => setSelectedGoal(goal)}
                   data-testid={`goal-card-${goal.id}`}
                 >
-                  <Card className="border-0 bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all duration-300 shadow-sm hover:shadow-lg">
+                  <Card className="border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white/90 dark:hover:bg-gray-800/90 transition-all duration-300 shadow-sm hover:shadow-lg">
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">

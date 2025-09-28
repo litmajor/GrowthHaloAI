@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target, Users, CreditCard, Settings, User, ChevronLeft, ChevronRight } from "lucide-react";
+import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target, Users, CreditCard, Settings, User, ChevronLeft, ChevronRight, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import HaloProgressRing from "./HaloProgressRing";
@@ -22,6 +22,7 @@ const navItems = [
   { path: "/journal", icon: BookOpen, label: "Growth Journal" },
   { path: "/intentions", icon: Target, label: "Intentions" },
   { path: "/goals", icon: Target, label: "Goals Journey" },
+  { path: "/personality", icon: Brain, label: "Personality" }, // Added Personality Test
   { path: "/community", icon: Users, label: "Community" },
   { path: "/events", icon: Calendar, label: "Events" },
   { path: "/content", icon: BookOpen, label: "Content" },

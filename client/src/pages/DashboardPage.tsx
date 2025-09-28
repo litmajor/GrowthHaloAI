@@ -383,15 +383,15 @@ export default function DashboardPage() {
                         </Button>
                       </Link>
 
-                      <Link href="/intentions">
+                      <Link href="/goals">
                         <Button
                           variant="outline"
                           className="w-full h-auto p-4 flex flex-col gap-2 hover-elevate"
                         >
                           <Target className="w-5 h-5" />
-                          <span className="font-medium">Set Intentions</span>
+                          <span className="font-medium">Manage Goals</span>
                           <span className="text-xs text-muted-foreground">
-                            Align with authentic growth
+                            Track your growth objectives
                           </span>
                         </Button>
                       </Link>

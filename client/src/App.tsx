@@ -27,6 +27,7 @@ import LandingPage from "./pages/LandingPage";
 import SubscriptionPage from "./pages/SubscriptionPage";
 import FAQPage from "./pages/FAQPage";
 import GoalsPage from "./pages/GoalsPage";
+import PersonalityTestPage from "./pages/PersonalityTestPage";
 
 function Router() {
   return (
@@ -52,6 +53,7 @@ function Router() {
       <Route path="/subscription" component={SubscriptionPage} />
       <Route path="/faq" component={FAQPage} />
       <Route path="/goals" component={GoalsPage} />
+      <Route path="/personality" component={PersonalityTestPage} />
       <Route component={NotFound} />
     </Switch>
   );
