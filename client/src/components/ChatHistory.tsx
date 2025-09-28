@@ -103,6 +103,12 @@ export default function ChatHistory({ userId, onSelectSession, className }: Chat
   const formatDate = (date: Date) => {
     const now = new Date();
     const dateObj = new Date(date); // Ensure it's a Date object
+    
+    // Check if the date is valid
+    if (isNaN(dateObj.getTime())) {
+      return 'Unknown date';
+    }
+    
     const diffInHours = (now.getTime() - dateObj.getTime()) / (1000 * 60 * 60);
     
     if (diffInHours < 24) {
@@ -110,7 +116,7 @@ export default function ChatHistory({ userId, onSelectSession, className }: Chat
     } else if (diffInHours < 48) {
       return 'Yesterday';
     } else {
-      return date.toLocaleDateString();
+      return dateObj.toLocaleDateString(); // Use dateObj instead of date
     }
   };
 

@@ -124,6 +124,201 @@ export default function LandingPage() {
 
       
 
+      {/* Pricing Section */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Choose Your Growth Path
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Every journey is unique. Find the perfect tier to support your transformation 
+            through expansion, contraction, and renewal.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          {/* Free Tier */}
+          <Card className="h-full hover:shadow-lg transition-shadow">
+            <CardHeader className="text-center pb-8">
+              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <CardTitle className="text-xl mb-2">First Steps</CardTitle>
+              <div className="mb-4">
+                <span className="text-3xl font-light">Free</span>
+              </div>
+              <CardDescription>Begin your growth journey with essential tools</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 mb-6 text-sm">
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  Basic halo tracking
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  Limited Bliss interactions (5 per day)
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  Access to one community circle
+                </li>
+              </ul>
+              <Link href="/register">
+                <Button className="w-full">Start Free</Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Growth Tier */}
+          <Card className="h-full hover:shadow-lg transition-shadow ring-2 ring-primary/20">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
+            </div>
+            <CardHeader className="text-center pb-8">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Zap className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle className="text-xl mb-2">Growth</CardTitle>
+              <div className="mb-4">
+                <span className="text-3xl font-light">$19</span>
+                <span className="text-muted-foreground text-sm">/month</span>
+              </div>
+              <CardDescription>Unlock your full potential with comprehensive tools</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 mb-6 text-sm">
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  Full halo tracking and insights
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  Unlimited Bliss conversations
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  All community circles
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  Advanced journaling with AI insights
+                </li>
+              </ul>
+              <Link href="/register">
+                <Button className="w-full bg-primary hover:bg-primary/90">Choose Growth</Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Transformation Tier */}
+          <Card className="h-full hover:shadow-lg transition-shadow">
+            <CardHeader className="text-center pb-8">
+              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
+                <Star className="w-6 h-6 text-purple-600" />
+              </div>
+              <CardTitle className="text-xl mb-2">Transformation</CardTitle>
+              <div className="mb-4">
+                <span className="text-3xl font-light">$39</span>
+                <span className="text-muted-foreground text-sm">/month</span>
+              </div>
+              <CardDescription>Accelerate your journey with personalized guidance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 mb-6 text-sm">
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  Everything in Growth tier
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  1-on-1 monthly coaching sessions
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  Early access to new features
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  Priority community support
+                </li>
+              </ul>
+              <Link href="/register">
+                <Button className="w-full" variant="outline">Transform Now</Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Facilitator Tier */}
+          <Card className="h-full hover:shadow-lg transition-shadow">
+            <CardHeader className="text-center pb-8">
+              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+                <Crown className="w-6 h-6 text-amber-600" />
+              </div>
+              <CardTitle className="text-xl mb-2">Facilitator</CardTitle>
+              <div className="mb-4">
+                <span className="text-3xl font-light">$99</span>
+                <span className="text-muted-foreground text-sm">/month</span>
+              </div>
+              <CardDescription>Professional tools for coaches and therapists</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 mb-6 text-sm">
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  Platform tools for client work
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  Community moderation capabilities
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  Access to facilitator training
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                  White-label options
+                </li>
+              </ul>
+              <Link href="/register">
+                <Button className="w-full" variant="outline">Go Professional</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20 text-center">
         <motion.div

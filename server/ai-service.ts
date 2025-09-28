@@ -317,6 +317,16 @@ export async function generateBlissResponse(
     }
   } catch (error) {
     console.error('Error generating Bliss response:', error);
+    
+    // Return a helpful fallback response when API key is missing
+    if (error.message.includes('OpenAI API key is not configured')) {
+      return {
+        message: "I'm having trouble connecting right now. This appears to be a configuration issue - the OpenAI API key needs to be set up. Please check with your administrator or try again later.",
+        phase: 'expansion',
+        confidence: 50
+      };
+    }
+    
     throw new Error('Failed to generate response');
   }
 }

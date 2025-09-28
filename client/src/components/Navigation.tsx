@@ -24,7 +24,6 @@ const navItems = [
   { path: "/community", icon: Users, label: "Community" },
   { path: "/events", icon: Calendar, label: "Events" },
   { path: "/content", icon: BookOpen, label: "Content" },
-  { path: "/pricing", icon: CreditCard, label: "Pricing" },
   { path: "/subscription", icon: CreditCard, label: "Subscription" }, // Added Subscription page link
 ];
 
