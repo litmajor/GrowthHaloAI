@@ -43,3 +43,51 @@ export const domainAnalogies = pgTable('domain_analogies', {
   reasoning: text('reasoning').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+
+
+// Hypothesis Formation Schema
+export const userHypotheses = pgTable('user_hypotheses', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull(),
+  category: text('category').notNull(), // 'preference' | 'trigger' | 'strength' | 'growth_style' | 'communication'
+  hypothesis: text('hypothesis').notNull(),
+  confidence: real('confidence').notNull().default(0.5),
+  evidence: text('evidence').array().notNull().default([]),
+  counterEvidence: text('counter_evidence').array().notNull().default([]),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  lastTested: timestamp('last_tested').defaultNow().notNull(),
+  testCount: integer('test_count').notNull().default(0),
+  confirmed: boolean('confirmed').notNull().default(false),
+});
+
+export const personalityInsights = pgTable('personality_insights', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull(),
+  dimension: text('dimension').notNull(),
+  profile: text('profile').notNull(),
+  confidence: real('confidence').notNull(),
+  implications: text('implications').array().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const predictiveInsights = pgTable('predictive_insights', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull(),
+  situation: text('situation').notNull(),
+  plannedAction: text('planned_action').notNull(),
+  likelyOutcome: text('likely_outcome').notNull(),
+  confidence: real('confidence').notNull(),
+  basedOn: text('based_on').array().notNull(),
+  preventativeActions: text('preventative_actions').array(),
+  alternativeApproaches: text('alternative_approaches').array(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export type UserHypothesis = typeof userHypotheses.$inferSelect;
+export type InsertUserHypothesis = typeof userHypotheses.$inferInsert;
+export type PersonalityInsight = typeof personalityInsights.$inferSelect;
+export type InsertPersonalityInsight = typeof personalityInsights.$inferInsert;
+export type PredictiveInsight = typeof predictiveInsights.$inferSelect;
+export type InsertPredictiveInsight = typeof predictiveInsights.$inferInsert;

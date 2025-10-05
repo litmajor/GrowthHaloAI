@@ -191,3 +191,93 @@ GET /api/causal-patterns/analogies/:userId - Find cross-domain wisdom
 - Multi-user pattern insights
 - Predictive modeling for outcomes
 - Intervention timing optimization
+
+
+
+## Phase 3.3: Hypothesis Formation
+
+### Overview
+The Hypothesis Formation system builds predictive models of user preferences, patterns, and growth styles. It generates testable hypotheses from accumulated data and refines them through ongoing conversations.
+
+### Features Implemented
+
+#### 1. Hypothesis Generation
+- Analyzes user data (memories, outcomes, emotions, themes)
+- Generates testable hypotheses across 5 categories:
+  - Preferences: What users value, enjoy, avoid
+  - Triggers: What energizes or depletes them
+  - Strengths: Natural abilities and tendencies
+  - Growth Style: How they learn and change
+  - Communication: How they process and express
+
+#### 2. Hypothesis Testing
+- Tests hypotheses against new evidence
+- Updates confidence levels based on supporting/contradicting data
+- Marks hypotheses as confirmed when confidence > 80%
+
+#### 3. Personality Insights
+- Synthesizes confirmed hypotheses into actionable personality profiles
+- Provides dimension-based insights:
+  - Decision-making style
+  - Stress response patterns
+  - Growth orientation
+  - Relationship dynamics
+  - Communication preferences
+
+#### 4. Predictive Outcomes
+- Predicts likely outcomes based on past patterns
+- Identifies potential pitfalls
+- Suggests preventative actions
+- Recommends alternative approaches that worked before
+
+### API Endpoints
+
+```
+POST /api/hypotheses/generate/:userId - Generate new hypotheses
+GET /api/hypotheses/:userId - Get user's hypotheses
+POST /api/hypotheses/:hypothesisId/test - Test hypothesis with new evidence
+GET /api/personality-insights/:userId - Get personality insights
+POST /api/predict-outcome/:userId - Predict outcome of planned action
+```
+
+### UI Components
+
+1. **PersonalityInsights** - Displays synthesized personality profile
+2. **PredictiveOutcome** - Interactive outcome prediction tool
+3. **Updated PatternsPage** - Tabbed interface for patterns, insights, and predictions
+
+### Database Schema
+
+- `user_hypotheses` - Stores testable hypotheses with evidence
+- `personality_insights` - Stores synthesized personality dimensions
+- `predictive_insights` - Stores outcome predictions
+
+### Usage Example
+
+```typescript
+// Generate hypotheses for a user
+const hypotheses = await hypothesisFormationService.generateHypotheses(userId);
+
+// Test a hypothesis with new evidence
+const result = await hypothesisFormationService.testHypothesis(
+  hypothesisId,
+  "User mentioned feeling energized after morning workout"
+);
+
+// Get personality insights
+const insights = await hypothesisFormationService.getPersonalityInsights(userId);
+
+// Predict outcome
+const prediction = await hypothesisFormationService.predictOutcome(
+  userId,
+  "Work through the weekend",
+  "Behind on project deadline"
+);
+```
+
+### Next Steps
+
+- Integrate hypothesis testing into main chat flow
+- Add automatic hypothesis generation triggers
+- Build dashboard showing hypothesis evolution over time
+- Implement A/B testing for prediction accuracy

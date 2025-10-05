@@ -17,6 +17,7 @@ import { users, conversations, messages, dailyCheckIns, intentions, values, goal
 import { memories, emotionalStates, conversationTopics } from '../shared/growth-schema';
 import { beliefs, contradictions, cognitiveDistortions } from '../shared/phase2-schema';
 import { causalReasoningService } from './causal-reasoning-service';
+import { hypothesisFormationService } from './hypothesis-formation-service'; // Import Hypothesis Formation Service
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Chat endpoint
@@ -272,6 +273,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Belief revision detection error:', error);
       res.status(500).json({ error: 'Failed to detect belief revision' });
+    }
+  });
+
+  // Phase 3: Hypothesis Formation routes
+  app.post('/api/hypotheses/generate/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const hypotheses = await hypothesisFormationService.generateHypotheses(userId);
+      res.json(hypotheses);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get('/api/hypotheses/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const confirmed = req.query.confirmed === 'true' ? true : req.query.confirmed === 'false' ? false : undefined;
+      const hypotheses = await hypothesisFormationService.getUserHypotheses(userId, confirmed);
+      res.json(hypotheses);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/hypotheses/:hypothesisId/test', async (req, res) => {
+    try {
+      const hypothesisId = parseInt(req.params.hypothesisId);
+      const { evidence } = req.body;
+      const result = await hypothesisFormationService.testHypothesis(hypothesisId, evidence);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get('/api/personality-insights/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const insights = await hypothesisFormationService.getPersonalityInsights(userId);
+      res.json(insights);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/predict-outcome/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { plannedAction, context } = req.body;
+      const prediction = await hypothesisFormationService.predictOutcome(userId, plannedAction, context);
+      res.json(prediction);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   });
 
