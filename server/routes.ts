@@ -67,37 +67,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // New adaptive chat endpoint
   app.post("/api/bliss/adaptive-chat", async (req, res) => {
+    // Support both authenticated users and demo/guest users
     const user = req.user as User;
-    if (!user) {
-      return res.status(401).send("Unauthorized");
-    }
-
-    const { message: userMessage, conversationId, conversationHistory } = req.body;
+    const { message: userMessage, conversationId, conversationHistory, userId: bodyUserId } = req.body;
+    
+    // Use authenticated user ID or fall back to userId from request body (for demo/guest users)
+    const effectiveUserId = user?.id || bodyUserId || 'demo-user';
 
     try {
       // Extract and store memories from user message
-      await enhancedMemoryService.extractAndStoreMemories(userMessage, user.id);
+      await enhancedMemoryService.extractAndStoreMemories(userMessage, effectiveUserId);
 
       // PHASE 2: Extract beliefs from message
-      await contradictionDetectionService.extractBeliefs(userMessage, user.id);
+      await contradictionDetectionService.extractBeliefs(userMessage, effectiveUserId);
 
       // PHASE 2: Get associative recalls
       const recalls = await associativeRecallService.recall(
-        user.id,
+        effectiveUserId,
         userMessage,
         conversationHistory
       );
 
       // PHASE 2: Detect contradictions
       const contradictionsFound = await contradictionDetectionService.detectContradictions(
-        user.id,
+        effectiveUserId,
         userMessage
       );
 
       // PHASE 2: Detect cognitive distortions
       const distortions = await contradictionDetectionService.detectCognitiveDistortions(
         userMessage,
-        user.id
+        effectiveUserId
       );
 
       // Build enhanced context
@@ -118,13 +118,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Store user message
-      await storage.saveMessage(user.id, conversationId || `conv_${Date.now()}`, 'user', userMessage);
+      await storage.saveMessage(effectiveUserId, conversationId || `conv_${Date.now()}`, 'user', userMessage);
 
       // Use AI service for adaptive chat with enhanced context
       const systemPrompt = getSystemPrompt() + (enhancedContext ? '\n\n' + enhancedContext : '');
 
       const stream = await aiService.adaptiveChatStream(
-        user.id,
+        effectiveUserId,
         userMessage,
         conversationId,
         conversationHistory,
@@ -146,7 +146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Store assistant message after stream ends
-      await storage.saveMessage(user.id, conversationId || `conv_${Date.now()}`, 'assistant', assistantMessage);
+      await storage.saveMessage(effectiveUserId, conversationId || `conv_${Date.now()}`, 'assistant', assistantMessage);
 
       res.end();
 
