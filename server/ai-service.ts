@@ -158,7 +158,7 @@ export async function generateAdaptiveBlissResponse(
     // Perform associative recall to surface relevant past memories
     const emotionalContext = patterns.emotionalTrajectory.trend === 'ascending' ? 0.5 : 
                             patterns.emotionalTrajectory.trend === 'descending' ? -0.5 : 0;
-    
+
     const associativeRecall = await advancedMemory.recallAssociativeMemories(
       userId,
       userMessage,
@@ -331,7 +331,7 @@ Respond with enhanced JSON:
         }
       };
     }
-    
+
     throw new Error('No adaptive response');
   } catch (error) {
     console.error('Adaptive response error:', error);
@@ -386,7 +386,7 @@ export async function generateBlissResponse(
     }
   } catch (error) {
     console.error('Error generating Bliss response:', error);
-    
+
     // Return a helpful fallback response when API key is missing
     if (error.message.includes('OpenAI API key is not configured')) {
       return {
@@ -395,7 +395,7 @@ export async function generateBlissResponse(
         confidence: 50
       };
     }
-    
+
     throw new Error('Failed to generate response');
   }
 }
@@ -532,7 +532,7 @@ Respond in JSON format:
         }
       };
     }
-    
+
     throw new Error('No analysis response');
   } catch (error) {
     console.error('Advanced pattern analysis error:', error);
@@ -551,6 +551,7 @@ Respond in JSON format:
 }
 
 export async function detectGrowthPhase(
+  userId: string, // Added userId for potential future use (e.g., fetching user-specific data)
   userMessage: string, 
   context?: {
     recentEntries?: string[];

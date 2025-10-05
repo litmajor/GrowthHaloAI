@@ -253,3 +253,106 @@ export type ConversationGoalLink = typeof conversationGoalLinks.$inferSelect;
 export type InsertConversationGoalLink = z.infer<typeof insertConversationGoalLinkSchema>;
 export type GoalMilestone = typeof goalMilestones.$inferSelect;
 export type InsertGoalMilestone = z.infer<typeof insertGoalMilestoneSchema>;
+
+// Memory System Tables
+export const memories = pgTable("memories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  conversationId: varchar("conversation_id"),
+  content: text("content").notNull(),
+  memoryType: text("memory_type", { 
+    enum: ["insight", "goal", "value", "pattern", "emotion"] 
+  }).notNull(),
+  emotionalValence: real("emotional_valence").default(0), // -1 to 1
+  importance: real("importance").default(0.5), // 0 to 1
+  tags: jsonb("tags").default([]), // Array of strings
+  relatedMemoryIds: jsonb("related_memory_ids").default([]), // Array of memory IDs
+  embedding: jsonb("embedding"), // Vector embedding for semantic search
+  createdAt: timestamp("created_at").defaultNow(),
+  lastAccessedAt: timestamp("last_accessed_at").defaultNow(),
+  accessCount: integer("access_count").default(0),
+});
+
+export const conversationThemes = pgTable("conversation_themes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  theme: text("theme").notNull(),
+  category: text("category", {
+    enum: ["work", "relationships", "health", "personal_growth", "creativity", "other"]
+  }).default("other"),
+  firstMentioned: timestamp("first_mentioned").defaultNow(),
+  lastMentioned: timestamp("last_mentioned").defaultNow(),
+  frequency: integer("frequency").default(1),
+  relatedMemoryIds: jsonb("related_memory_ids").default([]),
+  emotionalTrend: text("emotional_trend", { 
+    enum: ["improving", "declining", "stable"] 
+  }).default("stable"),
+  averageValence: real("average_valence").default(0),
+});
+
+// Emotional Tracking Tables
+export const emotionalDataPoints = pgTable("emotional_data_points", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  timestamp: timestamp("timestamp").defaultNow(),
+  valence: real("valence").notNull(), // -1 to 1
+  arousal: real("arousal").notNull(), // 0 to 1
+  dominantEmotion: text("dominant_emotion").notNull(),
+  secondaryEmotions: jsonb("secondary_emotions").default([]),
+  intensity: real("intensity").default(0.5), // 0 to 1
+  context: text("context"),
+  growthPhase: text("growth_phase", { 
+    enum: ["expansion", "contraction", "renewal"] 
+  }),
+  journalEntryId: varchar("journal_entry_id").references(() => journalEntries.id),
+  conversationId: varchar("conversation_id"),
+});
+
+export const emotionalPatterns = pgTable("emotional_patterns", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  patternType: text("pattern_type", { 
+    enum: ["daily_cycle", "weekly_cycle", "trigger_based", "phase_transition"] 
+  }).notNull(),
+  description: text("description").notNull(),
+  confidence: real("confidence").default(0.5),
+  firstDetected: timestamp("first_detected").defaultNow(),
+  lastConfirmed: timestamp("last_confirmed").defaultNow(),
+  triggerFactors: jsonb("trigger_factors").default([]),
+  frequency: integer("frequency").default(1),
+});
+
+// Memory schemas
+export const insertMemorySchema = createInsertSchema(memories).omit({
+  id: true,
+  createdAt: true,
+  lastAccessedAt: true,
+  accessCount: true,
+});
+
+export const insertConversationThemeSchema = createInsertSchema(conversationThemes).omit({
+  id: true,
+  firstMentioned: true,
+  lastMentioned: true,
+});
+
+export const insertEmotionalDataPointSchema = createInsertSchema(emotionalDataPoints).omit({
+  id: true,
+  timestamp: true,
+});
+
+export const insertEmotionalPatternSchema = createInsertSchema(emotionalPatterns).omit({
+  id: true,
+  firstDetected: true,
+  lastConfirmed: true,
+});
+
+// Memory types
+export type Memory = typeof memories.$inferSelect;
+export type InsertMemory = z.infer<typeof insertMemorySchema>;
+export type ConversationTheme = typeof conversationThemes.$inferSelect;
+export type InsertConversationTheme = z.infer<typeof insertConversationThemeSchema>;
+export type EmotionalDataPoint = typeof emotionalDataPoints.$inferSelect;
+export type InsertEmotionalDataPoint = z.infer<typeof insertEmotionalDataPointSchema>;
+export type EmotionalPattern = typeof emotionalPatterns.$inferSelect;
+export type InsertEmotionalPattern = z.infer<typeof insertEmotionalPatternSchema>;

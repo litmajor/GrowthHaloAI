@@ -8,6 +8,8 @@ import { subscriptionService } from "./subscription-service";
 import { paymentService } from "./payment-service";
 import { advancedAnalytics } from './analytics-service';
 import { eventsService } from './events-service';
+import { User } from './auth'; // Assuming User type is defined here
+import * as aiService from "./ai-service"; // Import aiService for adaptiveChat
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Chat endpoint
@@ -57,21 +59,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // New adaptive chat endpoint
   app.post("/api/bliss/adaptive-chat", async (req, res) => {
-    try {
-      const { message, conversationHistory = [], userId, userProfile } = req.body;
+    const user = req.user as User;
+    if (!user) {
+      return res.status(401).send("Unauthorized");
+    }
 
-      const { generateAdaptiveBlissResponse } = await import("./ai-service");
-      const response = await generateAdaptiveBlissResponse(
-        message,
-        userId,
-        conversationHistory,
-        userProfile
+    const { message, conversationId } = req.body;
+
+    try {
+      // Extract memories and emotions from the message
+      const { enhancedMemoryService } = await import("./enhanced-memory-service");
+      const extraction = await enhancedMemoryService.extractFromMessage(
+        user.id,
+        conversationId || `conv_${Date.now()}`,
+        message
       );
 
-      res.json(response);
-    } catch (error) {
+      // Find relevant past memories for context
+      const relevantMemories = await enhancedMemoryService.findRelevantMemories(
+        user.id,
+        message,
+        3
+      );
+
+      // Get AI response with memory context
+      const response = await aiService.adaptiveChat(user.id, message, conversationId, relevantMemories);
+
+      res.json({
+        ...response,
+        memoryExtraction: extraction,
+      });
+    } catch (error: any) {
       console.error("Adaptive chat error:", error);
-      res.status(500).json({ error: "Failed to generate adaptive response" });
+      res.status(500).json({ error: error.message });
     }
   });
 
@@ -777,6 +797,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching personality profile:", error);
       res.status(500).json({ error: "Failed to fetch personality profile" });
+    }
+  });
+
+  // Subscription routes
+  app.post("/api/subscription/create-checkout", async (req, res) => {
+    try {
+      const user = req.user as User;
+      if (!user) {
+        return res.status(401).send("Unauthorized");
+      }
+      const { tier } = req.body;
+      const session = await subscriptionService.createCheckoutSession(user.id, tier);
+      res.json({ url: session.url });
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Memory & Emotional Intelligence routes
+  app.get("/api/emotional-trajectory", async (req, res) => {
+    try {
+      const user = req.user as User;
+      if (!user) {
+        return res.status(401).send("Unauthorized");
+      }
+
+      const days = parseInt(req.query.days as string) || 30;
+      const { enhancedMemoryService } = await import("./enhanced-memory-service");
+
+      const dataPoints = await enhancedMemoryService.getEmotionalTrajectory(user.id, days);
+
+      // Calculate trend
+      const valences = dataPoints.map(d => d.valence);
+      const trend = valences.length > 1 ? 
+        (valences[valences.length - 1] - valences[0]) / valences.length : 0;
+
+      res.json({
+        dataPoints,
+        trend,
+        patterns: [], // Will be populated by pattern detection in future
+      });
+    } catch (error: any) {
+      console.error("Emotional trajectory error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/conversation-themes", async (req, res) => {
+    try {
+      const user = req.user as User;
+      if (!user) {
+        return res.status(401).send("Unauthorized");
+      }
+
+      const { enhancedMemoryService } = await import("./enhanced-memory-service");
+      const themes = await enhancedMemoryService.getUserThemes(user.id);
+
+      res.json(themes);
+    } catch (error: any) {
+      console.error("Themes error:", error);
+      res.status(500).json({ error: error.message });
     }
   });
 

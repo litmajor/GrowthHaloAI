@@ -11,6 +11,9 @@ import HaloProgressRing from "../components/HaloProgressRing";
 import PhaseIndicator from "../components/PhaseIndicator";
 import WeeklyInsights from "../components/WeeklyInsights";
 import MemoryInsights from '@/components/MemoryInsights'; // Import MemoryInsights component
+import EmotionalTrajectory from '@/components/EmotionalTrajectory'; // Import EmotionalTrajectory component
+import ThemeCloud from '@/components/ThemeCloud'; // Import ThemeCloud component
+
 
 import { ResponsiveContainer } from "@/components/ui/responsive-container";
 import { cn } from "@/lib/utils";
@@ -495,6 +498,8 @@ export default function DashboardPage() {
             {/* New Memory Tab Content */}
             <TabsContent value="memory" className="space-y-6">
               <MemoryInsights userId="current-user" />
+              <EmotionalTrajectory userId="current-user" />
+              <ThemeCloud userId="current-user" />
             </TabsContent>
 
             {/* Community Tab Content */}
