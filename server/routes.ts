@@ -276,6 +276,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Phase 4.2: Dormant Concept Reactivation routes
+  app.get('/api/dormant-concepts/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { dormantConceptService } = await import('./dormant-concept-service');
+      const concepts = await dormantConceptService.identifyDormantConcepts(userId);
+      res.json(concepts);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/dormant-concepts/check-relevance', async (req, res) => {
+    try {
+      const { dormantConcepts, currentMessage, currentContext } = req.body;
+      const { dormantConceptService } = await import('./dormant-concept-service');
+      const relevant = await dormantConceptService.checkRelevance(
+        dormantConcepts,
+        currentMessage,
+        currentContext
+      );
+      res.json(relevant);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/creative-insights/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { challenge } = req.body;
+      const { dormantConceptService } = await import('./dormant-concept-service');
+      const bridges = await dormantConceptService.bridgeDistantConcepts(userId, challenge);
+      res.json(bridges);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Phase 4: Meta-Memory routes
   app.get('/api/ideas/:userId', async (req, res) => {
     try {
