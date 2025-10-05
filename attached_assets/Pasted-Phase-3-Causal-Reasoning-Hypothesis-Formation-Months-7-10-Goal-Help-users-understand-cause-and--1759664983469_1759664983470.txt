@@ -1,0 +1,314 @@
+Phase 3: Causal Reasoning & Hypothesis Formation (Months 7-10)
+Goal
+Help users understand cause-and-effect in their lives and build a model of their unique patterns.
+3.1 Causal Reasoning Engine
+What It Does:
+
+Identifies what actions led to what outcomes
+Helps users see patterns: "When you X, Y tends to happen"
+Suggests what might work based on past success
+
+Schema:
+typescriptinterface CausalRelationship {
+  id: string;
+  userId: string;
+  cause: string;
+  effect: string;
+  confidence: number; // 0-1, based on evidence
+  domain: 'work' | 'relationships' | 'health' | 'creativity' | 'wellbeing';
+  evidence: string[]; // Conversation IDs where pattern observed
+  firstObserved: Date;
+  lastConfirmed: Date;
+  observationCount: number;
+  contextFactors?: string[]; // Conditions under which this holds true
+}
+
+interface OutcomeAnalysis {
+  id: string;
+  userId: string;
+  situation: string;
+  approach: string;
+  outcome: string;
+  outcomeQuality: 'positive' | 'negative' | 'mixed' | 'neutral';
+  contributingFactors: string[];
+  timestamp: Date;
+  growthPhase: string;
+}
+Detection Service:
+typescript// server/services/causalReasoningService.ts
+
+export class CausalReasoningService {
+  // Extract causal relationships from conversation
+  async extractCausalRelationships(
+    userId: string,
+    message: string
+  ): Promise<CausalRelationship[]> {
+    const analysis = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{
+        role: "system",
+        content: `Identify cause-and-effect relationships in this message.
+        
+        Look for patterns like:
+        - "When I do X, Y happens"
+        - "After I started X, I noticed Y"
+        - "X helped me Y"
+        - "X made me feel Y"
+        - "Because of X, Y occurred"
+        
+        Return JSON array of relationships:
+        {
+          cause: string (the action/condition),
+          effect: string (the result/outcome),
+          confidence: number (0-1),
+          domain: category,
+          evidence: quote from message,
+          contextFactors: any conditions mentioned
+        }`
+      }, {
+        role: "user",
+        content: message
+      }]
+    });
+
+    const relationships = JSON.parse(analysis.choices[0].message.content);
+    
+    // Store or update existing relationships
+    for (const rel of relationships) {
+      await this.updateOrCreateRelationship(userId, rel);
+    }
+
+    return relationships;
+  }
+
+  // Find confirmed patterns
+  async getPatterns(
+    userId: string,
+    domain?: string,
+    minConfidence: number = 0.6
+  ): Promise<CausalRelationship[]> {
+    let query = db.select()
+      .from(causalRelationships)
+      .where(eq(causalRelationships.userId, userId))
+      .where(gte(causalRelationships.confidence, minConfidence))
+      .where(gte(causalRelationships.observationCount, 2)); // Must be observed at least twice
+
+    if (domain) {
+      query = query.where(eq(causalRelationships.domain, domain));
+    }
+
+    return await query.orderBy(desc(causalRelationships.confidence));
+  }
+
+  // Suggest actions based on past success
+  async suggestActions(
+    userId: string,
+    currentSituation: string,
+    desiredOutcome: string
+  ): Promise<ActionSuggestion[]> {
+    // Find similar past situations
+    const pastOutcomes = await db.select()
+      .from(outcomeAnalyses)
+      .where(eq(outcomeAnalyses.userId, userId))
+      .where(eq(outcomeAnalyses.outcomeQuality, 'positive'));
+
+    // Use AI to find analogies
+    const analysis = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{
+        role: "system",
+        content: `Given this current situation and desired outcome, 
+        find relevant patterns from past successes.
+        
+        Current: ${currentSituation}
+        Desired: ${desiredOutcome}
+        
+        Past successes:
+        ${pastOutcomes.map(o => `
+          Situation: ${o.situation}
+          Approach: ${o.approach}
+          Outcome: ${o.outcome}
+        `).join('\n')}
+        
+        Return JSON array of suggestions based on what worked before:
+        {
+          suggestedAction: string,
+          reasoning: string (why this might work),
+          pastExample: string (reference to past success),
+          confidence: number (0-1)
+        }`
+      }]
+    });
+
+    return JSON.parse(analysis.choices[0].message.content);
+  }
+
+  // Analyze what's working vs. what's not
+  async analyzeApproaches(
+    userId: string,
+    domain: string
+  ): Promise<ApproachAnalysis> {
+    const outcomes = await db.select()
+      .from(outcomeAnalyses)
+      .where(eq(outcomeAnalyses.userId, userId))
+      .where(eq(outcomeAnalyses.domain, domain));
+
+    // Cluster by approach type
+    const approaches = new Map<string, OutcomeAnalysis[]>();
+    for (const outcome of outcomes) {
+      const key = outcome.approach;
+      if (!approaches.has(key)) approaches.set(key, []);
+      approaches.get(key)!.push(outcome);
+    }
+
+    // Calculate success rates
+    const analysis = Array.from(approaches.entries()).map(([approach, outcomes]) => {
+      const positiveCount = outcomes.filter(o => o.outcomeQuality === 'positive').length;
+      const successRate = positiveCount / outcomes.length;
+      
+      return {
+        approach,
+        successRate,
+        sampleSize: outcomes.length,
+        examples: outcomes.slice(0, 3) // Top 3 examples
+      };
+    }).sort((a, b) => b.successRate - a.successRate);
+
+    return {
+      domain,
+      mostEffective: analysis[0],
+      leastEffective: analysis[analysis.length - 1],
+      allApproaches: analysis
+    };
+  }
+}
+User-Facing Examples:
+typescript// When user asks for advice
+async function handleAdviceRequest(
+  userId: string,
+  situation: string
+): Promise<string> {
+  const patterns = await causalReasoningService.getPatterns(userId);
+  const suggestions = await causalReasoningService.suggestActions(
+    userId,
+    situation,
+    "positive resolution"
+  );
+
+  return `Based on what I've learned about you:
+
+**Patterns I've noticed:**
+${patterns.slice(0, 3).map(p => 
+  `• When you ${p.cause}, you tend to ${p.effect} (I've seen this ${p.observationCount} times)`
+).join('\n')}
+
+**What might help here:**
+${suggestions.slice(0, 2).map(s =>
+  `• ${s.suggestedAction}\n  Why: ${s.reasoning}\n  Similar to: ${s.pastExample}`
+).join('\n\n')}
+
+These are based on what's worked for you before. What resonates?`;
+}
+Example Conversation:
+User: "I'm stressed about this presentation tomorrow."
+
+Bliss: "I've noticed a pattern with you and high-stakes presentations: 
+When you prepare your outline days in advance but wait until the night 
+before to rehearse, you usually feel anxious. But when you do a practice 
+run 2-3 days before (like you did for that client pitch in August), you 
+feel much more confident and the presentation goes better.
+
+I also remember that taking a walk before big presentations helps you 
+clear your head—you mentioned that worked really well for your team 
+meeting last month.
+
+Based on that, maybe:
+1. Do a full practice run today (not tomorrow morning)
+2. Take a walk tomorrow before the presentation
+
+Does that feel right for this situation?"
+
+3.2 Analogical Thinking (Cross-Domain Pattern Transfer)
+What It Does:
+
+Finds similar challenges across different life domains
+Suggests solutions from one area that might work in another
+"This career challenge is like that relationship issue you solved"
+
+Implementation:
+typescriptinterface DomainAnalogy {
+  sourceId: string; // Original situation ID
+  sourceDomain: string;
+  sourceSituation: string;
+  sourceSolution: string;
+  targetDomain: string;
+  targetSituation: string;
+  analogyStrength: number; // 0-1
+  transferability: number; // How well solution might transfer
+  reasoning: string;
+}
+
+async function findAnalogies(
+  userId: string,
+  currentSituation: string,
+  currentDomain: string
+): Promise<DomainAnalogy[]> {
+  // Get past solved problems from other domains
+  const pastSolutions = await db.select()
+    .from(outcomeAnalyses)
+    .where(eq(outcomeAnalyses.userId, userId))
+    .where(ne(outcomeAnalyses.domain, currentDomain))
+    .where(eq(outcomeAnalyses.outcomeQuality, 'positive'));
+
+  // Find structural similarities
+  const analogyAnalysis = await openai.chat.completions.create({
+    model: "gpt-4",
+    messages: [{
+      role: "system",
+      content: `Find analogies between this current challenge and past 
+      successes from other life domains.
+      
+      Current situation (${currentDomain}): ${currentSituation}
+      
+      Past successes from other domains:
+      ${pastSolutions.map(s => `
+        Domain: ${s.domain}
+        Situation: ${s.situation}
+        Solution: ${s.approach}
+        Outcome: ${s.outcome}
+      `).join('\n')}
+      
+      Look for structural similarities:
+      - Similar relationship dynamics (power imbalance, collaboration, conflict)
+      - Similar emotional challenges (fear, uncertainty, overwhelm)
+      - Similar constraints (time, resources, support)
+      - Similar goals (growth, connection, achievement)
+      
+      Return JSON array of top 3 analogies with:
+      {
+        sourceId: which past situation,
+        analogyStrength: 0-1,
+        transferability: 0-1,
+        reasoning: why they're similar,
+        adaptedSolution: how to apply the past solution here
+      }`
+    }]
+  });
+
+  return JSON.parse(analogyAnalysis.choices[0].message.content);
+}
+Example Usage:
+User: "My new project at work feels overwhelming. Too many stakeholders 
+with different opinions and I don't know how to manage them all."
+
+Bliss: "This reminds me of something from a completely different part of 
+your life: Remember when you were planning your wedding and had to balance 
+what your parents wanted, what your partner wanted, and what you wanted? 
+You felt similarly overwhelmed by competing needs.
+
+What worked then was creating a 'non-negotiables' list—the 3 things that 
+truly mattered to you—and being flexible on everything else. That helped 
+you navigate those competing voices without losing yourself.
+
+Could that approach work here? What are the 2-3 non-negotiables for this 
+project that you need to protect, while being flexible on the rest?"
