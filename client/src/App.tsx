@@ -12,10 +12,10 @@ import CommunityPage from "./pages/CommunityPage";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
-import DashboardPage from "@/pages/DashboardPage";
+import DashboardPage from './pages/DashboardPage';
 import JournalPage from "@/pages/JournalPage";
 import IntentionsPage from "./pages/IntentionsPage";
-import PricingPage from "./pages/PricingPage";
+import PricingPage from "@/pages/PricingPage";
 import NotFound from "@/pages/not-found";
 import { queryClient } from "./lib/queryClient";
 import ProfilePage from "./pages/ProfilePage";
@@ -28,6 +28,7 @@ import SubscriptionPage from "./pages/SubscriptionPage";
 import FAQPage from "./pages/FAQPage";
 import GoalsPage from "./pages/GoalsPage";
 import PersonalityTestPage from "./pages/PersonalityTestPage";
+import PatternsPage from './pages/PatternsPage';
 
 function Router() {
   return (
@@ -48,6 +49,8 @@ function Router() {
       <Route path="/settings" component={SettingsPage} />
       <Route path="/events" component={EventsPage} />
       <Route path="/content" component={ContentPage} />
+      <Route path="/goals" component={GoalsPage} />
+      <Route path="/patterns" component={PatternsPage} />
       <Route path="/analytics" component={AnalyticsPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route path="/subscription" component={SubscriptionPage} />
@@ -63,7 +66,7 @@ function App() {
   //todo: remove mock functionality - get real user phase data from backend
   const currentPhase = "expansion" as const;
   const phaseConfidence = 75;
-  
+
   // Get current location to determine if sidebar should be shown
   const [location] = useLocation();
   const showSidebar = !["/", "/login", "/register", "/faq"].includes(location);

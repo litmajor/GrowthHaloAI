@@ -16,6 +16,7 @@ import { contradictionDetectionService } from './contradiction-detection-service
 import { users, conversations, messages, dailyCheckIns, intentions, values, goals, growthMetrics, type InsertUser } from '../shared/schema';
 import { memories, emotionalStates, conversationTopics } from '../shared/growth-schema';
 import { beliefs, contradictions, cognitiveDistortions } from '../shared/phase2-schema';
+import { causalReasoningService } from './causal-reasoning-service';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Chat endpoint
@@ -256,7 +257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (revision && !revision.celebrated) {
         const celebration = beliefRevisionService.generateCelebrationMessage(revision);
         await beliefRevisionService.markCelebrated(revision.id);
-        
+
         res.json({
           revision,
           celebration,
@@ -274,6 +275,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Phase 3: Causal reasoning endpoints
+  app.get('/api/causal-patterns/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const domain = req.query.domain as string | undefined;
+      const patterns = await causalReasoningService.getPatterns(userId, domain);
+      res.json(patterns);
+    } catch (error) {
+      console.error('Error fetching causal patterns:', error);
+      res.status(500).json({ error: 'Failed to fetch patterns' });
+    }
+  });
+
+  app.post('/api/causal-patterns/suggest-actions', async (req, res) => {
+    try {
+      const { userId, currentSituation, desiredOutcome } = req.body;
+      const suggestions = await causalReasoningService.suggestActions(
+        userId,
+        currentSituation,
+        desiredOutcome
+      );
+      res.json(suggestions);
+    } catch (error) {
+      console.error('Error suggesting actions:', error);
+      res.status(500).json({ error: 'Failed to suggest actions' });
+    }
+  });
+
+  app.get('/api/causal-patterns/analogies/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { situation, domain } = req.query;
+      const analogies = await causalReasoningService.findAnalogies(
+        userId,
+        situation as string,
+        domain as string
+      );
+      res.json(analogies);
+    } catch (error) {
+      console.error('Error finding analogies:', error);
+      res.status(500).json({ error: 'Failed to find analogies' });
+    }
+  });
+
+  // Belief revision endpoints
   app.get('/api/belief-revisions', async (req, res) => {
     try {
       const userId = req.query.userId as string;
