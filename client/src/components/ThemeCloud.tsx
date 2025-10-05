@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-export function ThemeCloud() {
+export default function ThemeCloud() {
   const { data: themes, isLoading } = useQuery({
     queryKey: ['conversation-themes'],
     queryFn: async () => {

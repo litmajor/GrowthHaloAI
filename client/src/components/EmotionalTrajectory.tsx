@@ -6,7 +6,7 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, ReferenceL
 import { format } from "date-fns";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-export function EmotionalTrajectory() {
+export default function EmotionalTrajectory() {
   const { data: trajectory, isLoading } = useQuery({
     queryKey: ['emotional-trajectory'],
     queryFn: async () => {
