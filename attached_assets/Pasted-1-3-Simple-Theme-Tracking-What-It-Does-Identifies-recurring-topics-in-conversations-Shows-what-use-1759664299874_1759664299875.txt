@@ -1,0 +1,97 @@
+1.3 Simple Theme Tracking
+What It Does:
+
+Identifies recurring topics in conversations
+Shows what user talks about most
+Connects related conversations
+
+Implementation:
+typescriptinterface ConversationTopic {
+  id: string;
+  userId: string;
+  topic: string;
+  category: 'work' | 'relationships' | 'health' | 'personal_growth' | 'creativity' | 'other';
+  firstMentioned: Date;
+  lastMentioned: Date;
+  mentionCount: number;
+  associatedEmotions: string[];
+  relatedTopics: string[];
+  growthPhaseWhenDiscussed: string[];
+}
+
+// Extract topics from conversation
+async function extractTopics(message: string): Promise<string[]> {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4",
+    messages: [{
+      role: "system",
+      content: `Extract 1-3 key topics from this message. Topics should be:
+      - Specific enough to be meaningful (not just "work" but "career transition to design")
+      - Consistent across mentions (use same phrasing)
+      - Related to personal growth, life decisions, or meaningful experiences
+      Return as JSON array of strings.`
+    }, {
+      role: "user",
+      content: message
+    }]
+  });
+
+  return JSON.parse(response.choices[0].message.content);
+}
+Dashboard Widget:
+typescript// Show top themes in sidebar
+export function ThemeCloud() {
+  const { data: themes } = useQuery({
+    queryKey: ['conversation-themes'],
+    queryFn: () => fetch('/api/themes').then(r => r.json())
+  });
+
+  return (
+    <div className="space-y-2">
+      <h4 className="text-sm font-medium text-gray-700">What You're Exploring</h4>
+      <div className="flex flex-wrap gap-2">
+        {themes?.map(theme => (
+          <Badge 
+            key={theme.topic}
+            variant="secondary"
+            className="cursor-pointer hover:bg-purple-100"
+            style={{ 
+              fontSize: `${0.75 + (theme.mentionCount / 20)}rem` 
+            }}
+          >
+            {theme.topic}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+}
+User-Facing Impact:
+
+Visual representation of what matters to them
+Easy way to jump back to related conversations
+Bliss can say: "You've been exploring career fulfillment a lot lately"
+
+
+Phase 1 Deliverables
+Week 1-4: Database & Backend Infrastructure
+
+ Create memory, emotional, and theme database tables
+ Set up vector embeddings for semantic search
+ Build memory extraction service
+ Build emotional analysis service
+ Create API endpoints for data retrieval
+
+Week 5-8: Core Services
+
+ Implement memory relevance scoring algorithm
+ Build emotional trajectory analysis
+ Create theme extraction and tracking
+ Integration with existing chat system
+
+Week 9-12: Frontend & Polish
+
+ Add emotional trajectory dashboard widget
+ Create theme cloud visualization
+ Update Bliss responses to reference memories
+ User testing and refinement
