@@ -1,13 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
-import { Sparkles, Zap, Star, Crown, ArrowRight, Circle, Heart, Brain, Users } from 'lucide-react';
+import { Sparkles, Zap, Star, Crown, ArrowRight, Circle, Heart, Brain, Users, MessageCircle, Lightbulb, Target, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function LandingPage() {
+  const [activeExample, setActiveExample] = useState('stuck');
+
   const features = [
     {
       icon: <Brain className="w-6 h-6" />,
@@ -28,6 +31,37 @@ export default function LandingPage() {
       icon: <Users className="w-6 h-6" />,
       title: "Community Circles",
       description: "Connect with like-minded individuals in curated communities for support and shared growth."
+    }
+  ];
+
+  const exampleConversations = [
+    {
+      id: 'stuck',
+      scenario: "Feeling Stuck",
+      icon: <Target className="w-5 h-5" />,
+      prompt: "I feel like I'm going in circles with my career. I keep saying I want change but nothing happens.",
+      response: "I remember three weeks ago you mentioned wanting to transition into design work, and last month you talked about how you light up when you're creating. I'm noticing a pattern - you're clear about what excites you, but maybe there's something underneath holding you back. What do you think might be making the 'change' feel unsafe right now?"
+    },
+    {
+      id: 'clarity',
+      scenario: "Seeking Clarity",
+      icon: <Lightbulb className="w-5 h-5" />,
+      prompt: "I don't know what I really want anymore. Everything feels confusing.",
+      response: "That feeling of confusion can actually be a sign you're in a contraction phase - a natural part of growth where old patterns break down before new clarity emerges. Looking at your journey, you've been pushing hard for the last few months. What if this confusion is your system asking for some space to process? What would feel nourishing right now?"
+    },
+    {
+      id: 'contradiction',
+      scenario: "Noticing Patterns",
+      icon: <TrendingUp className="w-5 h-5" />,
+      prompt: "I value authenticity above everything, so I always speak my mind.",
+      response: "I've noticed something interesting - you mentioned authenticity is your core value, and I also remember you sharing how you stayed quiet in that team meeting last week to 'keep the peace.' I'm not saying there's anything wrong with that, but I'm curious... do you see a tension there? Sometimes we have competing values we haven't fully examined."
+    },
+    {
+      id: 'growth',
+      scenario: "Tracking Progress",
+      icon: <Sparkles className="w-5 h-5" />,
+      prompt: "Tell me about my growth this month.",
+      response: "Looking at your journey this month, I'm seeing a shift from expansion into what feels like early contraction. You started setting those boundaries you talked about - remember declining that project that didn't align with your values? That's significant growth. Your emotional trajectory shows more groundedness lately, even as things feel harder. You're not avoiding the discomfort anymore, you're moving through it. That's real transformation."
     }
   ];
 
@@ -122,7 +156,122 @@ export default function LandingPage() {
         </div>
       </section>
 
-      
+      {/* Bliss in Action Section */}
+      <section className="container mx-auto px-4 py-20 bg-muted/30">
+        <div className="text-center mb-16">
+          <Badge className="mb-4" variant="secondary">
+            <MessageCircle className="w-4 h-4 mr-2" />
+            See Bliss in Action
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Experience Conversations That Transform
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            Bliss doesn't just respond to your questions - it remembers your journey, spots patterns you might miss, 
+            and gently guides you toward deeper self-awareness. Here's how real conversations with Bliss unfold:
+          </p>
+        </div>
+
+        <div className="max-w-5xl mx-auto">
+          <Tabs value={activeExample} onValueChange={setActiveExample} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-8">
+              {exampleConversations.map((example) => (
+                <TabsTrigger 
+                  key={example.id} 
+                  value={example.id}
+                  className="flex items-center gap-2"
+                  data-testid={`tab-example-${example.id}`}
+                >
+                  {example.icon}
+                  <span className="hidden sm:inline">{example.scenario}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {exampleConversations.map((example) => (
+              <TabsContent key={example.id} value={example.id} className="space-y-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {/* User Message */}
+                  <div className="flex justify-end mb-4" data-testid={`message-user-${example.id}`}>
+                    <div className="max-w-[80%] bg-primary text-primary-foreground rounded-2xl rounded-tr-sm px-6 py-4 shadow-md">
+                      <p className="text-sm md:text-base">{example.prompt}</p>
+                    </div>
+                  </div>
+
+                  {/* Bliss Response */}
+                  <div className="flex justify-start" data-testid={`message-bliss-${example.id}`}>
+                    <div className="max-w-[85%]">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                          <Sparkles className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="bg-card border rounded-2xl rounded-tl-sm px-6 py-4 shadow-md">
+                          <p className="text-sm md:text-base text-foreground leading-relaxed">
+                            {example.response}
+                          </p>
+                          <div className="mt-4 pt-4 border-t flex items-center gap-2 text-xs text-muted-foreground">
+                            <Brain className="w-4 h-4" />
+                            <span>Bliss uses memory, pattern recognition, and emotional intelligence</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </TabsContent>
+            ))}
+          </Tabs>
+
+          {/* Key Capabilities */}
+          <div className="mt-16 grid md:grid-cols-3 gap-6">
+            <Card className="border-primary/20" data-testid="card-capability-memory">
+              <CardHeader>
+                <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-2">
+                  <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <CardTitle className="text-lg">Remembers Your Journey</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Bliss recalls past conversations, values, and goals - creating a continuous thread through your growth story.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-primary/20" data-testid="card-capability-patterns">
+              <CardHeader>
+                <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-2">
+                  <TrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <CardTitle className="text-lg">Spots Hidden Patterns</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Gently surfaces contradictions and recurring themes that you might not see on your own.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-primary/20" data-testid="card-capability-guidance">
+              <CardHeader>
+                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-2">
+                  <Heart className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <CardTitle className="text-lg">Guides With Compassion</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Asks questions that invite reflection without judgment, helping you discover your own answers.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
 
       {/* Pricing Section */}
       <section className="container mx-auto px-4 py-20">
