@@ -10,6 +10,12 @@ import { advancedAnalytics } from './analytics-service';
 import { eventsService } from './events-service';
 import { User } from './auth'; // Assuming User type is defined here
 import * as aiService from "./ai-service"; // Import aiService for adaptiveChat
+import { enhancedMemoryService } from './enhanced-memory-service';
+import { associativeRecallService } from './associative-recall-service';
+import { contradictionDetectionService } from './contradiction-detection-service';
+import { users, conversations, messages, dailyCheckIns, intentions, values, goals, growthMetrics, type InsertUser } from '../shared/schema';
+import { memories, emotionalStates, conversationTopics } from '../shared/growth-schema';
+import { beliefs, contradictions, cognitiveDistortions } from '../shared/phase2-schema';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Chat endpoint
@@ -64,31 +70,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(401).send("Unauthorized");
     }
 
-    const { message, conversationId } = req.body;
+    const { message: userMessage, conversationId, conversationHistory } = req.body;
 
     try {
-      // Extract memories and emotions from the message
-      const { enhancedMemoryService } = await import("./enhanced-memory-service");
-      const extraction = await enhancedMemoryService.extractFromMessage(
+      // Extract and store memories from user message
+      await enhancedMemoryService.extractAndStoreMemories(userMessage, user.id);
+
+      // PHASE 2: Extract beliefs from message
+      await contradictionDetectionService.extractBeliefs(userMessage, user.id);
+
+      // PHASE 2: Get associative recalls
+      const recalls = await associativeRecallService.recall(
         user.id,
-        conversationId || `conv_${Date.now()}`,
-        message
+        userMessage,
+        conversationHistory
       );
 
-      // Find relevant past memories for context
-      const relevantMemories = await enhancedMemoryService.findRelevantMemories(
+      // PHASE 2: Detect contradictions
+      const contradictionsFound = await contradictionDetectionService.detectContradictions(
         user.id,
-        message,
-        3
+        userMessage
       );
 
-      // Get AI response with memory context
-      const response = await aiService.adaptiveChat(user.id, message, conversationId, relevantMemories);
+      // PHASE 2: Detect cognitive distortions
+      const distortions = await contradictionDetectionService.detectCognitiveDistortions(
+        userMessage,
+        user.id
+      );
 
-      res.json({
-        ...response,
-        memoryExtraction: extraction,
-      });
+      // Build enhanced context
+      let enhancedContext = '';
+
+      if (recalls.length > 0) {
+        enhancedContext += associativeRecallService.formatRecallsForContext(recalls);
+      }
+
+      if (contradictionsFound.length > 0) {
+        enhancedContext += '\n\nContradiction to gently address:\n';
+        enhancedContext += contradictionDetectionService.formatContradictionResponse(contradictionsFound[0]);
+      }
+
+      if (distortions.length > 0 && contradictionsFound.length === 0) {
+        enhancedContext += '\n\nCognitive pattern to gently reframe:\n';
+        enhancedContext += contradictionDetectionService.formatDistortionResponse(distortions[0]);
+      }
+
+      // Store user message
+      await storage.saveMessage(user.id, conversationId || `conv_${Date.now()}`, 'user', userMessage);
+
+      // Use AI service for adaptive chat with enhanced context
+      const systemPrompt = getSystemPrompt() + (enhancedContext ? '\n\n' + enhancedContext : '');
+
+      const stream = await aiService.adaptiveChatStream(
+        user.id,
+        userMessage,
+        conversationId,
+        conversationHistory,
+        systemPrompt
+      );
+
+      // Handle streaming response
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+
+      let assistantMessage = '';
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          res.write(`data: ${content}\n\n`);
+          assistantMessage += content;
+        }
+      }
+
+      // Store assistant message after stream ends
+      await storage.saveMessage(user.id, conversationId || `conv_${Date.now()}`, 'assistant', assistantMessage);
+
+      res.end();
+
     } catch (error: any) {
       console.error("Adaptive chat error:", error);
       res.status(500).json({ error: error.message });
@@ -117,7 +176,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Message is required" });
       }
 
+      const phaseDetection = await detectGrowthPhase(message, context);
 
+      // If userId provided, update their phase if confidence is high
+      if (userId && phaseDetection.confidence > 75) {
+        try {
+          await growthTracker.trackPhaseTransition(
+            userId,
+            phaseDetection.phase,
+            phaseDetection.confidence,
+            'user_message'
+          );
+        } catch (error) {
+          console.warn('Could not update user phase:', error);
+        }
+      }
+
+      res.json(phaseDetection);
+    } catch (error) {
+      console.error("Phase detection API error:", error);
+      res.status(500).json({ error: "Failed to detect phase" });
+    }
+  });
 
   // Contradiction Detection & Belief Revision endpoint
   app.post('/api/user/:userId/contradiction-analysis', async (req, res) => {
@@ -157,30 +237,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Belief revision guidance error:', error);
       res.status(500).json({ error: 'Failed to generate belief revision guidance' });
-    }
-  });
-
-
-      const phaseDetection = await detectGrowthPhase(message, context);
-
-      // If userId provided, update their phase if confidence is high
-      if (userId && phaseDetection.confidence > 75) {
-        try {
-          await growthTracker.trackPhaseTransition(
-            userId,
-            phaseDetection.phase,
-            phaseDetection.confidence,
-            'user_message'
-          );
-        } catch (error) {
-          console.warn('Could not update user phase:', error);
-        }
-      }
-
-      res.json(phaseDetection);
-    } catch (error) {
-      console.error("Phase detection API error:", error);
-      res.status(500).json({ error: "Failed to detect phase" });
     }
   });
 
@@ -831,7 +887,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Calculate trend
       const valences = dataPoints.map(d => d.valence);
-      const trend = valences.length > 1 ? 
+      const trend = valences.length > 1 ?
         (valences[valences.length - 1] - valences[0]) / valences.length : 0;
 
       res.json({
@@ -859,6 +915,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Themes error:", error);
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get themes for user
+  app.get('/api/themes', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send('Not authenticated');
+    }
+
+    try {
+      const themes = await enhancedMemoryService.getUserThemes(req.user!.id);
+      res.json(themes);
+    } catch (error) {
+      console.error('Error fetching themes:', error);
+      res.status(500).json({ error: 'Failed to fetch themes' });
+    }
+  });
+
+  // PHASE 2: Get user beliefs
+  app.get('/api/beliefs', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send('Not authenticated');
+    }
+
+    try {
+      const userBeliefs = await db.select()
+        .from(beliefs)
+        .where(eq(beliefs.userId, req.user!.id))
+        .orderBy(desc(beliefs.confidence));
+      res.json(userBeliefs);
+    } catch (error) {
+      console.error('Error fetching beliefs:', error);
+      res.status(500).json({ error: 'Failed to fetch beliefs' });
+    }
+  });
+
+  // PHASE 2: Get contradiction history
+  app.get('/api/contradictions', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send('Not authenticated');
+    }
+
+    try {
+      const userContradictions = await db.select()
+        .from(contradictions)
+        .where(eq(contradictions.userId, req.user!.id))
+        .orderBy(desc(contradictions.detectedAt))
+        .limit(20);
+      res.json(userContradictions);
+    } catch (error) {
+      console.error('Error fetching contradictions:', error);
+      res.status(500).json({ error: 'Failed to fetch contradictions' });
+    }
+  });
+
+  // PHASE 2: Get cognitive distortions
+  app.get('/api/cognitive-distortions', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send('Not authenticated');
+    }
+
+    try {
+      const distortionsData = await db.select()
+        .from(cognitiveDistortions)
+        .where(eq(cognitiveDistortions.userId, req.user!.id))
+        .orderBy(desc(cognitiveDistortions.detectedAt))
+        .limit(20);
+      res.json(distortionsData);
+    } catch (error) {
+      console.error('Error fetching cognitive distortions:', error);
+      res.status(500).json({ error: 'Failed to fetch cognitive distortions' });
     }
   });
 

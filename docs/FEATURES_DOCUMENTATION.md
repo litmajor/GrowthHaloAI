@@ -1,7 +1,7 @@
 # Bliss AI Growth Halo Platform - Features Documentation
 
 **Last Updated**: January 2025  
-**Current Phase**: Phase 1 Complete ✅ | Phase 2 In Planning 📋
+**Current Phase**: Phase 1 & 2 Complete ✅
 
 ## Implementation Status
 
@@ -12,11 +12,97 @@
 - Vector-based semantic search
 - AI-powered pattern recognition
 
-### Phase 2: Associative Recall & Contradiction Detection (📋 Planned)
-- Multi-pathway memory recall
-- Gentle contradiction detection
-- Belief revision tracking
-- Cognitive distortion identification
+### Phase 2: Associative Recall & Contradiction Detection ✅
+
+### 2.1 Multi-Pathway Memory Recall
+**Status**: ✅ Live
+
+Automatically surfaces relevant past insights through five distinct pathways:
+- **Semantic**: Conceptually similar memories via vector embeddings
+- **Temporal**: Similar times/patterns (hour, day, season)
+- **Emotional**: Matching emotional states
+- **Thematic**: Shared topics and themes
+- **Phase-Based**: Same growth phase experiences
+
+**User Impact**: Bliss naturally references past conversations, creating "aha!" moments
+
+**Example**:
+```
+"I remember three months ago when you mentioned feeling similarly frustrated 
+about creative freedom..."
+```
+
+### 2.2 Belief Tracking System
+**Status**: ✅ Live
+
+Automatically extracts and tracks:
+- **Values**: What matters most to user
+- **Goals**: Stated intentions and objectives
+- **Identity Beliefs**: Self-definitions and narratives
+- **Preferences**: Stated likes/dislikes
+- **Intentions**: Commitments to change
+
+**Storage**: Vector-indexed for semantic search, confidence scoring based on repetition
+
+### 2.3 Gentle Contradiction Detection
+**Status**: ✅ Live
+
+Identifies gaps between:
+- Actions vs. stated values
+- Behavior vs. goals
+- Self-concept vs. actions
+- Repeated cognitive distortions
+
+**Safety Features**:
+- Max 2 mentions per week
+- Only medium/high severity
+- Skip during emotional vulnerability
+- Requires pattern confirmation
+
+**Example**:
+```
+"I'm noticing something... You mentioned wanting to be more vulnerable, 
+but at the party you put on your happy face. What made it hard to show 
+up authentically in that moment?"
+```
+
+### 2.4 Cognitive Distortion Detection
+**Status**: ✅ Live
+
+Identifies and gently reframes:
+- All-or-nothing thinking
+- Catastrophizing
+- Overgeneralization
+- Emotional reasoning
+- Should statements
+- Labeling and mislabeling
+- Mental filtering
+- Personalization
+- Discounting positives
+- Jumping to conclusions
+
+**Approach**: Gentle questioning rather than correction
+
+**Example**:
+```
+"I hear you're being really hard on yourself. Words like 'always' make 
+things feel more absolute than they are. What specifically happened?"
+```
+
+### 2.5 Recall Analytics
+**Status**: ✅ Live
+
+Tracks which memories are surfaced and why:
+- Recall pathways used
+- Relevance scores
+- Whether memory was actually referenced
+- User's response to recall
+
+**Purpose**: Improve recall algorithm over time
+
+---
+
+## Next: Phase 3 (Months 7-9)
 
 ## Core Features Overview
 

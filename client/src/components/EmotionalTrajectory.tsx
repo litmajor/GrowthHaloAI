@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -54,24 +53,24 @@ export default function EmotionalTrajectory() {
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="px-0">
         {chartData.length > 0 ? (
           <>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={chartData}>
-                <XAxis 
-                  dataKey="date" 
+                <XAxis
+                  dataKey="date"
                   tick={{ fontSize: 12 }}
                   stroke="#888"
                 />
-                <YAxis 
-                  domain={[-1, 1]} 
+                <YAxis
+                  domain={[-1, 1]}
                   ticks={[-1, -0.5, 0, 0.5, 1]}
                   tick={{ fontSize: 12 }}
                   stroke="#888"
                 />
-                <Tooltip 
+                <Tooltip
                   content={({ active, payload }) => {
                     if (active && payload && payload[0]) {
                       return (
@@ -90,10 +89,10 @@ export default function EmotionalTrajectory() {
                   }}
                 />
                 <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
-                <Line 
-                  type="monotone" 
-                  dataKey="valence" 
-                  stroke="#8b5cf6" 
+                <Line
+                  type="monotone"
+                  dataKey="valence"
+                  stroke="#8b5cf6"
                   strokeWidth={2}
                   dot={{ fill: '#8b5cf6', r: 3 }}
                   activeDot={{ r: 5 }}
