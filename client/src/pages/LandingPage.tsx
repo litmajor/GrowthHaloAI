@@ -73,7 +73,7 @@ export default function LandingPage() {
       <nav className="container mx-auto px-4 py-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Circle className="w-8 h-8 text-primary" />
-          <span className="text-xl font-bold">Bliss AI</span>
+          <span className="text-xl font-bold">Growth Halo</span>
         </div>
         <div className="flex items-center gap-4">
           <Link href="/login">
@@ -93,10 +93,10 @@ export default function LandingPage() {
           transition={{ duration: 0.8 }}
         >
           <Badge className="mb-4" variant="secondary">
-            The World's Most Intelligent Personal Growth Companion
+            Powered by Bliss AI
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Bliss AI
+            Discover Your Growth Halo
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             The AI companion that remembers your entire journey and helps you become who you're meant to be.
@@ -108,11 +108,11 @@ export default function LandingPage() {
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
-            <Link href="/pricing">
+            <a href="#pricing">
               <Button size="lg" variant="outline" className="text-lg px-8">
                 View Pricing
               </Button>
-            </Link>
+            </a>
           </div>
         </motion.div>
       </section>
@@ -273,7 +273,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="container mx-auto px-4 py-20">
+      <section id="pricing" className="container mx-auto px-4 py-20">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Choose Your Growth Path
@@ -303,7 +303,7 @@ export default function LandingPage() {
                   <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                     <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
-                  Basic chat (limited messages)
+                  15 messages per day
                 </li>
                 <li className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
@@ -331,11 +331,9 @@ export default function LandingPage() {
           </Card>
 
           {/* Growth Tier */}
-          <Card className="h-full hover:shadow-lg transition-shadow ring-2 ring-primary/20">
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-              <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
-            </div>
+          <Card className="h-full hover:shadow-lg transition-shadow ring-2 ring-primary/20 relative">
             <CardHeader className="text-center pb-8">
+              <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">Most Popular</Badge>
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <Zap className="w-6 h-6 text-primary" />
               </div>
@@ -544,7 +542,7 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
               <Circle className="w-6 h-6 text-primary" />
-              <span className="font-semibold">Bliss AI</span>
+              <span className="font-semibold">Growth Halo</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <Link href="/faq">FAQ</Link>
