@@ -13,6 +13,7 @@ import WeeklyInsights from "../components/WeeklyInsights";
 import MemoryInsights from '@/components/MemoryInsights'; // Import MemoryInsights component
 import EmotionalTrajectory from '@/components/EmotionalTrajectory'; // Import EmotionalTrajectory component
 import ThemeCloud from '@/components/ThemeCloud'; // Import ThemeCloud component
+import { BeliefJourney } from '@/components/BeliefJourney'; // Import BeliefJourney component
 
 
 import { ResponsiveContainer } from "@/components/ui/responsive-container";
@@ -500,6 +501,9 @@ export default function DashboardPage() {
               <MemoryInsights userId="current-user" />
               <EmotionalTrajectory userId="current-user" />
               <ThemeCloud userId="current-user" />
+              <div className="mt-6">
+                <BeliefJourney />
+              </div>
             </TabsContent>
 
             {/* Community Tab Content */}

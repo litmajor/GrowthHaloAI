@@ -1,4 +1,3 @@
-
 import { pgTable, text, serial, integer, timestamp, boolean, jsonb, real, vector } from "drizzle-orm/pg-core";
 import { users } from "./schema";
 
@@ -57,6 +56,35 @@ export const recalledMemories = pgTable("recalled_memories", {
   recalledAt: timestamp("recalled_at").defaultNow().notNull()
 });
 
+export const contradictionDetections = pgTable('contradiction_detections', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull(),
+  conversationId: text('conversation_id').notNull(),
+  contradictionType: text('contradiction_type').notNull(),
+  statement1: text('statement_1').notNull(),
+  statement2: text('statement_2').notNull(),
+  statement1Date: timestamp('statement_1_date').notNull(),
+  statement2Date: timestamp('statement_2_date').notNull(),
+  severity: text('severity').notNull(), // 'minor', 'moderate', 'significant'
+  context: text('context'),
+  userAcknowledged: boolean('user_acknowledged').default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const beliefRevisions = pgTable('belief_revisions', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull(),
+  originalBelief: text('original_belief').notNull(),
+  revisedBelief: text('revised_belief').notNull(),
+  catalystConversationId: text('catalyst_conversation_id').notNull(),
+  revisedAt: timestamp('revised_at').defaultNow().notNull(),
+  revisionType: text('revision_type').notNull(), // 'expansion', 'softening', 'transformation', 'integration'
+  userAwareness: text('user_awareness').notNull(), // 'explicit', 'implicit'
+  significance: text('significance').notNull(), // 'minor', 'moderate', 'major'
+  explanation: text('explanation'),
+  celebrated: boolean('celebrated').default(false),
+});
+
 export type Belief = typeof beliefs.$inferSelect;
 export type NewBelief = typeof beliefs.$inferInsert;
 export type Contradiction = typeof contradictions.$inferSelect;
@@ -65,3 +93,7 @@ export type CognitiveDistortion = typeof cognitiveDistortions.$inferSelect;
 export type NewCognitiveDistortion = typeof cognitiveDistortions.$inferInsert;
 export type RecalledMemory = typeof recalledMemories.$inferSelect;
 export type NewRecalledMemory = typeof recalledMemories.$inferInsert;
+export type ContradictionDetection = typeof contradictionDetections.$inferSelect;
+export type NewContradictionDetection = typeof contradictionDetections.$inferInsert;
+export type BeliefRevision = typeof beliefRevisions.$inferSelect;
+export type NewBeliefRevision = typeof beliefRevisions.$inferInsert;

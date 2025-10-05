@@ -240,6 +240,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Belief Revision Tracking endpoints
+  app.post('/api/user/:userId/detect-belief-revision', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { currentBelief, conversationId } = req.body;
+
+      const { beliefRevisionService } = await import('./belief-revision-service');
+      const revision = await beliefRevisionService.detectBeliefRevision(
+        userId,
+        currentBelief,
+        conversationId
+      );
+
+      if (revision && !revision.celebrated) {
+        const celebration = beliefRevisionService.generateCelebrationMessage(revision);
+        await beliefRevisionService.markCelebrated(revision.id);
+        
+        res.json({
+          revision,
+          celebration,
+          shouldCelebrate: true
+        });
+      } else {
+        res.json({
+          revision: null,
+          shouldCelebrate: false
+        });
+      }
+    } catch (error) {
+      console.error('Belief revision detection error:', error);
+      res.status(500).json({ error: 'Failed to detect belief revision' });
+    }
+  });
+
+  app.get('/api/belief-revisions', async (req, res) => {
+    try {
+      const userId = req.query.userId as string;
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+      }
+
+      const { beliefRevisionService } = await import('./belief-revision-service');
+      const journey = await beliefRevisionService.getBeliefJourney(userId);
+
+      res.json(journey);
+    } catch (error) {
+      console.error('Get belief journey error:', error);
+      res.status(500).json({ error: 'Failed to fetch belief journey' });
+    }
+  });
+
   // Advanced AI Analysis endpoints
   app.post("/api/user/:userId/crisis-detection", async (req, res) => {
     try {
