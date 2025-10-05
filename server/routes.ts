@@ -327,6 +327,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Phase 4.5: Wisdom Library routes
+  app.get('/api/wisdom/library/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { wisdomLibraryService } = await import('./wisdom-library-service');
+      const wisdomBook = await wisdomLibraryService.generateWisdomBook(userId);
+      res.json(wisdomBook);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/wisdom/extract', async (req, res) => {
+    try {
+      const { userId, conversationId, message } = req.body;
+      const { wisdomLibraryService } = await import('./wisdom-library-service');
+      const wisdom = await wisdomLibraryService.extractWisdom(userId, conversationId, message);
+      res.json(wisdom);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/wisdom/applicable', async (req, res) => {
+    try {
+      const { userId, currentSituation } = req.body;
+      const { wisdomLibraryService } = await import('./wisdom-library-service');
+      const applicable = await wisdomLibraryService.findApplicableWisdom(userId, currentSituation);
+      res.json(applicable);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Phase 4: Meta-Memory routes
   app.get('/api/ideas/:userId', async (req, res) => {
     try {

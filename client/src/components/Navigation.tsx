@@ -131,6 +131,18 @@ export default function Navigation({
               </Link>
             );
           })}
+          <Link
+            to="/wisdom"
+            className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+              location.pathname === "/wisdom"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            )}
+          >
+            <Sparkles className="w-4 h-4" />
+            Wisdom
+          </Link>
         </nav>
 
         {/* Secondary Navigation */}
