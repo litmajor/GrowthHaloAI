@@ -1,7 +1,8 @@
 import { useUser } from '../hooks/use-user';
 import { CausalPatterns } from '../components/CausalPatterns';
-import { PersonalityInsights } from '../components/PersonalityInsights'; // Assuming this component will be created
-import { PredictiveOutcome } from '../components/PredictiveOutcome'; // Assuming this component will be created
+import { PersonalityInsights } from '../components/PersonalityInsights';
+import { PredictiveOutcome } from '../components/PredictiveOutcome';
+import { GrowthPhaseCompass } from '../components/GrowthPhaseCompass';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Brain, TrendingUp, Sparkles } from 'lucide-react';
@@ -27,15 +28,20 @@ export default function PatternsPage() {
         Discover what actions lead to what outcomes in your life
       </p>
 
-      <Tabs defaultValue="patterns" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="patterns">Causal Patterns</TabsTrigger>
-          <TabsTrigger value="personality">Personality Insights</TabsTrigger>
-          <TabsTrigger value="predictions">Predictions</TabsTrigger>
+      <Tabs defaultValue="phase" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="phase">Growth Phase</TabsTrigger>
+          <TabsTrigger value="causal">Causal Patterns</TabsTrigger>
+          <TabsTrigger value="personality">Personality</TabsTrigger>
+          <TabsTrigger value="predictive">Predictions</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="patterns">
-          <CausalPatterns userId={userId} />
+        <TabsContent value="phase" className="mt-6">
+          <GrowthPhaseCompass userId={user.id} />
+        </TabsContent>
+
+        <TabsContent value="causal" className="mt-6">
+          <CausalPatterns userId={user.id} />
         </TabsContent>
 
         <TabsContent value="personality">

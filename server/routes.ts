@@ -276,6 +276,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Phase 4.4: Growth Phase Prediction routes
+  app.get('/api/growth-phase/analysis/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { growthPhaseService } = await import('./growth-phase-service');
+      const analysis = await growthPhaseService.detectCurrentPhase(userId);
+      res.json(analysis);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Phase 4.2: Dormant Concept Reactivation routes
   app.get('/api/dormant-concepts/:userId', async (req, res) => {
     try {
