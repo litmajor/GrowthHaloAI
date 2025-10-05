@@ -91,3 +91,60 @@ export type PersonalityInsight = typeof personalityInsights.$inferSelect;
 export type InsertPersonalityInsight = typeof personalityInsights.$inferInsert;
 export type PredictiveInsight = typeof predictiveInsights.$inferSelect;
 export type InsertPredictiveInsight = typeof predictiveInsights.$inferInsert;
+
+// Phase 4: Meta-Memory Schemas
+import { serial, boolean } from 'drizzle-orm/pg-core';
+
+export const ideaEvolutions = pgTable('idea_evolutions', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull(),
+  ideaSummary: text('idea_summary').notNull(),
+  category: text('category').notNull(), // 'career' | 'project' | 'relationship' | 'identity' | 'creative'
+  
+  // Seed moment
+  seedConversationId: text('seed_conversation_id').notNull(),
+  seedTimestamp: timestamp('seed_timestamp').notNull(),
+  seedInitialForm: text('seed_initial_form').notNull(),
+  seedEmotionalState: text('seed_emotional_state').notNull(),
+  seedCatalyst: text('seed_catalyst').notNull(),
+  
+  // Current state
+  currentForm: text('current_form').notNull(),
+  maturityLevel: text('maturity_level').notNull(), // 'seed' | 'germinating' | 'growing' | 'mature' | 'dormant'
+  
+  // Related data
+  influencingFactors: text('influencing_factors').array().notNull().default([]),
+  relatedIdeas: text('related_ideas').array().notNull().default([]),
+  blockers: text('blockers').array(),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const ideaDevelopmentMilestones = pgTable('idea_development_milestones', {
+  id: serial('id').primaryKey(),
+  ideaId: integer('idea_id').notNull(),
+  timestamp: timestamp('timestamp').notNull(),
+  form: text('form').notNull(),
+  catalyst: text('catalyst').notNull(),
+  confidence: real('confidence').notNull(),
+  emotionalState: text('emotional_state').notNull(),
+});
+
+export const memoryFormationEvents = pgTable('memory_formation_events', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull(),
+  memoryId: text('memory_id').notNull(),
+  formationType: text('formation_type').notNull(), // 'sudden_insight' | 'gradual_realization' | 'external_input' | 'emotional_experience'
+  trigger: text('trigger').notNull(),
+  context: text('context').notNull(),
+  emotionalState: text('emotional_state').notNull(),
+  timestamp: timestamp('timestamp').defaultNow().notNull(),
+});
+
+export type IdeaEvolution = typeof ideaEvolutions.$inferSelect;
+export type InsertIdeaEvolution = typeof ideaEvolutions.$inferInsert;
+export type IdeaDevelopmentMilestone = typeof ideaDevelopmentMilestones.$inferSelect;
+export type InsertIdeaDevelopmentMilestone = typeof ideaDevelopmentMilestones.$inferInsert;
+export type MemoryFormationEvent = typeof memoryFormationEvents.$inferSelect;
+export type InsertMemoryFormationEvent = typeof memoryFormationEvents.$inferInsert;

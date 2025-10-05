@@ -29,6 +29,7 @@ import FAQPage from "./pages/FAQPage";
 import GoalsPage from "./pages/GoalsPage";
 import PersonalityTestPage from "./pages/PersonalityTestPage";
 import PatternsPage from './pages/PatternsPage';
+import IdeasPage from './pages/IdeasPage';
 
 function Router() {
   return (
@@ -51,6 +52,7 @@ function Router() {
       <Route path="/content" component={ContentPage} />
       <Route path="/goals" component={GoalsPage} />
       <Route path="/patterns" component={PatternsPage} />
+      <Route path="/ideas" element={<IdeasPage />} />
       <Route path="/analytics" component={AnalyticsPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route path="/subscription" component={SubscriptionPage} />

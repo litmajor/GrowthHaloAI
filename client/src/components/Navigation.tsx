@@ -24,6 +24,7 @@ const navItems = [
   { path: "/goals", icon: Target, label: "Goals Journey" },
   { path: "/personality", icon: Brain, label: "Personality" }, // Added Personality Test
   { path: "/patterns", icon: TrendingUp, label: "Patterns" }, // Added Patterns link
+  { path: "/ideas", icon: Sparkles, label: "Ideas" }, // Added Ideas link
   { path: "/community", icon: Users, label: "Community" },
   { path: "/events", icon: Calendar, label: "Events" },
   { path: "/content", icon: BookOpen, label: "Content" },

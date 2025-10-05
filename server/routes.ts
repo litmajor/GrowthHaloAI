@@ -276,6 +276,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Phase 4: Meta-Memory routes
+  app.get('/api/ideas/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const includeAll = req.query.all === 'true';
+      const { metaMemoryService } = await import('./meta-memory-service');
+      const ideas = await metaMemoryService.getUserIdeas(userId, includeAll);
+      res.json(ideas);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get('/api/idea-journey/:ideaId', async (req, res) => {
+    try {
+      const ideaId = parseInt(req.params.ideaId);
+      const { metaMemoryService } = await import('./meta-memory-service');
+      const journey = await metaMemoryService.visualizeIdeaJourney(ideaId);
+      res.json(journey);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/ideas/detect-seed', async (req, res) => {
+    try {
+      const { userId, message, conversationId } = req.body;
+      const { metaMemoryService } = await import('./meta-memory-service');
+      const idea = await metaMemoryService.detectIdeaSeed(userId, message, conversationId);
+      res.json(idea);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/ideas/track-development', async (req, res) => {
+    try {
+      const { userId, message } = req.body;
+      const { metaMemoryService } = await import('./meta-memory-service');
+      await metaMemoryService.trackIdeaDevelopment(userId, message);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Phase 3: Hypothesis Formation routes
   app.post('/api/hypotheses/generate/:userId', async (req, res) => {
     try {
