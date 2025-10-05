@@ -73,7 +73,7 @@ export default function LandingPage() {
       <nav className="container mx-auto px-4 py-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Circle className="w-8 h-8 text-primary" />
-          <span className="text-xl font-bold">Growth Halo</span>
+          <span className="text-xl font-bold">Bliss AI</span>
         </div>
         <div className="flex items-center gap-4">
           <Link href="/login">
@@ -93,14 +93,13 @@ export default function LandingPage() {
           transition={{ duration: 0.8 }}
         >
           <Badge className="mb-4" variant="secondary">
-            AI-Powered Personal Growth Platform
+            The World's Most Intelligent Personal Growth Companion
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Discover Your Growth Halo
+            Bliss AI
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Navigate life's cycles of expansion, contraction, and renewal with AI-powered insights, 
-            community support, and personalized guidance tailored to your unique journey.
+            The AI companion that remembers your entire journey and helps you become who you're meant to be.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/register">
@@ -292,35 +291,41 @@ export default function LandingPage() {
               <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-6 h-6 text-muted-foreground" />
               </div>
-              <CardTitle className="text-xl mb-2">First Steps</CardTitle>
+              <CardTitle className="text-xl mb-2">Free</CardTitle>
               <div className="mb-4">
-                <span className="text-3xl font-light">Free</span>
+                <span className="text-3xl font-light">$0</span>
               </div>
               <CardDescription>Begin your growth journey with essential tools</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 mb-6 text-sm">
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
-                  Basic halo tracking
+                  Basic chat (limited messages)
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
-                  Limited Bliss interactions (5 per day)
+                  Simple emotional tracking
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
-                  Access to one community circle
+                  30-day memory retention
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
+                  </div>
+                  Community access
                 </li>
               </ul>
               <Link href="/register">
-                <Button className="w-full">Start Free</Button>
+                <Button className="w-full" data-testid="button-signup-free">Start Free</Button>
               </Link>
             </CardContent>
           </Card>
@@ -336,7 +341,7 @@ export default function LandingPage() {
               </div>
               <CardTitle className="text-xl mb-2">Growth</CardTitle>
               <div className="mb-4">
-                <span className="text-3xl font-light">$19</span>
+                <span className="text-3xl font-light">$15</span>
                 <span className="text-muted-foreground text-sm">/month</span>
               </div>
               <CardDescription>Unlock your full potential with comprehensive tools</CardDescription>
@@ -344,32 +349,44 @@ export default function LandingPage() {
             <CardContent>
               <ul className="space-y-2 mb-6 text-sm">
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
-                  Full halo tracking and insights
+                  Unlimited chat
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
-                  Unlimited Bliss conversations
+                  Full emotional trajectory tracking
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
-                  All community circles
+                  Advanced memory (1 year retention)
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
-                  Advanced journaling with AI insights
+                  Associative recall
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
+                  </div>
+                  Goal tracking
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
+                  </div>
+                  No ads
                 </li>
               </ul>
               <Link href="/register">
-                <Button className="w-full bg-primary hover:bg-primary/90">Choose Growth</Button>
+                <Button className="w-full bg-primary hover:bg-primary/90" data-testid="button-signup-growth">Choose Growth</Button>
               </Link>
             </CardContent>
           </Card>
@@ -377,45 +394,63 @@ export default function LandingPage() {
           {/* Transformation Tier */}
           <Card className="h-full hover:shadow-lg transition-shadow">
             <CardHeader className="text-center pb-8">
-              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
-                <Star className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-4">
+                <Star className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <CardTitle className="text-xl mb-2">Transformation</CardTitle>
               <div className="mb-4">
-                <span className="text-3xl font-light">$39</span>
+                <span className="text-3xl font-light">$35</span>
                 <span className="text-muted-foreground text-sm">/month</span>
               </div>
-              <CardDescription>Accelerate your journey with personalized guidance</CardDescription>
+              <CardDescription>Accelerate your journey with advanced insights</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 mb-6 text-sm">
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
-                  Everything in Growth tier
+                  Everything in Growth
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
-                  1-on-1 monthly coaching sessions
+                  Contradiction detection
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
+                  </div>
+                  Causal reasoning insights
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
+                  </div>
+                  Hypothesis formation
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
+                  </div>
+                  Unlimited memory retention
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
+                  </div>
+                  Priority support
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
                   Early access to new features
                 </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
-                  </div>
-                  Priority community support
-                </li>
               </ul>
               <Link href="/register">
-                <Button className="w-full" variant="outline">Transform Now</Button>
+                <Button className="w-full" variant="outline" data-testid="button-signup-transformation">Transform Now</Button>
               </Link>
             </CardContent>
           </Card>
@@ -423,45 +458,57 @@ export default function LandingPage() {
           {/* Facilitator Tier */}
           <Card className="h-full hover:shadow-lg transition-shadow">
             <CardHeader className="text-center pb-8">
-              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-                <Crown className="w-6 h-6 text-amber-600" />
+              <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-4">
+                <Crown className="w-6 h-6 text-amber-600 dark:text-amber-400" />
               </div>
               <CardTitle className="text-xl mb-2">Facilitator</CardTitle>
               <div className="mb-4">
                 <span className="text-3xl font-light">$99</span>
                 <span className="text-muted-foreground text-sm">/month</span>
               </div>
-              <CardDescription>Professional tools for coaches and therapists</CardDescription>
+              <CardDescription>Professional B2B tools for coaches & therapists</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 mb-6 text-sm">
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
-                  Platform tools for client work
+                  Everything in Transformation
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
-                  Community moderation capabilities
+                  Multi-client dashboard
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
-                  Access to facilitator training
+                  Facilitate growth circles
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
                   White-label options
                 </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
+                  </div>
+                  Advanced analytics
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
+                  </div>
+                  API access
+                </li>
               </ul>
               <Link href="/register">
-                <Button className="w-full" variant="outline">Go Professional</Button>
+                <Button className="w-full" variant="outline" data-testid="button-signup-facilitator">Go Professional</Button>
               </Link>
             </CardContent>
           </Card>
@@ -497,7 +544,7 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
               <Circle className="w-6 h-6 text-primary" />
-              <span className="font-semibold">Growth Halo</span>
+              <span className="font-semibold">Bliss AI</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <Link href="/faq">FAQ</Link>
