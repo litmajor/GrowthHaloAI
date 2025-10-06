@@ -32,7 +32,7 @@ interface WisdomBook {
   totalWisdom: number;
 }
 
-export function WisdomLibrary({ userId }: { userId: number }) {
+export function WisdomLibrary({ userId }: { userId: string | number }) {
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
 
   const { data: wisdomBook, isLoading } = useQuery<WisdomBook>({
@@ -188,8 +188,7 @@ export function WisdomLibrary({ userId }: { userId: number }) {
                           <span className="text-xs text-muted-foreground">Confidence:</span>
                           <div className="flex-1 bg-secondary h-1.5 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-gradient-to-r from-purple-400 to-purple-600"
-                              style={{ width: `${entry.confidence * 100}%` }}
+                              className={`h-full bg-gradient-to-r from-purple-400 to-purple-600 confidence-meter-width-${Math.round(entry.confidence * 100)}`}
                             />
                           </div>
                         </div>

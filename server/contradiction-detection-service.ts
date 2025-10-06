@@ -30,7 +30,8 @@ interface DistortionResult {
 
 export class ContradictionDetectionService {
   
-  async extractBeliefs(message: string, userId: number): Promise<void> {
+  async extractBeliefs(message: string, userId: string | number): Promise<void> {
+    const uidNum = Number(userId);
     const analysis = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [{
@@ -60,7 +61,7 @@ export class ContradictionDetectionService {
         .from(beliefs)
         .where(
           and(
-            eq(beliefs.userId, userId),
+            eq(beliefs.userId, uidNum),
             sql`similarity(${beliefs.statement}, ${belief.statement}) > 0.8`
           )
         )
@@ -78,7 +79,7 @@ export class ContradictionDetectionService {
         // Insert new belief
         const embedding = await this.generateEmbedding(belief.statement);
         await db.insert(beliefs).values({
-          userId,
+          userId: uidNum,
           statement: belief.statement,
           category: belief.category,
           confidence: belief.confidence,
@@ -89,15 +90,16 @@ export class ContradictionDetectionService {
   }
 
   async detectContradictions(
-    userId: number,
+    userId: string | number,
     currentMessage: string
   ): Promise<ContradictionResult[]> {
+    const uidNum = Number(userId);
     // Get well-established beliefs
-    const userBeliefs = await db.select()
+      const userBeliefs = await db.select()
       .from(beliefs)
       .where(
         and(
-          eq(beliefs.userId, userId),
+          eq(beliefs.userId, uidNum),
           gt(beliefs.confidence, 0.6)
         )
       )
@@ -135,8 +137,8 @@ export class ContradictionDetectionService {
       const result = JSON.parse(analysis.choices[0].message.content || '{"isContradiction":false}');
 
       if (result.isContradiction) {
-        const shouldMention = await this.shouldMentionContradiction(
-          userId,
+          const shouldMention = await this.shouldMentionContradiction(
+          uidNum,
           result.severity
         );
 
@@ -153,7 +155,7 @@ export class ContradictionDetectionService {
 
           // Store contradiction
           await db.insert(contradictions).values({
-            userId,
+            userId: uidNum,
             beliefId: belief.id,
             belief: belief.statement,
             contradictingStatement: currentMessage,
@@ -168,7 +170,8 @@ export class ContradictionDetectionService {
     return contradictionsFound;
   }
 
-  async detectCognitiveDistortions(message: string, userId: number): Promise<DistortionResult[]> {
+  async detectCognitiveDistortions(message: string, userId: string | number): Promise<DistortionResult[]> {
+    const uidNum = Number(userId);
     const distortionTypes = [
       'all-or-nothing thinking',
       'overgeneralization',
@@ -211,7 +214,7 @@ export class ContradictionDetectionService {
     // Store distortions
     for (const distortion of distortions) {
       await db.insert(cognitiveDistortions).values({
-        userId,
+        userId: uidNum,
         messageContent: message,
         distortionType: distortion.type,
         evidence: distortion.evidence,
@@ -223,15 +226,16 @@ export class ContradictionDetectionService {
   }
 
   private async shouldMentionContradiction(
-    userId: number,
+    userId: string | number,
     severity: string
   ): Promise<boolean> {
+    const uidNum = Number(userId);
     // Don't overwhelm with contradictions
     const recentMentions = await db.select()
       .from(contradictions)
       .where(
         and(
-          eq(contradictions.userId, userId),
+          eq(contradictions.userId, uidNum),
           eq(contradictions.mentioned, true),
           sql`${contradictions.mentionedAt} > NOW() - INTERVAL '7 days'`
         )

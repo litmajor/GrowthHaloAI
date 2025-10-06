@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { advancedMemory } from './memory-service';
 import { goalIntelligence } from './goal-intelligence-service';
+import { storage } from './storage';
 
 // Create OpenAI client conditionally to avoid startup errors when API key is not set
 let openai: OpenAI | null = null;
@@ -135,6 +136,7 @@ export async function generateAdaptiveBlissResponse(
   suggestedFollowUp: string;
   memoryAnchors: string[];
   associativeRecall?: any;
+  contradictionAnalysis?: any;
   contextAdaptation?: any;
 }> {
   try {
@@ -184,7 +186,8 @@ export async function generateAdaptiveBlissResponse(
     );
 
     // Get existing goals and detect progress updates
-    const existingGoals = await goalIntelligence.getUserGoals(userId);
+  // getUserGoals is a private helper on the GoalIntelligenceService class; use storage directly
+  const existingGoals = await storage.getGoalsByUserId(userId);
     const progressUpdates = await goalIntelligence.detectProgressUpdates(
       userId,
       userMessage,
@@ -387,8 +390,11 @@ export async function generateBlissResponse(
   } catch (error) {
     console.error('Error generating Bliss response:', error);
 
+    // Safely coerce unknown error to string/message before inspecting
+    const errMsg = (error as any)?.message ?? String(error);
+
     // Return a helpful fallback response when API key is missing
-    if (error.message.includes('OpenAI API key is not configured')) {
+    if (typeof errMsg === 'string' && errMsg.includes('OpenAI API key is not configured')) {
       return {
         message: "I'm having trouble connecting right now. This appears to be a configuration issue - the OpenAI API key needs to be set up. Please check with your administrator or try again later.",
         phase: 'expansion',
@@ -1396,4 +1402,22 @@ Respond in JSON:
       suggestedReframes: []
     };
   }
+}
+
+// Lightweight streaming wrapper: returns an async iterable compatible with route consumer
+export async function adaptiveChatStream(
+  userId: string,
+  userMessage: string,
+  conversationId?: string,
+  conversationHistory: Array<{ role: 'user' | 'assistant'; content: string; timestamp?: Date }> = [],
+  systemPrompt?: string
+): Promise<AsyncIterable<{ choices: Array<{ delta: { content?: string } }> }>> {
+  // Create an async generator that yields a single chunk containing the full response
+  const response = await generateAdaptiveBlissResponse(userMessage, userId, conversationHistory);
+
+  async function* gen() {
+    yield { choices: [{ delta: { content: response.message } }] };
+  }
+
+  return gen();
 }

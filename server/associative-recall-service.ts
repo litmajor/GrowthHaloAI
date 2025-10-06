@@ -1,6 +1,6 @@
 
 import { db } from './db';
-import { memories, conversations } from '../shared/growth-schema';
+import { memories } from '../shared/growth-schema';
 import { recalledMemories } from '../shared/phase2-schema';
 import { eq, sql, and, gte, desc } from 'drizzle-orm';
 import OpenAI from 'openai';
@@ -22,28 +22,29 @@ interface Message {
 export class AssociativeRecallService {
   
   async recall(
-    userId: number,
+    userId: string | number,
     currentMessage: string,
     conversationHistory: Message[]
   ): Promise<RecallResult[]> {
-    
+    const uid = String(userId);
+
     // 1. Semantic similarity search
-    const semanticallyRelated = await this.findSimilarMemories(userId, currentMessage);
+    const semanticallyRelated = await this.findSimilarMemories(uid, currentMessage);
 
     // 2. Temporal patterns
-    const temporallyRelated = await this.findTemporalMatches(userId, new Date());
+    const temporallyRelated = await this.findTemporalMatches(uid, new Date());
 
     // 3. Emotional resonance
     const currentEmotion = await this.analyzeEmotionQuick(currentMessage);
-    const emotionallyRelated = await this.findEmotionalMatches(userId, currentEmotion);
+    const emotionallyRelated = await this.findEmotionalMatches(uid, currentEmotion);
 
     // 4. Theme/topic overlap
     const currentThemes = await this.extractThemesQuick(currentMessage);
-    const thematicallyRelated = await this.findThemeMatches(userId, currentThemes);
+    const thematicallyRelated = await this.findThemeMatches(uid, currentThemes);
 
     // 5. Growth phase alignment
     const currentPhase = await this.detectGrowthPhaseQuick(conversationHistory);
-    const phaseRelated = await this.findPhaseMatches(userId, currentPhase);
+    const phaseRelated = await this.findPhaseMatches(uid, currentPhase);
 
     // Combine and rank by relevance
     const allRecalls = this.combineAndRank([
@@ -62,9 +63,10 @@ export class AssociativeRecallService {
   }
 
   private async findSimilarMemories(
-    userId: number,
+    userId: string | number,
     query: string
   ): Promise<RecallResult[]> {
+    const uid = String(userId);
     const queryEmbedding = await this.generateEmbedding(query);
     
     const results = await db.execute(sql`
@@ -73,7 +75,7 @@ export class AssociativeRecallService {
         1 - (m.embedding <=> ${queryEmbedding}::vector) as similarity,
         EXTRACT(EPOCH FROM (NOW() - m.created_at)) / 86400 as days_ago
       FROM memories m
-      WHERE m.user_id = ${userId}
+      WHERE m.user_id = ${uid}
         AND 1 - (m.embedding <=> ${queryEmbedding}::vector) > 0.7
       ORDER BY similarity DESC
       LIMIT 10
@@ -87,9 +89,10 @@ export class AssociativeRecallService {
   }
 
   private async findTemporalMatches(
-    userId: number,
+    userId: string | number,
     currentTime: Date
   ): Promise<RecallResult[]> {
+    const uid = String(userId);
     const hour = currentTime.getHours();
     const dayOfWeek = currentTime.getDay();
     
@@ -98,7 +101,7 @@ export class AssociativeRecallService {
       .from(memories)
       .where(
         and(
-          eq(memories.userId, userId),
+          eq(memories.userId, uid),
           sql`EXTRACT(HOUR FROM ${memories.createdAt}) BETWEEN ${hour - 2} AND ${hour + 2}`,
           sql`EXTRACT(DOW FROM ${memories.createdAt}) = ${dayOfWeek}`
         )
@@ -114,15 +117,16 @@ export class AssociativeRecallService {
   }
 
   private async findEmotionalMatches(
-    userId: number,
+    userId: string | number,
     currentEmotion: { valence: number; arousal: number }
   ): Promise<RecallResult[]> {
+    const uid = String(userId);
     const results = await db.execute(sql`
       SELECT *,
         ABS(CAST(emotional_context->>'valence' AS FLOAT) - ${currentEmotion.valence}) +
         ABS(CAST(emotional_context->>'arousal' AS FLOAT) - ${currentEmotion.arousal}) as emotion_distance
       FROM memories
-      WHERE user_id = ${userId}
+      WHERE user_id = ${uid}
         AND emotional_context IS NOT NULL
       ORDER BY emotion_distance ASC
       LIMIT 5
@@ -136,17 +140,18 @@ export class AssociativeRecallService {
   }
 
   private async findThemeMatches(
-    userId: number,
+    userId: string | number,
     currentThemes: string[]
   ): Promise<RecallResult[]> {
     if (currentThemes.length === 0) return [];
 
+    const uid = String(userId);
     const results = await db.execute(sql`
       SELECT *,
         (SELECT COUNT(*) FROM jsonb_array_elements_text(themes) theme
          WHERE theme = ANY(${currentThemes})) as theme_overlap
       FROM memories
-      WHERE user_id = ${userId}
+      WHERE user_id = ${uid}
         AND themes IS NOT NULL
         AND (SELECT COUNT(*) FROM jsonb_array_elements_text(themes) theme
              WHERE theme = ANY(${currentThemes})) > 0
@@ -162,14 +167,15 @@ export class AssociativeRecallService {
   }
 
   private async findPhaseMatches(
-    userId: number,
+    userId: string | number,
     currentPhase: string
   ): Promise<RecallResult[]> {
+    const uid = String(userId);
     const results = await db.select()
       .from(memories)
       .where(
         and(
-          eq(memories.userId, userId),
+          eq(memories.userId, uid),
           sql`growth_phase_context = ${currentPhase}`
         )
       )
@@ -265,10 +271,11 @@ export class AssociativeRecallService {
     return response.choices[0].message.content?.toLowerCase() || 'expansion';
   }
 
-  private async trackRecalls(userId: number, recalls: RecallResult[], context: string): Promise<void> {
+  private async trackRecalls(userId: string | number, recalls: RecallResult[], context: string): Promise<void> {
+    const uid = String(userId);
     for (const recall of recalls) {
       await db.insert(recalledMemories).values({
-        userId,
+        userId: sql`${uid}`,
         memoryId: recall.memory.id,
         recallContext: context,
         recallTypes: recall.recallTypes,

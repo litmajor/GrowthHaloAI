@@ -1,7 +1,7 @@
 
 import OpenAI from 'openai';
 import { db } from './db';
-import { emotionalStates, conversationTopics, phaseHistory, userProfiles } from '../shared/growth-schema';
+import { emotionalDataPoints as emotionalStates, conversationThemes as conversationTopics, phaseHistory, userProfiles } from '../shared/growth-schema';
 import { eq, and, desc, gte, sql } from 'drizzle-orm';
 import { formatDistanceToNow, differenceInDays } from 'date-fns';
 
@@ -43,13 +43,14 @@ interface PhaseHistoryEntry {
 }
 
 export class GrowthPhaseService {
-  async detectCurrentPhase(userId: number): Promise<GrowthPhaseAnalysis> {
+  async detectCurrentPhase(userId: string | number): Promise<GrowthPhaseAnalysis> {
+    const uid = String(userId);
     // Get recent emotional trajectory
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const emotionalData = await db.select()
       .from(emotionalStates)
       .where(and(
-        eq(emotionalStates.userId, userId),
+        eq(emotionalStates.userId, uid),
         gte(emotionalStates.timestamp, thirtyDaysAgo)
       ))
       .orderBy(desc(emotionalStates.timestamp))
@@ -58,14 +59,14 @@ export class GrowthPhaseService {
     // Get recent conversation themes
     const themes = await db.select()
       .from(conversationTopics)
-      .where(eq(conversationTopics.userId, userId))
+        .where(eq(conversationTopics.userId, uid))
       .orderBy(desc(conversationTopics.lastMentioned))
       .limit(10);
 
     // Get current profile
     const profile = await db.select()
       .from(userProfiles)
-      .where(eq(userProfiles.userId, userId))
+        .where(eq(userProfiles.userId, uid))
       .limit(1);
 
     const currentProfile = profile[0];
@@ -77,7 +78,7 @@ export class GrowthPhaseService {
       ? `Average valence: ${(emotionalData.reduce((sum, e) => sum + e.valence, 0) / emotionalData.length).toFixed(2)}, Recent emotions: ${emotionalData.slice(0, 5).map(e => e.dominantEmotion).join(', ')}`
       : 'No recent emotional data';
 
-    const themesSummary = themes.map(t => `${t.topic} (mentioned ${t.frequency}x)`).join(', ');
+  const themesSummary = themes.map(t => `${t.theme} (mentioned ${t.frequency || 0}x)`).join(', ');
 
     const phaseDetection = await client.chat.completions.create({
       model: "gpt-4",
@@ -124,11 +125,11 @@ Return JSON:
     const detection = JSON.parse(phaseDetection.choices[0].message.content || '{}');
 
     // Get phase history
-    const history = await this.getPhaseHistory(userId);
+  const history = await this.getPhaseHistory(uid);
 
     // Predict next transition
     const prediction = await this.predictTransition(
-      userId,
+      uid,
       detection.currentPhase,
       detection.phaseProgress,
       history
@@ -148,7 +149,7 @@ Return JSON:
           phaseConfidence: Math.round(detection.confidence * 100),
           updatedAt: new Date()
         })
-        .where(eq(userProfiles.userId, userId));
+        .where(eq(userProfiles.userId, String(userId)));
     }
 
     return {
@@ -163,25 +164,26 @@ Return JSON:
     };
   }
 
-  private async getPhaseHistory(userId: number): Promise<PhaseHistoryEntry[]> {
+  private async getPhaseHistory(userId: string | number): Promise<PhaseHistoryEntry[]> {
+    const uid = String(userId);
     const history = await db.select()
       .from(phaseHistory)
-      .where(eq(phaseHistory.userId, userId))
+      .where(eq(phaseHistory.userId, uid))
       .orderBy(desc(phaseHistory.startDate))
       .limit(10);
 
     return history.map(h => ({
       phase: h.phase,
-      duration: h.endDate ? differenceInDays(h.endDate, h.startDate) : differenceInDays(new Date(), h.startDate),
+      duration: h.endDate ? differenceInDays(h.endDate, h.startDate!) : differenceInDays(new Date(), h.startDate!),
       keyLearnings: (h.insights as any)?.keyLearnings || [],
       transitionCatalyst: (h.triggers as any)?.catalyst || 'Unknown',
-      startDate: h.startDate,
+      startDate: h.startDate!,
       endDate: h.endDate || undefined
     }));
   }
 
   private async predictTransition(
-    userId: number,
+    userId: string,
     currentPhase: string,
     progress: number,
     history: PhaseHistoryEntry[]

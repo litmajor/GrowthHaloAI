@@ -35,7 +35,7 @@ The Wisdom Library automatically extracts, organizes, and surfaces the user's ha
 ```typescript
 {
   id: number,
-  userId: number,
+  userId: string | number,
   insight: string,
   category: string,
   dateRealized: Date,

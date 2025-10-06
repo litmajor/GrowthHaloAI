@@ -36,10 +36,11 @@ export interface IdeaJourneyVisualization {
 
 export class MetaMemoryService {
   async detectIdeaSeed(
-    userId: number,
+    userId: string | number,
     message: string,
     conversationId: string
   ): Promise<any | null> {
+    const uidNum = Number(userId);
     try {
       const client = getOpenAIClient();
 
@@ -78,7 +79,7 @@ export class MetaMemoryService {
 
       // Create idea evolution record
       const [idea] = await db.insert(ideaEvolutions).values({
-        userId,
+        userId: uidNum,
         ideaSummary: result.ideaSummary,
         category: result.category,
         seedConversationId: conversationId,
@@ -99,14 +100,15 @@ export class MetaMemoryService {
     }
   }
 
-  async trackIdeaDevelopment(userId: number, message: string): Promise<void> {
+  async trackIdeaDevelopment(userId: string | number, message: string): Promise<void> {
+    const uidNum = Number(userId);
     try {
       const client = getOpenAIClient();
 
       // Find active ideas
       const existingIdeas = await db.select()
         .from(ideaEvolutions)
-        .where(eq(ideaEvolutions.userId, userId));
+        .where(eq(ideaEvolutions.userId, uidNum));
 
       const activeIdeas = existingIdeas.filter(idea => 
         ['seed', 'germinating', 'growing'].includes(idea.maturityLevel)
@@ -275,10 +277,11 @@ export class MetaMemoryService {
     }
   }
 
-  async getUserIdeas(userId: number, includeAll: boolean = false): Promise<any[]> {
+  async getUserIdeas(userId: string | number, includeAll: boolean = false): Promise<any[]> {
+    const uidNum = Number(userId);
     let query = db.select()
       .from(ideaEvolutions)
-      .where(eq(ideaEvolutions.userId, userId));
+      .where(eq(ideaEvolutions.userId, uidNum));
 
     if (!includeAll) {
       // Only active ideas

@@ -1,7 +1,7 @@
 
 import OpenAI from 'openai';
 import { db } from './db';
-import { conversationTopics, emotionalStates } from '../shared/growth-schema';
+import { conversationThemes as conversationTopics, emotionalDataPoints as emotionalStates } from '../shared/growth-schema';
 import { eq, and, sql, desc } from 'drizzle-orm';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -18,11 +18,11 @@ function getOpenAIClient(): OpenAI {
 }
 
 interface DormantConcept {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   concept: string;
   category: 'value' | 'interest' | 'skill' | 'dream' | 'insight' | 'approach';
-  lastMentioned: Date;
+  lastMentioned: Date | null;
   mentionCount: number;
   emotionalValence: number;
   context: string[];
@@ -41,7 +41,7 @@ interface ConceptBridge {
 }
 
 export class DormantConceptService {
-  async identifyDormantConcepts(userId: number): Promise<DormantConcept[]> {
+  async identifyDormantConcepts(userId: string): Promise<DormantConcept[]> {
     // Get all topics that haven't been mentioned recently
     const themes = await db.select()
       .from(conversationTopics)
@@ -52,22 +52,23 @@ export class DormantConceptService {
     const now = Date.now();
 
     for (const theme of themes) {
-      const daysSinceLastMention = 
-        (now - theme.lastMentioned.getTime()) / (1000 * 60 * 60 * 24);
+      if (!theme.lastMentioned) continue;
+      const daysSinceLastMention = (now - theme.lastMentioned.getTime()) / (1000 * 60 * 60 * 24);
 
       // If mentioned 3+ times but not in past 60 days, it's dormant
-      if (theme.frequency >= 3 && daysSinceLastMention > 60) {
-        const category = await this.categorizeConcept(theme.topic);
-        const emotionalValence = await this.getAverageValence(userId, theme.topic);
-        const context = await this.getContexts(userId, theme.topic);
+      if ((theme.frequency || 0) >= 3 && daysSinceLastMention > 60) {
+        const topicText = theme.theme || 'unknown';
+        const category = await this.categorizeConcept(topicText);
+        const emotionalValence = await this.getAverageValence(userId, topicText);
+        const context = await this.getContexts(userId, topicText);
 
         dormant.push({
           id: theme.id,
           userId,
-          concept: theme.topic,
+          concept: topicText,
           category,
           lastMentioned: theme.lastMentioned,
-          mentionCount: theme.frequency,
+          mentionCount: theme.frequency || 0,
           emotionalValence,
           context,
           potentialRelevance: 0
@@ -108,7 +109,7 @@ export class DormantConceptService {
     }
   }
 
-  private async getAverageValence(userId: number, topic: string): Promise<number> {
+  private async getAverageValence(userId: string, topic: string): Promise<number> {
     try {
       const emotions = await db.select()
         .from(emotionalStates)
@@ -125,7 +126,7 @@ export class DormantConceptService {
     }
   }
 
-  private async getContexts(userId: number, topic: string): Promise<string[]> {
+  private async getContexts(userId: string, topic: string): Promise<string[]> {
     // Return some example contexts - in production, would extract from conversation history
     return ['working on projects', 'discussing future plans', 'reflecting on growth'];
   }
@@ -184,7 +185,7 @@ export class DormantConceptService {
   }
 
   formatReactivation(concept: DormantConcept): string {
-    const timeSince = formatDistanceToNow(concept.lastMentioned, { addSuffix: true });
+    const timeSince = concept.lastMentioned ? formatDistanceToNow(concept.lastMentioned, { addSuffix: true }) : 'some time ago';
 
     return `This reminds me of something you haven't talked about in a while...
 
@@ -198,7 +199,7 @@ or could it be part of the solution you're looking for?`;
   }
 
   async bridgeDistantConcepts(
-    userId: number,
+    userId: string,
     currentChallenge: string
   ): Promise<ConceptBridge[]> {
     try {
@@ -216,8 +217,8 @@ or could it be part of the solution you're looking for?`;
       // Generate embeddings for topics
       const conceptEmbeddings = await Promise.all(
         userTopics.map(async (t) => ({
-          concept: t.topic,
-          embedding: await this.generateEmbedding(t.topic)
+          concept: t.theme || 'unknown',
+          embedding: await this.generateEmbedding(t.theme || '')
         }))
       );
 

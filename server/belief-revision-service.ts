@@ -1,7 +1,8 @@
 
 import OpenAI from 'openai';
 import { db } from './db';
-import { beliefRevisions, memories } from '../shared/phase2-schema';
+import { beliefRevisions } from '../shared/phase2-schema';
+import { memories } from '../shared/growth-schema';
 import { eq, and, desc } from 'drizzle-orm';
 
 let openai: OpenAI | null = null;
@@ -62,7 +63,7 @@ export class BeliefRevisionService {
             role: "system",
             content: `Compare these two beliefs about self. Determine if there has been meaningful growth or shift.
 
-Past belief (${this.getTimeAgo(pastBelief.createdAt)}): "${pastBelief.content}"
+Past belief (${this.getTimeAgo(pastBelief.createdAt ?? new Date())}): "${pastBelief.content}"
 Current statement: "${currentBelief}"
 
 Return ONLY valid JSON with this structure:
@@ -125,12 +126,26 @@ That's significant growth. You've ${verb} in a really meaningful way. Do you not
 
   // Get user's belief journey
   async getBeliefJourney(userId: string, limit: number = 10): Promise<BeliefRevision[]> {
-    return await db
+    const results = await db
       .select()
       .from(beliefRevisions)
       .where(eq(beliefRevisions.userId, userId))
       .orderBy(desc(beliefRevisions.revisedAt))
       .limit(limit);
+
+    return results.map(r => ({
+      id: r.id,
+      userId: r.userId,
+      originalBelief: r.originalBelief,
+      revisedBelief: r.revisedBelief,
+      catalystConversationId: r.catalystConversationId,
+      revisedAt: r.revisedAt,
+      revisionType: r.revisionType as BeliefRevision['revisionType'],
+      userAwareness: r.userAwareness as BeliefRevision['userAwareness'],
+      significance: r.significance as BeliefRevision['significance'],
+      explanation: r.explanation ?? '',
+      celebrated: r.celebrated ?? false,
+    }));
   }
 
   // Mark revision as celebrated

@@ -30,19 +30,19 @@ export class GrowthTrackingService {
   }> {
     try {
       // Get comprehensive historical data
-      const phaseHistory = await storage.all(`
+      const phaseHistory = await storage.getAll(`
         SELECT * FROM phase_history 
         WHERE user_id = $1 AND start_date > NOW() - INTERVAL '${timeframe === 'week' ? '7 days' : timeframe === 'month' ? '30 days' : timeframe === '3months' ? '90 days' : '365 days'}'
         ORDER BY start_date DESC
       `, [userId]);
 
-      const energyData = await storage.all(`
+      const energyData = await storage.getAll(`
         SELECT * FROM energy_patterns 
         WHERE user_id = $1 AND date > NOW() - INTERVAL '${timeframe === 'week' ? '7 days' : timeframe === 'month' ? '30 days' : timeframe === '3months' ? '90 days' : '365 days'}'
         ORDER BY date DESC
       `, [userId]);
 
-      const journalEntries = await storage.all(`
+      const journalEntries = await storage.getAll(`
         SELECT content, ai_insights, detected_phase, sentiment, created_at FROM journal_entries 
         WHERE user_id = $1 AND created_at > NOW() - INTERVAL '${timeframe === 'week' ? '7 days' : timeframe === 'month' ? '30 days' : timeframe === '3months' ? '90 days' : '365 days'}'
         ORDER BY created_at DESC
@@ -83,7 +83,7 @@ export class GrowthTrackingService {
   }
 
   private detectCyclicalPatterns(phaseHistory: any[], energyData: any[]): Array<{ pattern: string; frequency: number; predictability: number }> {
-    const patterns = [];
+  const patterns: Array<{ pattern: string; frequency: number; predictability: number }> = [];
     
     // Analyze phase cycle lengths
     if (phaseHistory.length >= 3) {
@@ -134,7 +134,7 @@ export class GrowthTrackingService {
 
   private analyzeWeeklyEnergyPatterns(energyData: any[]): Array<{ pattern: string; frequency: number; predictability: number }> {
     const patterns = [];
-    const dailyAverages = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] }; // Sunday = 0
+  const dailyAverages: number[][] = [[], [], [], [], [], [], []]; // Sunday = 0
 
     energyData.forEach(entry => {
       const dayOfWeek = new Date(entry.date).getDay();
@@ -148,11 +148,10 @@ export class GrowthTrackingService {
     let bestAvg = 0;
     let worstAvg = 10;
 
-    Object.keys(dailyAverages).forEach(day => {
-      const dayNum = parseInt(day);
+    for (let dayNum = 0; dayNum < dailyAverages.length; dayNum++) {
       const energies = dailyAverages[dayNum];
       if (energies.length > 0) {
-        const avg = energies.reduce((sum, val) => sum + val, 0) / energies.length;
+        const avg = energies.reduce((sum: number, val: number) => sum + val, 0) / energies.length;
         if (avg > bestAvg) {
           bestAvg = avg;
           bestDay = dayNum;
@@ -162,7 +161,7 @@ export class GrowthTrackingService {
           worstDay = dayNum;
         }
       }
-    });
+  }
 
     if (bestDay >= 0) {
       patterns.push({
@@ -228,7 +227,7 @@ export class GrowthTrackingService {
   }
 
   private calculateEnergyCorrelations(energyData: any[], phaseHistory: any[]): Array<{ metric: string; correlation: number; insight: string }> {
-    const correlations = [];
+  const correlations: Array<{ metric: string; correlation: number; insight: string }> = [];
 
     if (energyData.length < 5) return correlations;
 
@@ -293,7 +292,7 @@ export class GrowthTrackingService {
   }
 
   private detectAnomalies(energyData: any[], journalEntries: any[]): Array<{ date: Date; description: string; significance: number }> {
-    const anomalies = [];
+  const anomalies: Array<{ date: Date; description: string; significance: number }> = [];
 
     // Detect energy anomalies
     if (energyData.length >= 7) {
@@ -336,11 +335,11 @@ export class GrowthTrackingService {
       });
     }
 
-    return anomalies.sort((a, b) => b.significance - a.significance);
+  return anomalies.sort((a, b) => b.significance - a.significance);
   }
 
   private async generatePredictions(userId: string, phaseHistory: any[], energyData: any[], journalEntries: any[]): Promise<Array<{ prediction: string; confidence: number; timeframe: string }>> {
-    const predictions = [];
+  const predictions: Array<{ prediction: string; confidence: number; timeframe: string }> = [];
 
     // Predict next phase transition based on historical patterns
     if (phaseHistory.length >= 2) {
@@ -361,7 +360,7 @@ export class GrowthTrackingService {
         };
         
         predictions.push({
-          prediction: `Likely to transition to ${nextPhases[currentPhase.phase]} phase within the next ${Math.round(avgDuration - daysSinceStart)} days`,
+    prediction: `Likely to transition to ${nextPhases[String(currentPhase.phase) as 'expansion'|'contraction'|'renewal']} phase within the next ${Math.round(avgDuration - daysSinceStart)} days`,
           confidence: Math.min(85, 60 + (phaseDurations.length * 5)),
           timeframe: `${Math.round(avgDuration - daysSinceStart)} days`
         });
@@ -437,7 +436,7 @@ export class GrowthTrackingService {
       // Analyze sentiment and detect phase
       const [sentimentAnalysis, phaseDetection] = await Promise.all([
         analyzeSentiment(content),
-        detectGrowthPhase(content)
+        detectGrowthPhase(userId, content)
       ]);
 
       // Save journal entry with AI insights
@@ -482,20 +481,20 @@ export class GrowthTrackingService {
       `, [userId]);
 
       // Get recent energy patterns
-      const recentEnergy = await storage.get(`
+      const recentEnergy = await storage.getAll(`
         SELECT * FROM energy_patterns 
         WHERE user_id = $1 
         ORDER BY date DESC 
         LIMIT 7
-      `, [userId]);
+      `, [userId]) || [];
 
       // Get recent insights
-      const recentInsights = await storage.all(`
+      const recentInsights = await storage.getAll(`
         SELECT ai_insights FROM journal_entries 
         WHERE user_id = $1 
         ORDER BY created_at DESC 
         LIMIT 5
-      `, [userId]);
+      `, [userId]) || [];
 
       // Calculate average energy levels
       const avgEnergy = recentEnergy.length > 0 ? {
@@ -537,11 +536,11 @@ export class GrowthTrackingService {
   async generateWeeklyInsights(userId: string) {
     try {
       // Get journal entries from the past week
-      const entries = await storage.all(`
+      const entries = await storage.getAll(`
         SELECT content FROM journal_entries 
         WHERE user_id = $1 AND created_at > NOW() - INTERVAL '7 days'
         ORDER BY created_at DESC
-      `, [userId]);
+      `, [userId]) || [];
 
       if (entries.length === 0) {
         return { insights: 'No journal entries this week to analyze.' };

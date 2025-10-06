@@ -15,7 +15,7 @@ interface PredictiveInsight {
   alternativeApproaches?: string[];
 }
 
-export function PredictiveOutcome({ userId }: { userId: number }) {
+export function PredictiveOutcome({ userId }: { userId: string | number }) {
   const [plannedAction, setPlannedAction] = useState('');
   const [context, setContext] = useState('');
 

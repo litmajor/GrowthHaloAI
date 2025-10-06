@@ -19,29 +19,47 @@ export interface UsageStats {
   coachingSessions: { used: number; included: number };
 }
 
-const TIER_LIMITS = {
+type TierLimits = {
+  blissInteractions: number;
+  communityCircles: number;
+  coachingSessions: number;
+  advancedFeatures: boolean;
+  prioritySupport: boolean;
+  moderationTools: boolean;
+  whiteLabel: boolean;
+};
+
+const TIER_LIMITS: Record<UserSubscription['tier'], TierLimits> = {
   free: {
-    blissInteractions: 5,
-    communityCircles: 1,
+    blissInteractions: 10,
+    communityCircles: 3,
     coachingSessions: 0,
-    advancedFeatures: false
+    advancedFeatures: false,
+    prioritySupport: false,
+    moderationTools: false,
+    whiteLabel: false
   },
   growth: {
     blissInteractions: -1, // unlimited
     communityCircles: 8,
-    coachingSessions: 0,
-    advancedFeatures: true
+    coachingSessions: 1,
+    advancedFeatures: true,
+    prioritySupport: false,
+    moderationTools: false,
+    whiteLabel: false
   },
   transformation: {
     blissInteractions: -1,
-    communityCircles: 8,
-    coachingSessions: 1,
+    communityCircles: 14,
+    coachingSessions: 2,
     advancedFeatures: true,
-    prioritySupport: true
+    prioritySupport: true,
+    moderationTools: false,
+    whiteLabel: false
   },
   facilitator: {
     blissInteractions: -1,
-    communityCircles: 8,
+    communityCircles: 20,
     coachingSessions: 5,
     advancedFeatures: true,
     prioritySupport: true,
@@ -178,17 +196,30 @@ export class SubscriptionService {
     }
   }
 
-  async upgradeSubscription(userId: string, newTier: string): Promise<boolean> {
+  async upgradeSubscription(userId: string, newTier: string, opts?: { stripeCustomerId?: string; stripeSubscriptionId?: string }): Promise<boolean> {
     try {
       const now = new Date();
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + 1);
 
+      const params: any[] = [newTier, now, endDate];
+      let setExtra = '';
+      if (opts?.stripeCustomerId) {
+        setExtra += ', stripe_customer_id = $4';
+        params.push(opts.stripeCustomerId);
+      }
+      if (opts?.stripeSubscriptionId) {
+        setExtra += (opts?.stripeCustomerId ? ', stripe_subscription_id = $5' : ', stripe_subscription_id = $4');
+        params.push(opts.stripeSubscriptionId);
+      }
+
+      params.push(userId);
+
       await storage.execute(`
         UPDATE user_subscriptions 
-        SET tier = $1, current_period_start = $2, current_period_end = $3, updated_at = NOW()
-        WHERE user_id = $4
-      `, [newTier, now, endDate, userId]);
+        SET tier = $1, current_period_start = $2, current_period_end = $3 ${setExtra}, updated_at = NOW()
+        WHERE user_id = $${params.length}
+      `, params);
 
       return true;
     } catch (error) {

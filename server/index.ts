@@ -1,10 +1,20 @@
+// Load .env.local first (if present), then .env so local overrides take precedence.
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+dotenv.config();
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+// Default JSON/urlencoded parsers for regular API routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Helper raw body parser to use for endpoints that need the raw payload (e.g. Stripe webhooks)
+import { raw } from 'express';
+export const rawBodyMiddleware = raw({ type: '*/*' });
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -61,11 +71,17 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
+  // On some platforms (Windows) reusePort is not supported; only enable when available
+  const listenOptions: any = {
     port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+    host: '0.0.0.0',
+  };
+
+  if (process.platform !== 'win32') {
+    listenOptions.reusePort = true;
+  }
+
+  server.listen(listenOptions, () => {
     log(`serving on port ${port}`);
   });
 })();

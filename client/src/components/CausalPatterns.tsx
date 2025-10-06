@@ -13,7 +13,7 @@ interface CausalPattern {
   observationCount: number;
 }
 
-export function CausalPatterns({ userId }: { userId: number }) {
+export function CausalPatterns({ userId }: { userId: string | number }) {
   const { data: patterns, isLoading } = useQuery<CausalPattern[]>({
     queryKey: ['causal-patterns', userId],
     queryFn: async () => {

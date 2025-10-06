@@ -19,7 +19,7 @@ function getOpenAIClient(): OpenAI {
 
 interface WisdomEntry {
   id: number;
-  userId: number;
+  userId: string | number;
   insight: string;
   category: string;
   dateRealized: Date;
@@ -47,10 +47,11 @@ interface WisdomBook {
 
 export class WisdomLibraryService {
   async extractWisdom(
-    userId: number,
+    userId: string | number,
     conversationId: string,
     message: string
   ): Promise<WisdomEntry | null> {
+    const uidNum = Number(userId);
     try {
       const client = getOpenAIClient();
 
@@ -100,7 +101,7 @@ If not wisdom, return: { "hasWisdom": false }`
 
       // Store wisdom
       const [wisdom] = await db.insert(wisdomEntries).values({
-        userId,
+        userId: uidNum,
         insight: result.insight,
         category: result.category,
         dateRealized: new Date(),
@@ -114,7 +115,7 @@ If not wisdom, return: { "hasWisdom": false }`
       }).returning();
 
       // Find and link related wisdom
-      await this.linkRelatedWisdom(wisdom.id, wisdom.insight, userId);
+  await this.linkRelatedWisdom(wisdom.id, wisdom.insight, uidNum);
 
       return wisdom as WisdomEntry;
     } catch (error) {
@@ -123,14 +124,15 @@ If not wisdom, return: { "hasWisdom": false }`
     }
   }
 
-  private async linkRelatedWisdom(wisdomId: number, insight: string, userId: number): Promise<void> {
+  private async linkRelatedWisdom(wisdomId: number, insight: string, userId: string | number): Promise<void> {
+    const uidNum = Number(userId);
     try {
       const client = getOpenAIClient();
 
       const existingWisdom = await db.select()
         .from(wisdomEntries)
         .where(and(
-          eq(wisdomEntries.userId, userId),
+          eq(wisdomEntries.userId, uidNum),
           // Don't include the current wisdom
         ))
         .limit(50);
@@ -166,13 +168,14 @@ Return JSON with IDs of related insights (max 5):
     }
   }
 
-  async buildWisdomCollections(userId: number): Promise<WisdomCollection[]> {
+  async buildWisdomCollections(userId: string | number): Promise<WisdomCollection[]> {
     try {
+      const uidNum = Number(userId);
       const client = getOpenAIClient();
 
       const allWisdom = await db.select()
         .from(wisdomEntries)
-        .where(eq(wisdomEntries.userId, userId))
+        .where(eq(wisdomEntries.userId, uidNum))
         .orderBy(desc(wisdomEntries.dateRealized));
 
       if (allWisdom.length === 0) return [];
@@ -214,15 +217,16 @@ Return JSON:
   }
 
   async findApplicableWisdom(
-    userId: number,
+    userId: string | number,
     currentSituation: string
   ): Promise<WisdomEntry[]> {
     try {
+      const uidNum = Number(userId);
       const client = getOpenAIClient();
 
       const allWisdom = await db.select()
         .from(wisdomEntries)
-        .where(eq(wisdomEntries.userId, userId));
+        .where(eq(wisdomEntries.userId, uidNum));
 
       if (allWisdom.length === 0) return [];
 
@@ -261,19 +265,20 @@ Return JSON with indices of relevant insights (max 3 most relevant):
     }
   }
 
-  async generateWisdomBook(userId: number): Promise<WisdomBook> {
+  async generateWisdomBook(userId: string | number): Promise<WisdomBook> {
     try {
-      const collections = await this.buildWisdomCollections(userId);
+      const uidNum = Number(userId);
+      const collections = await this.buildWisdomCollections(uidNum);
       
       const mostReferenced = await db.select()
         .from(wisdomEntries)
-        .where(eq(wisdomEntries.userId, userId))
+        .where(eq(wisdomEntries.userId, uidNum))
         .orderBy(desc(wisdomEntries.timesReferenced))
         .limit(5);
 
       const recentBreakthroughs = await db.select()
         .from(wisdomEntries)
-        .where(eq(wisdomEntries.userId, userId))
+        .where(eq(wisdomEntries.userId, uidNum))
         .orderBy(desc(wisdomEntries.dateRealized))
         .limit(5);
 

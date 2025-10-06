@@ -2,6 +2,7 @@
 import OpenAI from "openai";
 import { db } from "./db";
 import { memories, conversationThemes, emotionalDataPoints } from "../shared/growth-schema";
+import type { Memory, EmotionalDataPoint, ConversationTheme } from '@shared/growth-schema';
 import { eq, desc, sql, and, gte } from "drizzle-orm";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -152,7 +153,8 @@ Only extract truly meaningful content, not casual statements.`
         const similarity = this.cosineSimilarity(contextEmbedding, embedding);
         
         // Calculate days since creation
-        const daysSinceCreated = (Date.now() - memory.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+  const createdAtMs = memory.createdAt ? memory.createdAt.getTime() : Date.now();
+  const daysSinceCreated = (Date.now() - createdAtMs) / (1000 * 60 * 60 * 24);
         const recencyScore = Math.pow(1 / (1 + Math.log(daysSinceCreated + 1)), 0.5);
         
         // Combined relevance score
@@ -191,15 +193,17 @@ Only extract truly meaningful content, not casual statements.`
         ))
         .limit(1);
 
-      if (existing.length > 0) {
-        // Update existing theme
+      const first = existing[0];
+      if (first) {
+        // Update existing theme (guard possible nulls)
+        const freq = (first.frequency ?? 0) + 1;
         await db
           .update(conversationThemes)
           .set({
-            frequency: existing[0].frequency + 1,
+            frequency: freq,
             lastMentioned: new Date(),
           })
-          .where(eq(conversationThemes.id, existing[0].id));
+          .where(eq(conversationThemes.id, first.id));
       } else {
         // Create new theme
         await db.insert(conversationThemes).values({

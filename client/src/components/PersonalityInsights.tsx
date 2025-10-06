@@ -11,7 +11,7 @@ interface PersonalityInsight {
   implications: string[];
 }
 
-export function PersonalityInsights({ userId }: { userId: number }) {
+export function PersonalityInsights({ userId }: { userId: string | number }) {
   const { data: insights, isLoading } = useQuery<PersonalityInsight[]>({
     queryKey: ['personality-insights', userId],
     queryFn: async () => {

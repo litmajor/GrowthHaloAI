@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { CreditCard, Calendar, Star, Crown, Zap, Sparkles, ArrowRight, Check, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import CheckoutButton from '@/components/CheckoutButton';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -316,8 +317,7 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
                 .map((tier) => (
                   <div
                     key={tier.id}
-                    className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer"
-                    onClick={() => handleUpgrade(tier.id)}
+                    className="p-4 border rounded-lg hover:bg-muted/50"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -332,7 +332,10 @@ export default function SubscriptionManager({ userId }: SubscriptionManagerProps
                           <div className="text-sm text-muted-foreground">${tier.price}/month</div>
                         </div>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                      <div className="ml-4">
+                        {/* Use CheckoutButton to initiate Stripe Checkout for the selected tier */}
+                        <CheckoutButton userId={userId} tier={tier.id as 'growth' | 'transformation' | 'facilitator'} />
+                      </div>
                     </div>
                   </div>
                 ))}

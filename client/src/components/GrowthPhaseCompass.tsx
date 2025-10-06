@@ -26,7 +26,7 @@ interface GrowthPhaseAnalysis {
   guidance: string;
 }
 
-export function GrowthPhaseCompass({ userId }: { userId: number }) {
+export function GrowthPhaseCompass({ userId }: { userId: string | number }) {
   const { data: analysis, isLoading } = useQuery<GrowthPhaseAnalysis>({
     queryKey: ['growth-phase-analysis', userId],
     queryFn: async () => {
@@ -189,16 +189,17 @@ export function GrowthPhaseCompass({ userId }: { userId: number }) {
         <CardContent>
           <ul className="space-y-3">
             {analysis.personalPatterns.map((pattern, idx) => (
-              <motion.li
-                key={idx}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className="flex items-start gap-2 text-sm"
-              >
-                <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                <span>{pattern}</span>
-              </motion.li>
+              <li key={idx}>
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="flex items-start gap-2 text-sm"
+                >
+                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span>{pattern}</span>
+                </motion.div>
+              </li>
             ))}
           </ul>
         </CardContent>

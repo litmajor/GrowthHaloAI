@@ -406,7 +406,7 @@ Return as JSON array of strings.
   private generateRecallReasoning(memories: ConversationMemory[], concepts: string[]): string {
     if (memories.length === 0) return 'No relevant memories found';
     
-    const phases = [...new Set(memories.map(m => m.phase))];
+    const phases = Array.from(new Set(memories.map(m => m.phase)));
     const avgEmotional = memories.reduce((sum, m) => sum + m.emotionalState, 0) / memories.length;
     
     return `Recalled ${memories.length} relevant memories spanning ${phases.join(', ')} phases, ` +

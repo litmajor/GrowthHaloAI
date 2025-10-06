@@ -16,7 +16,7 @@ interface Idea {
   updatedAt: string;
 }
 
-export function IdeasDashboard({ userId }: { userId: number }) {
+export function IdeasDashboard({ userId }: { userId: string | number }) {
   const [selectedIdeaId, setSelectedIdeaId] = useState<number | null>(null);
 
   const { data: ideas, isLoading } = useQuery<Idea[]>({

@@ -280,7 +280,14 @@ Respond with detailed JSON matching the expected structure.`;
       console.error('Error generating AI content recommendations:', error);
 
       // Fallback to rule-based recommendations
-      return this.generateFallbackRecommendations(userContext);
+      // Ensure currentPhase is one of the allowed values before passing
+      const fallbackContext = {
+        ...userContext,
+        currentPhase: (['expansion', 'contraction', 'renewal'].includes(userContext.currentPhase)
+          ? userContext.currentPhase
+          : 'expansion') as 'expansion' | 'contraction' | 'renewal'
+      };
+      return this.generateFallbackRecommendations(fallbackContext);
     }
   }
 
@@ -302,9 +309,13 @@ Respond with detailed JSON matching the expected structure.`;
     }));
   }
 
-  private generateFallbackRecommendations(userContext: any) {
+  private generateFallbackRecommendations(userContext: { currentPhase: 'expansion' | 'contraction' | 'renewal'; recentMood: number; [key: string]: any }) {
     // Rule-based fallback system
-    const phaseContent = {
+    const phaseContent: {
+      expansion: { title: string; type: string; reasoning: string }[];
+      contraction: { title: string; type: string; reasoning: string }[];
+      renewal: { title: string; type: string; reasoning: string }[];
+    } = {
       expansion: [
         { title: 'Embracing New Opportunities', type: 'article', reasoning: 'Perfect for your expansion phase' },
         { title: 'Setting Ambitious Goals', type: 'practice', reasoning: 'Channel your growth energy effectively' }

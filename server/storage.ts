@@ -154,6 +154,23 @@ export class MemStorage implements IStorage {
     }
   }
 
+  // Save chat message convenience method used by routes
+  async saveMessage(userId: string, conversationId: string, role: 'user' | 'assistant', content: string): Promise<void> {
+    const table = this.mockTables.get('chat_messages');
+    if (!table) return;
+    const id = randomUUID();
+    const now = new Date();
+    table.set(id, {
+      id,
+      user_id: userId,
+      conversation_id: conversationId,
+      message: content,
+      role,
+      is_user: role === 'user',
+      created_at: now,
+    });
+  }
+
   private extractTableName(query: string): string {
     const match = query.match(/FROM\s+(\w+)|INTO\s+(\w+)|UPDATE\s+(\w+)/i);
     return match ? (match[1] || match[2] || match[3]) : 'unknown';
@@ -227,7 +244,7 @@ export class MemStorage implements IStorage {
     if (!followsTable) return;
 
     // Find and remove the follow relationship
-    for (const id of followsTable.keys()) {
+    for (const id of Array.from(followsTable.keys())) {
       const follow = followsTable.get(id);
       if (follow && follow.follower_id === followerId && follow.following_id === followingId) {
         followsTable.delete(id);
@@ -241,7 +258,7 @@ export class MemStorage implements IStorage {
     if (!followsTable) return [];
 
     const followers = [];
-    for (const id of followsTable.keys()) {
+    for (const id of Array.from(followsTable.keys())) {
       const follow = followsTable.get(id);
       if (follow && follow.following_id === userId) {
         const followerUser = this.users.get(follow.follower_id);
@@ -263,7 +280,7 @@ export class MemStorage implements IStorage {
     if (!followsTable) return [];
 
     const following = [];
-    for (const id of followsTable.keys()) {
+    for (const id of Array.from(followsTable.keys())) {
       const follow = followsTable.get(id);
       if (follow && follow.follower_id === userId) {
         const followedUser = this.users.get(follow.following_id);
@@ -332,9 +349,24 @@ export class MemStorage implements IStorage {
   async createGoal(goalData: InsertGoal): Promise<Goal> {
     const id = randomUUID();
     const now = new Date();
+    // Ensure defaults for fields that may be optional on InsertGoal
     const goal: Goal = {
       id,
-      ...goalData,
+      userId: (goalData as any).userId,
+      title: (goalData as any).title,
+      description: (goalData as any).description ?? null,
+      category: (goalData as any).category,
+      priority: (goalData as any).priority ?? 5,
+      status: (goalData as any).status ?? 'active',
+      progress: (goalData as any).progress ?? 0,
+      detectedFromConversation: (goalData as any).detectedFromConversation ?? true,
+      emotionalInvestment: (goalData as any).emotionalInvestment ?? 5,
+      urgency: (goalData as any).urgency ?? 5,
+      targetDate: (goalData as any).targetDate ?? null,
+      completedAt: (goalData as any).completedAt ?? null,
+      lastMentioned: (goalData as any).lastMentioned ?? now,
+      aiInsights: (goalData as any).aiInsights ?? null,
+      conversationContext: (goalData as any).conversationContext ?? null,
       createdAt: now,
       updatedAt: now,
     };
@@ -362,9 +394,16 @@ export class MemStorage implements IStorage {
     const now = new Date();
     const progress: GoalProgress = {
       id,
-      ...progressData,
-      createdAt: now,
-    };
+      userId: (progressData as any).userId,
+      goalId: (progressData as any).goalId,
+      progressPercentage: (progressData as any).progressPercentage,
+      detectedActivity: (progressData as any).detectedActivity ?? null,
+      conversationExcerpt: (progressData as any).conversationExcerpt ?? null,
+      aiConfidence: (progressData as any).aiConfidence ?? null,
+      momentum: (progressData as any).momentum ?? null,
+      obstacles: (progressData as any).obstacles ?? null,
+  createdAt: now,
+    } as unknown as GoalProgress;
 
     const progressTable = this.mockTables.get('goal_progress');
     progressTable?.set(id, progress);
@@ -383,7 +422,7 @@ export class MemStorage implements IStorage {
       const progress = progressTable.get(id);
       if (progress && 
           progress.userId === userId && 
-          new Date(progress.createdAt) >= cutoffDate) {
+          new Date(progress.createdAt ?? 0) >= cutoffDate) {
         recentProgress.push({
           id: progress.id,
           goalId: progress.goalId,
@@ -399,7 +438,7 @@ export class MemStorage implements IStorage {
       }
     }
 
-    return recentProgress.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return recentProgress.sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime());
   }
 
   async createGoalRelationship(relationshipData: InsertGoalRelationship): Promise<GoalRelationship> {
@@ -407,9 +446,15 @@ export class MemStorage implements IStorage {
     const now = new Date();
     const relationship: GoalRelationship = {
       id,
-      ...relationshipData,
+      primaryGoalId: (relationshipData as any).primaryGoalId,
+      relatedGoalId: (relationshipData as any).relatedGoalId,
+      relationshipType: (relationshipData as any).relationshipType,
+      strength: (relationshipData as any).strength ?? 0.5,
+      aiDetected: (relationshipData as any).aiDetected ?? true,
+      userConfirmed: (relationshipData as any).userConfirmed ?? false,
+      impact: (relationshipData as any).impact ?? null,
       createdAt: now,
-    };
+    } as unknown as GoalRelationship;
 
     const relationshipsTable = this.mockTables.get('goal_relationships');
     relationshipsTable?.set(id, relationship);
@@ -422,9 +467,15 @@ export class MemStorage implements IStorage {
     const now = new Date();
     const link: ConversationGoalLink = {
       id,
-      ...linkData,
+      userId: (linkData as any).userId,
+      goalId: (linkData as any).goalId,
+      conversationSnippet: (linkData as any).conversationSnippet,
+      linkType: (linkData as any).linkType,
+      sentiment: (linkData as any).sentiment ?? null,
+      confidence: (linkData as any).confidence ?? null,
+      extractedInsight: (linkData as any).extractedInsight ?? null,
       createdAt: now,
-    };
+    } as unknown as ConversationGoalLink;
 
     const linksTable = this.mockTables.get('conversation_goal_links');
     linksTable?.set(id, link);

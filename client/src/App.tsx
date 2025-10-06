@@ -53,9 +53,9 @@ function Router() {
       <Route path="/content" component={ContentPage} />
       <Route path="/goals" component={GoalsPage} />
       <Route path="/patterns" component={PatternsPage} />
-      <Route path="/ideas" element={<IdeasPage />} />
-      <Route path="/wisdom" element={<WisdomPage />} />
-      <Route path="*" element={<NotFound />} />
+      <Route path="/ideas" component={IdeasPage} />
+      <Route path="/wisdom" component={WisdomPage} />
+      <Route path="*" component={NotFound} />
       <Route path="/analytics" component={AnalyticsPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route path="/subscription" component={SubscriptionPage} />

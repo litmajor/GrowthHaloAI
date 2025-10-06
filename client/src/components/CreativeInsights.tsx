@@ -16,7 +16,7 @@ interface ConceptBridge {
   applicability: string;
 }
 
-export function CreativeInsights({ userId }: { userId: number }) {
+export function CreativeInsights({ userId }: { userId: string | number }) {
   const [challenge, setChallenge] = useState('');
 
   const { mutate: generateInsights, data: bridges, isPending } = useMutation({

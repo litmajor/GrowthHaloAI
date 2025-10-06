@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { subscriptionService } from './subscription-service';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
-  apiVersion: '2023-10-16',
+  apiVersion: '2025-08-27.basil',
 });
 
 export interface PaymentIntent {
@@ -93,18 +93,40 @@ export class PaymentService {
     const tier = session.metadata?.tier as string;
     
     if (session.subscription) {
-      // Update user subscription in our database
-      await subscriptionService.upgradeSubscription(userId, tier);
-      
-      // Store Stripe customer and subscription IDs
-      // This would typically update the database with Stripe IDs
-      console.log(`Subscription created for user ${userId}: ${session.subscription}`);
+      // session.subscription may be an ID or a full object depending on webhook payload
+      const stripeSubscriptionId = typeof session.subscription === 'string' ? session.subscription : (session.subscription as any).id;
+      const stripeCustomerId = session.customer as string | undefined;
+
+      // Update user subscription in our database and persist Stripe IDs
+      await subscriptionService.upgradeSubscription(userId, tier, {
+        stripeCustomerId,
+        stripeSubscriptionId
+      });
+
+      console.log(`Subscription created for user ${userId}: subscription=${stripeSubscriptionId} customer=${stripeCustomerId}`);
     }
   }
 
   private async handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
     // Handle subscription updates (upgrades, downgrades, etc.)
-    console.log('Subscription updated:', subscription.id);
+    try {
+      // Attempt to find our user by stripe customer id if we store customer_id on user_subscriptions
+      const customerId = subscription.customer as string | undefined;
+      if (!customerId) return;
+
+      // Find user by stripe_customer_id
+      // This assumes storage has the ability to run a query returning user_id
+      const row: any = await (await import('./storage')).storage.get(`SELECT user_id FROM user_subscriptions WHERE stripe_customer_id = $1`, [customerId]);
+      if (row?.user_id) {
+        // Update stored subscription id and keep tier as-is
+        await subscriptionService.upgradeSubscription(row.user_id, subscription?.metadata?.tier || 'growth', {
+          stripeCustomerId: customerId,
+          stripeSubscriptionId: subscription.id
+        });
+      }
+    } catch (error) {
+      console.error('Error handling subscription.updated webhook persist:', error);
+    }
   }
 
   private async handleSubscriptionCancelled(subscription: Stripe.Subscription): Promise<void> {

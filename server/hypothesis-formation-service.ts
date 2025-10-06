@@ -34,31 +34,32 @@ export interface PredictiveInsightData {
 }
 
 export class HypothesisFormationService {
-  async generateHypotheses(userId: number): Promise<any[]> {
+  async generateHypotheses(userId: string | number): Promise<any[]> {
+    const uidNum = Number(userId);
     try {
       const client = getOpenAIClient();
 
       // Gather user data
       const conversations = await db.select()
         .from(memories)
-        .where(eq(memories.userId, userId))
+        .where(eq(memories.userId, String(uidNum)))
         .orderBy(desc(memories.createdAt))
         .limit(50);
 
       const outcomes = await db.select()
         .from(outcomeAnalyses)
-        .where(eq(outcomeAnalyses.userId, userId))
+        .where(eq(outcomeAnalyses.userId, uidNum))
         .limit(20);
 
       const emotions = await db.select()
         .from(emotionalDataPoints)
-        .where(eq(emotionalDataPoints.userId, userId))
+        .where(eq(emotionalDataPoints.userId, String(uidNum)))
         .orderBy(desc(emotionalDataPoints.timestamp))
         .limit(30);
 
       const themes = await db.select()
         .from(conversationThemes)
-        .where(eq(conversationThemes.userId, userId))
+        .where(eq(conversationThemes.userId, String(uidNum)))
         .orderBy(desc(conversationThemes.frequency))
         .limit(10);
 
@@ -117,7 +118,7 @@ export class HypothesisFormationService {
       // Store in database
       for (const hyp of hypotheses) {
         await db.insert(userHypotheses).values({
-          userId,
+          userId: uidNum,
           category: hyp.category,
           hypothesis: hyp.hypothesis,
           confidence: hyp.confidence,
@@ -203,14 +204,15 @@ export class HypothesisFormationService {
     }
   }
 
-  async getPersonalityInsights(userId: number): Promise<any[]> {
+  async getPersonalityInsights(userId: string | number): Promise<any[]> {
+    const uidNum = Number(userId);
     try {
       const client = getOpenAIClient();
 
       const confirmedHypotheses = await db.select()
         .from(userHypotheses)
         .where(and(
-          eq(userHypotheses.userId, userId),
+          eq(userHypotheses.userId, uidNum),
           eq(userHypotheses.confirmed, true)
         ));
 
@@ -257,7 +259,7 @@ export class HypothesisFormationService {
         const existing = await db.select()
           .from(personalityInsights)
           .where(and(
-            eq(personalityInsights.userId, userId),
+            eq(personalityInsights.userId, uidNum),
             eq(personalityInsights.dimension, insight.dimension)
           ))
           .limit(1);
@@ -273,7 +275,7 @@ export class HypothesisFormationService {
             .where(eq(personalityInsights.id, existing[0].id));
         } else {
           await db.insert(personalityInsights).values({
-            userId,
+            userId: uidNum,
             dimension: insight.dimension,
             profile: insight.profile,
             confidence: insight.confidence,
@@ -290,17 +292,18 @@ export class HypothesisFormationService {
   }
 
   async predictOutcome(
-    userId: number,
+    userId: string | number,
     plannedAction: string,
     context: string
   ): Promise<PredictiveInsightData | null> {
+    const uidNum = Number(userId);
     try {
       const client = getOpenAIClient();
 
       // Find similar past situations
       const pastOutcomes = await db.select()
         .from(outcomeAnalyses)
-        .where(eq(outcomeAnalyses.userId, userId))
+        .where(eq(outcomeAnalyses.userId, uidNum))
         .limit(10);
 
       if (pastOutcomes.length === 0) {
@@ -346,7 +349,7 @@ export class HypothesisFormationService {
 
       // Store the prediction
       await db.insert(predictiveInsights).values({
-        userId,
+        userId: uidNum,
         situation: context,
         plannedAction,
         likelyOutcome: result.likelyOutcome,
@@ -363,8 +366,9 @@ export class HypothesisFormationService {
     }
   }
 
-  async getUserHypotheses(userId: number, confirmed?: boolean): Promise<any[]> {
-    let conditions = [eq(userHypotheses.userId, userId)];
+  async getUserHypotheses(userId: string | number, confirmed?: boolean): Promise<any[]> {
+    const uidNum = Number(userId);
+    let conditions = [eq(userHypotheses.userId, uidNum)];
     
     if (confirmed !== undefined) {
       conditions.push(eq(userHypotheses.confirmed, confirmed));

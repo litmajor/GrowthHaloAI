@@ -17,7 +17,7 @@ interface DormantConcept {
   context: string[];
 }
 
-export function DormantConcepts({ userId }: { userId: number }) {
+export function DormantConcepts({ userId }: { userId: string | number }) {
   const { data: concepts, isLoading } = useQuery<DormantConcept[]>({
     queryKey: ['dormant-concepts', userId],
     queryFn: async () => {

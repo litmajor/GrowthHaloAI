@@ -8,7 +8,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export interface CausalRelationship {
   id: string;
-  userId: number;
+  userId: string | number;
   cause: string;
   effect: string;
   confidence: number;
@@ -17,7 +17,7 @@ export interface CausalRelationship {
   firstObserved: Date;
   lastConfirmed: Date;
   observationCount: number;
-  contextFactors?: string[];
+  contextFactors?: string[] | null;
 }
 
 export interface ActionSuggestion {
@@ -46,10 +46,11 @@ export interface ApproachAnalysis {
 
 export class CausalReasoningService {
   async extractCausalRelationships(
-    userId: number,
+    userId: string | number,
     message: string,
     conversationId: string
   ): Promise<CausalRelationship[]> {
+    const uidNum = Number(userId);
     try {
       const analysis = await openai.chat.completions.create({
         model: "gpt-4",
@@ -84,7 +85,7 @@ export class CausalReasoningService {
       
       // Store or update existing relationships
       for (const rel of relationships) {
-        await this.updateOrCreateRelationship(userId, rel, conversationId);
+        await this.updateOrCreateRelationship(uidNum, rel, conversationId);
       }
 
       return relationships;
@@ -95,16 +96,17 @@ export class CausalReasoningService {
   }
 
   private async updateOrCreateRelationship(
-    userId: number,
+    userId: string | number,
     rel: any,
     conversationId: string
   ): Promise<void> {
+    const uidNum = Number(userId);
     // Check if similar relationship exists
-    const existing = await db.select()
+      const existing = await db.select()
       .from(causalRelationships)
       .where(
         and(
-          eq(causalRelationships.userId, userId),
+          eq(causalRelationships.userId, uidNum),
           eq(causalRelationships.cause, rel.cause),
           eq(causalRelationships.effect, rel.effect)
         )
@@ -125,7 +127,7 @@ export class CausalReasoningService {
     } else {
       // Create new
       await db.insert(causalRelationships).values({
-        userId,
+        userId: uidNum,
         cause: rel.cause,
         effect: rel.effect,
         confidence: rel.confidence,
@@ -137,12 +139,13 @@ export class CausalReasoningService {
   }
 
   async getPatterns(
-    userId: number,
+    userId: string | number,
     domain?: string,
     minConfidence: number = 0.6
   ): Promise<CausalRelationship[]> {
+    const uidNum = Number(userId);
     let conditions = [
-      eq(causalRelationships.userId, userId),
+      eq(causalRelationships.userId, uidNum),
       gte(causalRelationships.confidence, minConfidence),
       gte(causalRelationships.observationCount, 2)
     ];
@@ -158,16 +161,17 @@ export class CausalReasoningService {
   }
 
   async suggestActions(
-    userId: number,
+    userId: string | number,
     currentSituation: string,
     desiredOutcome: string
   ): Promise<ActionSuggestion[]> {
+    const uidNum = Number(userId);
     try {
       const pastOutcomes = await db.select()
         .from(outcomeAnalyses)
         .where(
           and(
-            eq(outcomeAnalyses.userId, userId),
+            eq(outcomeAnalyses.userId, uidNum),
             eq(outcomeAnalyses.outcomeQuality, 'positive')
           )
         )
@@ -212,13 +216,14 @@ export class CausalReasoningService {
     }
   }
 
-  async analyzeApproaches(userId: number, domain: string): Promise<ApproachAnalysis | null> {
+  async analyzeApproaches(userId: string | number, domain: string): Promise<ApproachAnalysis | null> {
+    const uidNum = Number(userId);
     try {
       const outcomes = await db.select()
         .from(outcomeAnalyses)
         .where(
           and(
-            eq(outcomeAnalyses.userId, userId),
+            eq(outcomeAnalyses.userId, uidNum),
             eq(outcomeAnalyses.domain, domain)
           )
         );
@@ -261,16 +266,17 @@ export class CausalReasoningService {
   }
 
   async findAnalogies(
-    userId: number,
+    userId: string | number,
     currentSituation: string,
     currentDomain: string
   ): Promise<any[]> {
+    const uidNum = Number(userId);
     try {
       const pastSolutions = await db.select()
         .from(outcomeAnalyses)
         .where(
           and(
-            eq(outcomeAnalyses.userId, userId),
+            eq(outcomeAnalyses.userId, uidNum),
             ne(outcomeAnalyses.domain, currentDomain),
             eq(outcomeAnalyses.outcomeQuality, 'positive')
           )
@@ -323,7 +329,7 @@ export class CausalReasoningService {
         const source = pastSolutions.find(s => s.id === analogy.sourceId);
         if (source) {
           await db.insert(domainAnalogies).values({
-            userId,
+            userId: uidNum,
             sourceId: analogy.sourceId,
             sourceDomain: source.domain,
             sourceSituation: source.situation,
