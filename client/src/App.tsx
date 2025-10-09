@@ -3,8 +3,9 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import Navigation from "@/components/Navigation";
 import { HintsProvider } from "@/components/HintsProvider";
+import { ContextualHelpWidget } from "@/components/ContextualHelpWidget";
+import Navigation from "@/components/Navigation";
 import Home from "@/pages/Home";
 import ValuesPage from "./pages/ValuesPage";
 import CheckInPage from "./pages/CheckInPage";
@@ -34,6 +35,9 @@ import WisdomPage from "./pages/WisdomPage";
 import APIPage from "./pages/APIPage";
 import { useState, useEffect } from "react";
 import OnboardingFlow from "@/components/OnboardingFlow";
+// Assuming CheckoutSuccess and CheckoutCancel are defined elsewhere or will be added
+// import CheckoutSuccess from "@/pages/CheckoutSuccess";
+// import CheckoutCancel from "@/pages/CheckoutCancel";
 
 function Router() {
   return (
@@ -64,6 +68,9 @@ function Router() {
       <Route path="/subscription" component={SubscriptionPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route path="/faq" component={FAQPage} />
+      {/* Placeholder routes for checkout, assuming they exist */}
+      {/* <Route path="/checkout/success" component={CheckoutSuccess} /> */}
+      {/* <Route path="/checkout/cancel" component={CheckoutCancel} /> */}
       <Route component={NotFound} />
     </Switch>
   );
@@ -111,6 +118,7 @@ function App() {
                 <Router />
               </main>
             </div>
+            <ContextualHelpWidget />
             <Toaster />
           </TooltipProvider>
         </HintsProvider>
