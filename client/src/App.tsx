@@ -57,12 +57,11 @@ function Router() {
       <Route path="/patterns" component={PatternsPage} />
       <Route path="/ideas" component={IdeasPage} />
       <Route path="/wisdom" component={WisdomPage} />
-      <Route path="*" component={NotFound} />
       <Route path="/analytics" component={AnalyticsPage} />
-      <Route path="/profile" component={ProfilePage} />
-      <Route path="/subscription" component={SubscriptionPage} />
-      <Route path="/faq" component={FAQPage} />
       <Route path="/personality" component={PersonalityTestPage} />
+      <Route path="/subscription" component={SubscriptionPage} />
+      <Route path="/profile" component={ProfilePage} />
+      <Route path="/faq" component={FAQPage} />
       <Route component={NotFound} />
     </Switch>
   );

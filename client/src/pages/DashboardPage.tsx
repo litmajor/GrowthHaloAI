@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Compass, Brain, Heart, Zap, Users, Target, BarChart3, BookOpen, CreditCard } from "lucide-react";
+import { Calendar, Compass, Brain, Heart, Zap, Users, Target, BarChart3, BookOpen, CreditCard, TrendingUp } from "lucide-react";
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
