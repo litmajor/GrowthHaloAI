@@ -173,3 +173,89 @@ Bliss 2.0 builds upon all previous implementations:
 - Community intelligence (anonymized patterns)
 - Multi-modal input integration
 - Advanced visualization (memory graphs, evolution timelines)
+
+## Admin Dashboard & Analytics System
+
+### Overview
+Comprehensive admin dashboard for platform management and analytics, implemented October 9, 2025. Provides secure access to revenue metrics, subscription analytics, user management, and system monitoring.
+
+### Admin Authentication
+- **Invite-Code Protected Registration**: Admin accounts require a valid invite code to register
+- **Secure Login System**: Separate admin login flow with email/password authentication
+- **Role-Based Access**: Admin middleware protects all admin endpoints
+- **Session Management**: Admin sessions integrated with existing authentication system
+
+### Admin Pages
+- **Admin Login** (`/admin/login`): Secure admin authentication portal
+- **Admin Registration** (`/admin/register`): Invite-code protected account creation
+- **Digital Twin Labs** (`/admin/digital-twin-labs`): Main admin dashboard with 6-tab interface
+
+### Digital Twin Labs Dashboard
+
+**Tab 1: Users**
+- Active user count and growth metrics
+- User distribution by subscription tier
+- Recent user activity and engagement stats
+
+**Tab 2: Analytics**
+- Platform-wide usage analytics
+- User engagement metrics
+- Growth trends and patterns
+
+**Tab 3: Revenue** (New Enhancement)
+- **Total Revenue**: All-time subscription revenue tracking
+- **MRR (Monthly Recurring Revenue)**: Current monthly recurring revenue
+- **ARR (Annual Recurring Revenue)**: Annualized revenue projections
+- **Active Subscriptions**: Real-time active subscription count
+- **Subscription Growth**: New vs cancelled subscriptions tracking
+- **Plan Breakdown**: Revenue distribution across subscription tiers
+- **Time Range Filters**: Week, Month, Year view options
+- **Subscription Statistics**: Total, active, cancelled, and expired counts
+
+**Tab 4: Twins**
+- Digital twin management and monitoring
+- Twin creation and lifecycle tracking
+
+**Tab 5: Perception**
+- Perception system analytics
+- Pattern recognition insights
+
+**Tab 6: Experiments**
+- Platform experiments and A/B testing
+- Feature rollout management
+
+### Revenue Analytics Implementation
+
+**Backend Services** (`server/admin-service.ts`):
+- `getRevenueOverview(timeRange)`: Aggregates revenue metrics by time period
+- `getSubscriptionStats()`: Computes subscription statistics and trends
+- Revenue calculation across all payment records
+- Subscription lifecycle tracking (new, active, cancelled, expired)
+
+**Data Schema** (`shared/admin-schema.ts`):
+- **revenueMetrics**: Tracks aggregated revenue data
+  - Total revenue, MRR, ARR calculations
+  - Subscription growth metrics
+  - Time-based revenue trends
+- **subscriptionStats**: Subscription lifecycle statistics
+  - Total, active, cancelled, expired counts
+  - Plan-based distribution
+
+**API Endpoints** (`server/admin-routes.ts`):
+- `GET /api/admin/analytics/revenue`: Revenue overview with time range
+- `GET /api/admin/analytics/subscriptions/stats`: Subscription statistics
+- All endpoints protected by `requireAdmin` middleware
+
+### Security Features
+- Invite-code validation for admin registration
+- Password strength requirements (minimum 8 characters)
+- Admin-only route protection via middleware
+- Secure session management
+- No sidebar on admin routes for focused experience
+
+### Technical Architecture
+- **Frontend**: React with TypeScript, TanStack Query for data fetching
+- **Backend**: Express REST API with role-based middleware
+- **Database**: PostgreSQL with Drizzle ORM
+- **UI Components**: Shadcn/ui with custom admin styling
+- **Routing**: Wouter with dedicated admin route namespace
