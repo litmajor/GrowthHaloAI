@@ -346,6 +346,66 @@
       scroll-behavior: auto !important;
     }
   }
+
+  /* Manual Reduce Motion Class */
+  .reduce-motion *,
+  .reduce-motion *::before,
+  .reduce-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* High Contrast Mode */
+  .high-contrast {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --border: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+  }
+
+  /* Dyslexic Font */
+  .dyslexic-font * {
+    font-family: 'OpenDyslexic', Arial, sans-serif !important;
+  }
+
+  /* Simplified Visuals */
+  .simplified-visuals {
+    --shadow-2xs: none;
+    --shadow-xs: none;
+    --shadow-sm: none;
+    --shadow: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+    --shadow-xl: none;
+    --shadow-2xl: none;
+  }
+
+  .simplified-visuals * {
+    border-radius: 4px !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Font Size Adjustments */
+  [data-font-size="large"] {
+    font-size: 112.5%;
+  }
+
+  [data-font-size="xlarge"] {
+    font-size: 125%;
+  }
+
+  /* RTL Support */
+  [dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+  }
+
+  [dir="rtl"] .flex {
+    flex-direction: row-reverse;
+  }
 }
 
 /**

@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { HintsProvider } from "@/components/HintsProvider";
 import { ContextualHelpWidget } from "@/components/ContextualHelpWidget";
+import { AccessibilityProvider } from "@/components/AccessibilityProvider";
+import '@/lib/i18n';
 import Navigation from "@/components/Navigation";
 import { queryClient } from "./lib/queryClient";
 import { useState, useEffect, lazy, Suspense } from "react";
@@ -116,9 +118,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="growth-halo-theme">
-        {showOnboarding && <OnboardingFlow onComplete={handleOnboardingComplete} />}
-        <HintsProvider>
-          <TooltipProvider>
+        <AccessibilityProvider>
+          {showOnboarding && <OnboardingFlow onComplete={handleOnboardingComplete} />}
+          <HintsProvider>
+            <TooltipProvider>
             <div className="min-h-screen bg-background text-foreground">
               {showSidebar && (
                 <Navigation
@@ -135,6 +138,7 @@ function App() {
             <Toaster />
           </TooltipProvider>
         </HintsProvider>
+        </AccessibilityProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
