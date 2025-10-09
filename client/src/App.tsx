@@ -31,11 +31,13 @@ import PersonalityTestPage from "./pages/PersonalityTestPage";
 import PatternsPage from './pages/PatternsPage';
 import IdeasPage from './pages/IdeasPage';
 import WisdomPage from "./pages/WisdomPage";
+import APIPage from "./pages/APIPage";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
+      <Route path="/api" component={APIPage} />
       <Route path="/chat" component={Home} />
       <Route path="/dashboard" component={DashboardPage} />
       <Route path="/compass" component={ValuesPage} />

@@ -675,6 +675,7 @@ export default function LandingPage() {
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <Link href="/faq">FAQ</Link>
+              <Link href="/api">API</Link>
               <Link href="/analytics">Analytics</Link>
               <Link href="/content">Content</Link>
               <Link href="/events">Events</Link>
