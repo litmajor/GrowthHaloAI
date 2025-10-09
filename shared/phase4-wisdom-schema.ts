@@ -3,7 +3,7 @@ import { pgTable, serial, text, integer, timestamp, jsonb, real } from 'drizzle-
 
 export const wisdomEntries = pgTable('wisdom_entries', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull(),
+  userId: text('user_id').notNull(),
   insight: text('insight').notNull(),
   category: text('category').notNull(), // 'self-knowledge' | 'relationship-wisdom' | 'life-philosophy' | etc.
   dateRealized: timestamp('date_realized').notNull().defaultNow(),
@@ -20,7 +20,7 @@ export const wisdomEntries = pgTable('wisdom_entries', {
 
 export const wisdomCollections = pgTable('wisdom_collections', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull(),
+  userId: text('user_id').notNull(),
   theme: text('theme').notNull(),
   evolution: text('evolution'),
   entryIds: jsonb('entry_ids').$type<number[]>().notNull().default([]),

@@ -10,13 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import HaloProgressRing from "../components/HaloProgressRing";
 import PhaseIndicator from "../components/PhaseIndicator";
 import WeeklyInsights from "../components/WeeklyInsights";
-import MemoryInsights from '@/components/MemoryInsights';
-import EmotionalTrajectory from '@/components/EmotionalTrajectory';
-import ThemeCloud from '@/components/ThemeCloud';
-import { BeliefJourney } from '@/components/BeliefJourney';
-import AnalyticsDashboard from '@/components/AnalyticsDashboard';
-import ValuesCompass from '@/components/ValuesCompass';
-import CommunityPage from '@/pages/CommunityPage';
+import MemoryInsights from '@/components/MemoryInsights'; // Import MemoryInsights component
+import EmotionalTrajectory from '@/components/EmotionalTrajectory'; // Import EmotionalTrajectory component
+import ThemeCloud from '@/components/ThemeCloud'; // Import ThemeCloud component
+import { BeliefJourney } from '@/components/BeliefJourney'; // Import BeliefJourney component
 
 
 import { ResponsiveContainer } from "@/components/ui/responsive-container";
@@ -125,156 +122,11 @@ export default function DashboardPage() {
     renewal: "from-renewal/20 to-renewal/5"
   };
 
-  // SSR-safe window width
-  const [windowWidth, setWindowWidth] = useState(1024);
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setWindowWidth(window.innerWidth);
-      const handleResize = () => setWindowWidth(window.innerWidth);
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }
-  }, []);
-
   return (
     <div className="min-h-screen bg-background p-6">
       {/* Navigation Placeholder - Assuming Navigation component exists and is imported */}
       {/* <Navigation currentPhase={currentPhase} phaseConfidence={phaseConfidence} /> */}
 
-<<<<<<< HEAD
-          {/* Progress Ring and Phase Indicator */}
-          <div className="flex flex-col sm:flex-row justify-center items-center space-y-8 sm:space-y-0 sm:space-x-8 lg:space-x-12">
-            <HaloProgressRing
-              progress={loading ? 0 : phaseConfidence}
-              phase={currentPhase}
-              size={windowWidth < 640 ? 150 : 200}
-            />
-            <PhaseIndicator
-              currentPhase={currentPhase}
-              confidence={loading ? 0 : phaseConfidence}
-              size="lg"
-            />
-          </div>
-
-          {/* Tabs for different sections */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-6"> {/* 6 columns for all tabs */}
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="insights">Insights</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="values">Values</TabsTrigger>
-              <TabsTrigger value="memory">Memory</TabsTrigger>
-              <TabsTrigger value="community">Community</TabsTrigger>
-            </TabsList>
-
-            {/* Overview Tab Content */}
-            <TabsContent value="overview" className="space-y-6">
-              {/* Main Content Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-                {/* Energy Mapping Card */}
-                <motion.div
-                  className="lg:col-span-2"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <BarChart3 className="w-5 h-5" />
-                        Energy Mapping
-                      </CardTitle>
-                      <CardDescription>
-                        Your current energy levels across all dimensions of being
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {loading ? (
-                        <div className="animate-pulse space-y-4">
-                          {[...Array(4)].map((_, i) => (
-                            <div key={i} className="h-4 bg-muted rounded" />
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-2 gap-6">
-                          {Object.entries(growthData?.energyLevels || { mental: 5, physical: 5, emotional: 5, spiritual: 5 }).map(([type, level]) => (
-                            <div key={type} className="space-y-3">
-                              <div className="flex justify-between">
-                                <span className="text-sm capitalize">{type}</span>
-                                <span className="text-sm font-medium">{level}/10</span>
-                              </div>
-                              <div className="w-full bg-muted rounded-full h-2">
-                                <div
-                                  className={`bg-primary h-2 rounded-full transition-all duration-500 ${getEnergyColor(level as number)}`}
-                                  style={{ width: `${(level as number) * 10}%` }}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-
-                {/* Recent Journal Entries Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  <Card className="h-full flex flex-col justify-center items-center">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <BookOpen className="w-5 h-5" />
-                        Recent Journal Entries
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-center">
-                        <motion.div
-                          className="text-5xl font-light text-primary mb-2"
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.7 }}
-                        >
-                          {growthData?.recentJournalEntries || 0}
-                        </motion.div>
-                        <p className="text-sm text-muted-foreground">Entries this week</p>
-                        <Button variant="ghost" className="mt-4">
-                          View Journal →
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </div>
-
-              {/* Weekly Insights & Intentions Progress */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-                {/* Weekly Insights */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8 }}
-                >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Brain className="w-5 h-5" />
-                        Weekly Insights from Bliss
-                      </CardTitle>
-                      <CardDescription>
-                        AI-powered observations about your growth patterns
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {loading ? (
-                        <div className="animate-pulse space-y-4">
-                          {[...Array(3)].map((_, i) => (
-                            <div key={i} className="h-4 bg-muted rounded" />
-                          ))}
-=======
       <main className="max-w-7xl mx-auto ml-64 space-y-8">
         {/* Start Here Section for New Users */}
         {(!user?.hasCompletedOnboarding) && (
@@ -303,7 +155,6 @@ export default function DashboardPage() {
                             <div className="font-medium text-sm">1. Daily Check-in</div>
                             <div className="text-xs text-muted-foreground">Track your energy (2 min)</div>
                           </div>
->>>>>>> 3dd237b55f8d5a71822d4fb1a15ee3053000ccb5
                         </div>
                       </CardContent>
                     </Card>
@@ -450,7 +301,7 @@ export default function DashboardPage() {
                         {growthData?.recentJournalEntries || 0}
                       </motion.div>
                       <p className="text-sm text-muted-foreground">Entries this week</p>
-                      <Button variant="link" className="mt-4">
+                      <Button variant="ghost" className="mt-4">
                         View Journal →
                       </Button>
                     </div>
@@ -459,38 +310,6 @@ export default function DashboardPage() {
               </motion.div>
             </div>
 
-<<<<<<< HEAD
-            {/* Insights Tab Content */}
-            <TabsContent value="insights" className="space-y-6">
-              <WeeklyInsights userId={userId} />
-            </TabsContent>
-
-            {/* Analytics Tab Content */}
-            <TabsContent value="analytics" className="space-y-6">
-              <AnalyticsDashboard userId={userId} />
-            </TabsContent>
-
-            {/* Values Tab Content */}
-            <TabsContent value="values" className="space-y-6">
-              <ValuesCompass />
-            </TabsContent>
-
-            {/* New Memory Tab Content */}
-            <TabsContent value="memory" className="space-y-6">
-              <MemoryInsights userId="current-user" />
-              <EmotionalTrajectory />
-              <ThemeCloud userId={userId} />
-              <div className="mt-6">
-                <BeliefJourney />
-              </div>
-            </TabsContent>
-
-            {/* Community Tab Content */}
-            <TabsContent value="community" className="space-y-6">
-              <CommunityPage />
-            </TabsContent>
-          </Tabs>
-=======
             {/* Weekly Insights & Intentions Progress */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
 
@@ -777,7 +596,6 @@ export default function DashboardPage() {
               </Card>
             </div>
           </TabsContent>
->>>>>>> 3dd237b55f8d5a71822d4fb1a15ee3053000ccb5
 
           {/* Values Tab Content (assuming it exists and is unchanged) */}
           <TabsContent value="values" className="space-y-6">

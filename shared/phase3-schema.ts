@@ -4,7 +4,7 @@ import { users } from './schema';
 
 export const causalRelationships = pgTable('causal_relationships', {
   id: uuid('id').defaultRandom().primaryKey(),
-  userId: integer('user_id').references(() => users.id).notNull(),
+  userId: text('user_id').references(() => users.id).notNull(),
   cause: text('cause').notNull(),
   effect: text('effect').notNull(),
   confidence: real('confidence').notNull().default(0.5),
@@ -18,7 +18,7 @@ export const causalRelationships = pgTable('causal_relationships', {
 
 export const outcomeAnalyses = pgTable('outcome_analyses', {
   id: uuid('id').defaultRandom().primaryKey(),
-  userId: integer('user_id').references(() => users.id).notNull(),
+  userId: text('user_id').references(() => users.id).notNull(),
   situation: text('situation').notNull(),
   approach: text('approach').notNull(),
   outcome: text('outcome').notNull(),
@@ -31,7 +31,7 @@ export const outcomeAnalyses = pgTable('outcome_analyses', {
 
 export const domainAnalogies = pgTable('domain_analogies', {
   id: uuid('id').defaultRandom().primaryKey(),
-  userId: integer('user_id').references(() => users.id).notNull(),
+  userId: text('user_id').references(() => users.id).notNull(),
   sourceId: uuid('source_id').notNull(),
   sourceDomain: text('source_domain').notNull(),
   sourceSituation: text('source_situation').notNull(),
@@ -49,7 +49,7 @@ export const domainAnalogies = pgTable('domain_analogies', {
 // Hypothesis Formation Schema
 export const userHypotheses = pgTable('user_hypotheses', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull(),
+  userId: text('user_id').notNull(),
   category: text('category').notNull(), // 'preference' | 'trigger' | 'strength' | 'growth_style' | 'communication'
   hypothesis: text('hypothesis').notNull(),
   confidence: real('confidence').notNull().default(0.5),
@@ -63,7 +63,7 @@ export const userHypotheses = pgTable('user_hypotheses', {
 
 export const personalityInsights = pgTable('personality_insights', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull(),
+  userId: text('user_id').notNull(),
   dimension: text('dimension').notNull(),
   profile: text('profile').notNull(),
   confidence: real('confidence').notNull(),
@@ -74,7 +74,7 @@ export const personalityInsights = pgTable('personality_insights', {
 
 export const predictiveInsights = pgTable('predictive_insights', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull(),
+  userId: text('user_id').notNull(),
   situation: text('situation').notNull(),
   plannedAction: text('planned_action').notNull(),
   likelyOutcome: text('likely_outcome').notNull(),
@@ -97,7 +97,7 @@ import { serial, boolean } from 'drizzle-orm/pg-core';
 
 export const ideaEvolutions = pgTable('idea_evolutions', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull(),
+  userId: text('user_id').notNull(),
   ideaSummary: text('idea_summary').notNull(),
   category: text('category').notNull(), // 'career' | 'project' | 'relationship' | 'identity' | 'creative'
   
@@ -133,7 +133,7 @@ export const ideaDevelopmentMilestones = pgTable('idea_development_milestones', 
 
 export const memoryFormationEvents = pgTable('memory_formation_events', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull(),
+  userId: text('user_id').notNull(),
   memoryId: text('memory_id').notNull(),
   formationType: text('formation_type').notNull(), // 'sudden_insight' | 'gradual_realization' | 'external_input' | 'emotional_experience'
   trigger: text('trigger').notNull(),

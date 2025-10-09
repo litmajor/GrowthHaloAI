@@ -4,7 +4,7 @@ import { users } from "./schema";
 // Beliefs tracking table
 export const beliefs = pgTable("beliefs", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
+  userId: text("user_id").references(() => users.id).notNull(),
   statement: text("statement").notNull(),
   category: text("category").notNull(), // 'value' | 'goal' | 'identity' | 'preference' | 'intention'
   confidence: real("confidence").notNull(), // 0-1 scale
@@ -19,7 +19,7 @@ export const beliefs = pgTable("beliefs", {
 // Contradictions tracking table
 export const contradictions = pgTable("contradictions", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
+  userId: text("user_id").references(() => users.id).notNull(),
   beliefId: integer("belief_id").references(() => beliefs.id),
   belief: text("belief").notNull(),
   contradictingStatement: text("contradicting_statement").notNull(),
@@ -35,7 +35,7 @@ export const contradictions = pgTable("contradictions", {
 // Cognitive distortions tracking
 export const cognitiveDistortions = pgTable("cognitive_distortions", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
+  userId: text("user_id").references(() => users.id).notNull(),
   messageContent: text("message_content").notNull(),
   distortionType: text("distortion_type").notNull(),
   evidence: text("evidence").notNull(),
@@ -47,7 +47,7 @@ export const cognitiveDistortions = pgTable("cognitive_distortions", {
 // Recalled memories tracking
 export const recalledMemories = pgTable("recalled_memories", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
+  userId: text("user_id").references(() => users.id).notNull(),
   memoryId: integer("memory_id").notNull(),
   recallContext: text("recall_context").notNull(),
   recallTypes: jsonb("recall_types").$type<string[]>().notNull(), // ['semantic', 'temporal', 'emotional', 'thematic', 'phase']

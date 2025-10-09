@@ -5,11 +5,15 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, ReferenceL
 import { format } from "date-fns";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-export default function EmotionalTrajectory() {
+interface EmotionalTrajectoryProps {
+  userId: string;
+}
+
+export default function EmotionalTrajectory({ userId }: EmotionalTrajectoryProps) {
   const { data: trajectory, isLoading } = useQuery({
-    queryKey: ['emotional-trajectory'],
+    queryKey: ['emotional-trajectory', userId],
     queryFn: async () => {
-      const res = await fetch('/api/emotional-trajectory?days=30', { credentials: 'include' });
+      const res = await fetch(`/api/emotional-trajectory?days=30&userId=${userId}`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch emotional trajectory');
       return res.json();
     },
