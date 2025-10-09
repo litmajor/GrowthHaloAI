@@ -29,11 +29,11 @@ export default function PatternsPage() {
         </TabsList>
 
         <TabsContent value="phase" className="mt-6">
-          <GrowthPhaseCompass userId={user.id} />
+          <GrowthPhaseCompass userId={userId} />
         </TabsContent>
 
         <TabsContent value="causal" className="mt-6">
-          <CausalPatterns userId={user.id} />
+          <CausalPatterns userId={userId} />
         </TabsContent>
 
         <TabsContent value="personality">
