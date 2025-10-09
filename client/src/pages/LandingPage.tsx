@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
@@ -65,7 +64,7 @@ export default function LandingPage() {
     }
   ];
 
-  
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -673,25 +672,13 @@ export default function LandingPage() {
               <Circle className="w-6 h-6 text-primary" />
               <span className="font-semibold">Growth Halo</span>
             </div>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <Link href="/faq">
-                <a className="hover:text-primary transition-colors">FAQ</a>
-              </Link>
-              <Link href="/api">
-                <a className="hover:text-primary transition-colors">API</a>
-              </Link>
-              <Link href="/analytics">
-                <a className="hover:text-primary transition-colors">Analytics</a>
-              </Link>
-              <Link href="/content">
-                <a className="hover:text-primary transition-colors">Content</a>
-              </Link>
-              <Link href="/events">
-                <a className="hover:text-primary transition-colors">Events</a>
-              </Link>
-              <Link href="/community">
-                <a className="hover:text-primary transition-colors">Community</a>
-              </Link>
+            <div className="flex items-center space-x-6 text-sm text-muted-foreground">
+              <Link href="/faq" className="hover:text-primary transition-colors">FAQ</Link>
+              <Link href="/api" className="hover:text-primary transition-colors">API</Link>
+              <Link href="/analytics" className="hover:text-primary transition-colors">Analytics</Link>
+              <Link href="/content" className="hover:text-primary transition-colors">Content</Link>
+              <Link href="/events" className="hover:text-primary transition-colors">Events</Link>
+              <Link href="/community" className="hover:text-primary transition-colors">Community</Link>
             </div>
           </div>
         </div>
