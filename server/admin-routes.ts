@@ -113,4 +113,120 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ error: 'Failed to create admin' });
     }
   });
+
+  // Perception profiling endpoints
+  app.get('/api/admin/perception/:userId', requireAdmin, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const profile = await adminService.getPerceptionProfile(userId);
+      res.json(profile);
+    } catch (error) {
+      console.error('Get perception profile error:', error);
+      res.status(500).json({ error: 'Failed to get perception profile' });
+    }
+  });
+
+  app.post('/api/admin/perception/:userId/generate', requireAdmin, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const adminId = req.user.id;
+      
+      const profileId = await adminService.generatePerceptionProfile(userId);
+      
+      await adminService.logAdminAction(
+        adminId,
+        'generate_perception_profile',
+        'user',
+        userId,
+        { profileId }
+      );
+
+      res.json({ profileId });
+    } catch (error) {
+      console.error('Generate perception profile error:', error);
+      res.status(500).json({ error: 'Failed to generate perception profile' });
+    }
+  });
+
+  app.put('/api/admin/perception/:userId/consent', requireAdmin, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { consent } = req.body;
+      const adminId = req.user.id;
+
+      await adminService.updatePerceptionConsent(userId, consent);
+      
+      await adminService.logAdminAction(
+        adminId,
+        'update_perception_consent',
+        'user',
+        userId,
+        { consent }
+      );
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Update perception consent error:', error);
+      res.status(500).json({ error: 'Failed to update consent' });
+    }
+  });
+
+  // Experiment management endpoints
+  app.get('/api/admin/experiments', requireAdmin, async (req, res) => {
+    try {
+      const { status } = req.query;
+      const experiments = await adminService.getExperiments(status as string);
+      res.json(experiments);
+    } catch (error) {
+      console.error('Get experiments error:', error);
+      res.status(500).json({ error: 'Failed to get experiments' });
+    }
+  });
+
+  app.post('/api/admin/experiments', requireAdmin, async (req, res) => {
+    try {
+      const { name, hypothesis, description } = req.body;
+      const adminId = req.user.id;
+
+      const experimentId = await adminService.createExperiment(adminId, name, hypothesis, description);
+      res.json({ experimentId });
+    } catch (error) {
+      console.error('Create experiment error:', error);
+      res.status(500).json({ error: 'Failed to create experiment' });
+    }
+  });
+
+  app.get('/api/admin/experiments/:experimentId/participants', requireAdmin, async (req, res) => {
+    try {
+      const { experimentId } = req.params;
+      const participants = await adminService.getExperimentParticipants(experimentId);
+      res.json(participants);
+    } catch (error) {
+      console.error('Get participants error:', error);
+      res.status(500).json({ error: 'Failed to get participants' });
+    }
+  });
+
+  app.post('/api/admin/experiments/:experimentId/participants', requireAdmin, async (req, res) => {
+    try {
+      const { experimentId } = req.params;
+      const { userId, consent } = req.body;
+      const adminId = req.user.id;
+
+      const participantId = await adminService.addExperimentParticipant(experimentId, userId, consent);
+      
+      await adminService.logAdminAction(
+        adminId,
+        'add_experiment_participant',
+        'experiment',
+        experimentId,
+        { userId, consent, participantId }
+      );
+
+      res.json({ participantId });
+    } catch (error) {
+      console.error('Add participant error:', error);
+      res.status(500).json({ error: 'Failed to add participant' });
+    }
+  });
 }

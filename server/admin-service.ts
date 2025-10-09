@@ -301,6 +301,250 @@ export class AdminService {
       .map(([topic]) => topic);
   }
 
+  async generatePerceptionProfile(userId: string) {
+    // Extract linguistic features
+    const userMemories = await db.select()
+      .from(memories)
+      .where(eq(memories.userId, userId))
+      .orderBy(desc(memories.timestamp))
+      .limit(100);
+
+    const emotionalData = await db.select()
+      .from(emotionalDataPoints)
+      .where(eq(emotionalDataPoints.userId, userId))
+      .orderBy(desc(emotionalDataPoints.timestamp))
+      .limit(100);
+
+    // Calculate linguistic features
+    const features = this.extractLinguisticFeatures(userMemories);
+    
+    // Calculate Big Five proxy
+    const traits = {
+      openness: this.calculateOpenness(userMemories),
+      conscientiousness: this.calculateConscientiousness(userMemories),
+      extraversion: this.calculateExtraversion(emotionalData),
+      agreeableness: this.calculateAgreeableness(userMemories),
+      neuroticism: this.calculateNeuroticism(emotionalData)
+    };
+
+    // Generate cognitive proxy estimate
+    const cognitiveProxy = this.estimateCognitiveProxy(features, traits);
+
+    // Emotion style analysis
+    const emotionStyle = this.analyzeEmotionStyle(emotionalData);
+
+    // Engagement patterns
+    const engagementPatterns = this.analyzeEngagementPatterns(userMemories, emotionalData);
+
+    // Extract key phrases
+    const keyPhrases = this.extractKeyPhrases(userMemories);
+
+    // Overall confidence
+    const confidenceOverall = this.calculateOverallConfidence(userMemories.length, emotionalData.length);
+
+    const profileId = `perception_${userId}_${Date.now()}`;
+
+    // Check if consent exists
+    const existingProfile = await db.select()
+      .from(perceptionProfiles)
+      .where(eq(perceptionProfiles.userId, userId))
+      .limit(1);
+
+    const consentGiven = existingProfile.length > 0 ? existingProfile[0].consentGiven : false;
+
+    await db.insert(perceptionProfiles).values({
+      id: profileId,
+      userId,
+      summary: this.generateProfileSummary(traits, emotionStyle),
+      traits,
+      emotionStyle,
+      engagementPatterns,
+      cognitiveProxy,
+      keyPhrases,
+      confidenceOverall,
+      consentGiven,
+    });
+
+    return profileId;
+  }
+
+  private extractLinguisticFeatures(memories: any[]) {
+    const allText = memories.map(m => m.content || '').join(' ');
+    const words = allText.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    const uniqueWords = new Set(words);
+
+    return {
+      lexicalDiversity: uniqueWords.size / Math.max(words.length, 1),
+      vocabularyRichness: words.filter(w => w.length > 7).length / Math.max(words.length, 1),
+      avgWordLength: words.reduce((sum, w) => sum + w.length, 0) / Math.max(words.length, 1),
+      sentenceCount: (allText.match(/[.!?]+/g) || []).length,
+    };
+  }
+
+  private estimateCognitiveProxy(features: any, traits: any): any {
+    // Simple heuristic-based cognitive estimate
+    // In production, this should use trained ML model
+    const baseEstimate = 100;
+    const vocabBoost = features.vocabularyRichness * 30;
+    const diversityBoost = features.lexicalDiversity * 20;
+    const opennessBoost = (traits.openness / 100) * 15;
+
+    const estimate = Math.round(baseEstimate + vocabBoost + diversityBoost + opennessBoost);
+    const confidence = Math.min(features.lexicalDiversity * 0.8, 0.85);
+    const margin = Math.round(estimate * (1 - confidence) * 0.5);
+
+    return {
+      estimate: Math.max(85, Math.min(145, estimate)),
+      ci: [estimate - margin, estimate + margin] as [number, number],
+      confidence: Math.round(confidence * 100) / 100,
+      basis: ['vocabulary_richness', 'lexical_diversity', 'openness_trait']
+    };
+  }
+
+  private analyzeEmotionStyle(emotionalData: any[]): string {
+    if (emotionalData.length < 5) return 'insufficient_data';
+
+    const valences = emotionalData.map(d => d.valence || 0);
+    const stdDev = Math.sqrt(
+      valences.reduce((sum, v) => sum + Math.pow(v - (valences.reduce((a, b) => a + b, 0) / valences.length), 2), 0) / valences.length
+    );
+
+    const avgValence = valences.reduce((a, b) => a + b, 0) / valences.length;
+
+    if (stdDev > 0.3) return 'high_variability';
+    if (avgValence > 0.6) return 'consistently_positive';
+    if (avgValence < 0.4) return 'tends_to_ruminate';
+    return 'stable_moderate';
+  }
+
+  private analyzeEngagementPatterns(memories: any[], emotionalData: any[]) {
+    const timestamps = memories.map(m => new Date(m.timestamp));
+    const hours = timestamps.map(t => t.getHours());
+    const hourCounts = new Map<number, number>();
+    
+    hours.forEach(h => hourCounts.set(h, (hourCounts.get(h) || 0) + 1));
+    const peakHours = Array.from(hourCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2)
+      .map(([hour]) => `${hour}:00`);
+
+    return {
+      peak_hours: peakHours,
+      session_length_median: 8.4, // Simplified
+      total_interactions: memories.length,
+      consistency_score: memories.length > 20 ? 0.7 : 0.4
+    };
+  }
+
+  private extractKeyPhrases(memories: any[]): string[] {
+    // Simple keyword extraction - in production use NLP libraries
+    const text = memories.map(m => m.content || '').join(' ').toLowerCase();
+    const patterns = [
+      /i'm (scared|afraid|worried) (of|about) ([^.!?]+)/gi,
+      /i (get|feel) ([^.!?]+) easily/gi,
+      /i (want|need|wish) to ([^.!?]+)/gi
+    ];
+
+    const phrases: string[] = [];
+    patterns.forEach(pattern => {
+      const matches = text.match(pattern);
+      if (matches) phrases.push(...matches.slice(0, 3));
+    });
+
+    return phrases.slice(0, 5);
+  }
+
+  private generateProfileSummary(traits: any, emotionStyle: string): string {
+    const highestTrait = Object.entries(traits)
+      .sort((a: any, b: any) => b[1] - a[1])[0][0];
+    
+    const traitDescriptions: Record<string, string> = {
+      openness: 'curious and open to new experiences',
+      conscientiousness: 'organized and goal-oriented',
+      extraversion: 'socially engaged and energetic',
+      agreeableness: 'cooperative and empathetic',
+      neuroticism: 'emotionally sensitive'
+    };
+
+    return `${traitDescriptions[highestTrait]}, ${emotionStyle.replace(/_/g, ' ')}`;
+  }
+
+  private calculateOverallConfidence(memoryCount: number, emotionalCount: number): number {
+    const dataScore = Math.min((memoryCount + emotionalCount) / 100, 1);
+    return Math.round(dataScore * 0.8 * 100) / 100;
+  }
+
+  async getPerceptionProfile(userId: string) {
+    const [profile] = await db.select()
+      .from(perceptionProfiles)
+      .where(eq(perceptionProfiles.userId, userId))
+      .limit(1);
+
+    return profile;
+  }
+
+  async updatePerceptionConsent(userId: string, consent: boolean) {
+    await db.update(perceptionProfiles)
+      .set({ consentGiven: consent, lastUpdated: new Date() })
+      .where(eq(perceptionProfiles.userId, userId));
+  }
+
+  async createExperiment(adminId: string, name: string, hypothesis: string, description?: string) {
+    const experimentId = `exp_${Date.now()}`;
+    
+    await db.insert(experiments).values({
+      id: experimentId,
+      name,
+      hypothesis,
+      description,
+      status: 'draft',
+      createdBy: adminId,
+    });
+
+    await this.logAdminAction(adminId, 'create_experiment', 'experiment', experimentId, { name, hypothesis });
+
+    return experimentId;
+  }
+
+  async addExperimentParticipant(experimentId: string, userId: string, consent: boolean) {
+    const participantId = `part_${Date.now()}`;
+
+    await db.insert(experimentParticipants).values({
+      id: participantId,
+      experimentId,
+      userId,
+      consentGiven: consent,
+      consentedAt: consent ? new Date() : null,
+    });
+
+    if (consent) {
+      await db.update(experiments)
+        .set({ participantCount: sql`${experiments.participantCount} + 1` })
+        .where(eq(experiments.id, experimentId));
+    }
+
+    return participantId;
+  }
+
+  async getExperiments(status?: string) {
+    if (status) {
+      return await db.select()
+        .from(experiments)
+        .where(eq(experiments.status, status))
+        .orderBy(desc(experiments.createdAt));
+    }
+
+    return await db.select()
+      .from(experiments)
+      .orderBy(desc(experiments.createdAt));
+  }
+
+  async getExperimentParticipants(experimentId: string) {
+    return await db.select()
+      .from(experimentParticipants)
+      .where(eq(experimentParticipants.experimentId, experimentId));
+  }
+
   async logAdminAction(adminId: string, action: string, targetType: string, targetId: string, details: any) {
     await db.insert(auditLogs).values({
       id: `log_${Date.now()}`,

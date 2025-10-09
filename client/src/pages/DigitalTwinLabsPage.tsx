@@ -47,6 +47,59 @@ interface DigitalTwin {
     totalMemories: number;
     totalBeliefs: number;
     totalContradictions: number;
+
+
+  const fetchExperiments = async () => {
+    try {
+      const res = await fetch('/api/admin/experiments');
+      if (!res.ok) throw new Error('Failed to fetch experiments');
+      const data = await res.json();
+      setExperiments(data);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch experiments',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const generatePerceptionProfile = async (userId: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/perception/${userId}/generate`, {
+        method: 'POST',
+      });
+      if (!res.ok) throw new Error('Failed to generate perception profile');
+      
+      toast({
+        title: 'Success',
+        description: 'Perception profile generated successfully',
+      });
+      
+      await fetchPerceptionProfile(userId);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to generate perception profile',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPerceptionProfile = async (userId: string) => {
+    try {
+      const res = await fetch(`/api/admin/perception/${userId}`);
+      if (!res.ok) throw new Error('Failed to fetch perception profile');
+      const data = await res.json();
+      setPerceptionProfile(data);
+    } catch (error) {
+      console.error('Failed to fetch perception profile:', error);
+    }
+  };
+
   };
 }
 
@@ -54,12 +107,16 @@ export default function DigitalTwinLabsPage() {
   const [users, setUsers] = useState<UserWithAnalytics[]>([]);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [digitalTwin, setDigitalTwin] = useState<DigitalTwin | null>(null);
+  const [perceptionProfile, setPerceptionProfile] = useState<any>(null);
+  const [experiments, setExperiments] = useState<any[]>([]);
+  const [showCreateExperiment, setShowCreateExperiment] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchUsers();
+    fetchExperiments();
   }, []);
 
   const fetchUsers = async () => {
@@ -165,10 +222,12 @@ export default function DigitalTwinLabsPage() {
           </div>
 
           <Tabs defaultValue="users" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="twins">Digital Twins</TabsTrigger>
+              <TabsTrigger value="perception">Perception</TabsTrigger>
+              <TabsTrigger value="experiments">Experiments</TabsTrigger>
             </TabsList>
 
             <TabsContent value="users" className="space-y-4">
@@ -288,6 +347,180 @@ export default function DigitalTwinLabsPage() {
             <TabsContent value="twins" className="space-y-4">
               {selectedUser && digitalTwin ? (
                 <div className="space-y-4">
+
+
+            <TabsContent value="perception" className="space-y-4">
+              {selectedUser ? (
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle>Perception Profile</CardTitle>
+                        <CardDescription>AI-generated psychological and cognitive analysis</CardDescription>
+                      </div>
+                      <Button onClick={() => generatePerceptionProfile(selectedUser)} disabled={loading}>
+                        <Brain className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                        Generate Profile
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-6">
+                      <p className="text-sm text-amber-700 dark:text-amber-300">
+                        ⚠️ Perception profiles are probabilistic estimates for research purposes only. 
+                        Not for clinical or diagnostic use. Always ensure user consent.
+                      </p>
+                    </div>
+                    
+                    {perceptionProfile ? (
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="font-semibold mb-2">Summary</h3>
+                          <p className="text-muted-foreground">{perceptionProfile.summary}</p>
+                          <div className="mt-2 flex items-center gap-2">
+                            <Badge variant={perceptionProfile.consentGiven ? "default" : "destructive"}>
+                              {perceptionProfile.consentGiven ? "Consent Given" : "No Consent"}
+                            </Badge>
+                            <Badge variant="outline">
+                              Confidence: {Math.round((perceptionProfile.confidenceOverall || 0) * 100)}%
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {perceptionProfile.cognitiveProxy && (
+                          <div>
+                            <h3 className="font-semibold mb-3">Cognitive Proxy Estimate</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="p-4 rounded-lg border">
+                                <p className="text-3xl font-bold">{perceptionProfile.cognitiveProxy.estimate}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  95% CI: [{perceptionProfile.cognitiveProxy.ci[0]}, {perceptionProfile.cognitiveProxy.ci[1]}]
+                                </p>
+                              </div>
+                              <div className="p-4 rounded-lg border">
+                                <p className="text-sm text-muted-foreground mb-2">Based on:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {perceptionProfile.cognitiveProxy.basis.map((b: string) => (
+                                    <Badge key={b} variant="secondary" className="text-xs">
+                                      {b.replace(/_/g, ' ')}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {perceptionProfile.keyPhrases && perceptionProfile.keyPhrases.length > 0 && (
+                          <div>
+                            <h3 className="font-semibold mb-3">Key Phrases</h3>
+                            <div className="space-y-2">
+                              {perceptionProfile.keyPhrases.map((phrase: string, idx: number) => (
+                                <div key={idx} className="p-2 rounded bg-muted text-sm italic">
+                                  "{phrase}"
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {perceptionProfile.engagementPatterns && (
+                          <div>
+                            <h3 className="font-semibold mb-3">Engagement Patterns</h3>
+                            <div className="grid grid-cols-3 gap-3">
+                              <div className="p-3 rounded-lg bg-muted">
+                                <p className="text-sm text-muted-foreground">Peak Hours</p>
+                                <p className="font-medium">{perceptionProfile.engagementPatterns.peak_hours?.join(', ')}</p>
+                              </div>
+                              <div className="p-3 rounded-lg bg-muted">
+                                <p className="text-sm text-muted-foreground">Interactions</p>
+                                <p className="font-medium">{perceptionProfile.engagementPatterns.total_interactions}</p>
+                              </div>
+                              <div className="p-3 rounded-lg bg-muted">
+                                <p className="text-sm text-muted-foreground">Consistency</p>
+                                <p className="font-medium">{Math.round((perceptionProfile.engagementPatterns.consistency_score || 0) * 100)}%</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        Generate a perception profile to view detailed analysis
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <Brain className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground">Select a user to view perception profile</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="experiments" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Research Experiments</CardTitle>
+                      <CardDescription>Manage research studies and participant data</CardDescription>
+                    </div>
+                    <Button onClick={() => setShowCreateExperiment(true)}>
+                      <Zap className="w-4 h-4 mr-2" />
+                      New Experiment
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {experiments.map((exp) => (
+                      <div key={exp.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold">{exp.name}</h3>
+                              <Badge variant={
+                                exp.status === 'active' ? 'default' :
+                                exp.status === 'completed' ? 'secondary' : 'outline'
+                              }>
+                                {exp.status}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-2">{exp.hypothesis}</p>
+                            {exp.description && (
+                              <p className="text-sm text-muted-foreground/80">{exp.description}</p>
+                            )}
+                            <div className="flex items-center gap-4 mt-3 text-sm">
+                              <span className="flex items-center gap-1">
+                                <Users className="w-4 h-4" />
+                                {exp.participantCount} participants
+                              </span>
+                              <span className="text-muted-foreground">
+                                Created {new Date(exp.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm">
+                            View Details
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    {experiments.length === 0 && (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <Zap className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>No experiments created yet</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
                   <Card>
                     <CardHeader>
                       <div className="flex items-center justify-between">
