@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target, Users, CreditCard, Settings, User, ChevronLeft, ChevronRight, Brain, TrendingUp, Home, MessageCircle, CalendarDays, FileText, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
@@ -112,21 +112,45 @@ export default function Navigation({
               <Link key={item.path} href={item.path}>
                 <motion.div
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                    "hover-elevate cursor-pointer",
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                    "hover-elevate cursor-pointer relative overflow-hidden",
                     isActive
-                      ? "bg-primary/10 text-primary"
+                      ? "bg-primary/10 text-primary shadow-sm"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
                     isCollapsed ? "justify-center" : ""
                   )}
-                  whileHover={{ scale: 1.02 }}
+                  initial={false}
+                  animate={{
+                    scale: isActive ? 1.02 : 1,
+                  }}
+                  whileHover={{ 
+                    scale: 1.02,
+                    transition: { duration: 0.2 }
+                  }}
                   whileTap={{ scale: 0.98 }}
                   data-testid={`nav-${item.path === '/' ? 'chat' : item.path.slice(1)}`}
                 >
-                  <Icon className="w-5 h-5" />
-                  {!isCollapsed && (
-                    <span className="text-sm">{item.label}</span>
+                  {isActive && (
+                    <motion.div
+                      className="absolute inset-0 bg-primary/5 rounded-lg"
+                      layoutId="activeNav"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
                   )}
+                  <Icon className="w-5 h-5 relative z-10" />
+                  <AnimatePresence>
+                    {!isCollapsed && (
+                      <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: "auto" }}
+                        exit={{ opacity: 0, width: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="text-sm relative z-10"
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               </Link>
             );

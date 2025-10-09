@@ -354,7 +354,7 @@ export default function LandingPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-primary/20" data-testid="card-capability-patterns">
+            <Card className="border-primary/20" elevation="md" state="hover" data-testid="card-capability-patterns">
               <CardHeader>
                 <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-2">
                   <TrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400" />
@@ -368,7 +368,7 @@ export default function LandingPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-primary/20" data-testid="card-capability-guidance">
+            <Card className="border-primary/20" elevation="md" state="hover" data-testid="card-capability-guidance">
               <CardHeader>
                 <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-2">
                   <Heart className="w-5 h-5 text-blue-600 dark:text-blue-400" />
