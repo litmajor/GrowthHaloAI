@@ -4,7 +4,14 @@ import { beliefs, contradictions, cognitiveDistortions } from '../shared/phase2-
 import { eq, gt, and, desc, sql } from 'drizzle-orm';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: 'https://openrouter.ai/api/v1',
+  defaultHeaders: {
+    'HTTP-Referer': 'https://growth-halo.replit.app',
+    'X-Title': 'Growth Halo AI'
+  }
+});
 
 interface BeliefExtraction {
   statement: string;

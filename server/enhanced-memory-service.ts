@@ -5,7 +5,14 @@ import { memories, conversationThemes, emotionalDataPoints } from "../shared/gro
 import type { Memory, EmotionalDataPoint, ConversationTheme } from '@shared/growth-schema';
 import { eq, desc, sql, and, gte } from "drizzle-orm";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: 'https://openrouter.ai/api/v1',
+  defaultHeaders: {
+    'HTTP-Referer': 'https://growth-halo.replit.app',
+    'X-Title': 'Growth Halo AI'
+  }
+});
 
 interface MemoryExtractionResult {
   memories: Array<{
