@@ -62,7 +62,6 @@ function Router() {
       <Route path="/profile" component={ProfilePage} />
       <Route path="/subscription" component={SubscriptionPage} />
       <Route path="/faq" component={FAQPage} />
-      <Route path="/goals" component={GoalsPage} />
       <Route path="/personality" component={PersonalityTestPage} />
       <Route component={NotFound} />
     </Switch>

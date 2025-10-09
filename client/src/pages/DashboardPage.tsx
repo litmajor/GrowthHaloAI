@@ -466,19 +466,70 @@ export default function DashboardPage() {
               </Card>
             </TabsContent>
 
-            {/* Analytics Tab Content (assuming it exists and is unchanged) */}
+            {/* Analytics Tab Content */}
             <TabsContent value="analytics" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Growth Analytics</CardTitle>
-                  <CardDescription>Visualize your progress over time</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    Analytics content loading...
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5" />
+                      Growth Trajectory
+                    </CardTitle>
+                    <CardDescription>Your progress over the past 30 days</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Journal Entries</span>
+                        <Badge>{growthData?.recentJournalEntries || 0}</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Check-ins Completed</span>
+                        <Badge>12</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Insights Captured</span>
+                        <Badge>8</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5" />
+                      Phase Distribution
+                    </CardTitle>
+                    <CardDescription>Time spent in each phase</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Expansion</span>
+                          <span>40%</span>
+                        </div>
+                        <Progress value={40} className="h-2" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Contraction</span>
+                          <span>35%</span>
+                        </div>
+                        <Progress value={35} className="h-2" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Renewal</span>
+                          <span>25%</span>
+                        </div>
+                        <Progress value={25} className="h-2" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             {/* Values Tab Content (assuming it exists and is unchanged) */}

@@ -674,12 +674,24 @@ export default function LandingPage() {
               <span className="font-semibold">Growth Halo</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <Link href="/faq">FAQ</Link>
-              <Link href="/api">API</Link>
-              <Link href="/analytics">Analytics</Link>
-              <Link href="/content">Content</Link>
-              <Link href="/events">Events</Link>
-              <Link href="/community">Community</Link>
+              <Link href="/faq">
+                <a className="hover:text-primary transition-colors">FAQ</a>
+              </Link>
+              <Link href="/api">
+                <a className="hover:text-primary transition-colors">API</a>
+              </Link>
+              <Link href="/analytics">
+                <a className="hover:text-primary transition-colors">Analytics</a>
+              </Link>
+              <Link href="/content">
+                <a className="hover:text-primary transition-colors">Content</a>
+              </Link>
+              <Link href="/events">
+                <a className="hover:text-primary transition-colors">Events</a>
+              </Link>
+              <Link href="/community">
+                <a className="hover:text-primary transition-colors">Community</a>
+              </Link>
             </div>
           </div>
         </div>

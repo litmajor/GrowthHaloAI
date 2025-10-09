@@ -219,9 +219,9 @@ export default function ChatInterface({
   };
 
   return (
-    <div className="flex flex-col h-screen max-h-screen bg-background">
+    <div className="flex flex-col h-[calc(100vh-4rem)] bg-background">
       {/* Chat Interface with Tabs */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         <Tabs defaultValue="chat" className="flex-1 flex flex-col">
           <div className="shrink-0 border-b bg-card/50 backdrop-blur-sm p-4">
             <div className="flex items-center justify-between mb-4">
