@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -14,15 +14,19 @@ import {
   Shield,
   User,
   Palette,
-  Globe,
   Database,
-  Moon,
-  Sun,
-  Monitor,
-  Sparkles
+  Sparkles,
+  HelpCircle
 } from "lucide-react";
+import { useState } from 'react';
+import { useUser } from '@/hooks/use-user';
+import { useToast } from '@/hooks/use-toast';
+import { useLocation, Link } from 'wouter';
+import OnboardingFlow from '@/components/OnboardingFlow';
 
 export default function SettingsPage() {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       <ResponsiveContainer size="lg" className="py-4 sm:py-6 lg:py-8">
@@ -106,7 +110,44 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Notification Settings */}
+            {/* Help & Support */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5" />
+                  Help & Support
+                </CardTitle>
+                <CardDescription>
+                  Get help and learn about Growth Halo features
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="space-y-1">
+                    <p className="font-medium">Revisit Onboarding Tutorial</p>
+                    <p className="text-sm text-muted-foreground">
+                      Take the tour again to learn about features
+                    </p>
+                  </div>
+                  <Button onClick={() => setShowOnboarding(true)} variant="outline">
+                    Start Tour
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="space-y-1">
+                    <p className="font-medium">Help Documentation</p>
+                    <p className="text-sm text-muted-foreground">
+                      Browse guides and tutorials
+                    </p>
+                  </div>
+                  <Button variant="outline" asChild>
+                    <Link href="/faq">View FAQ</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Notifications */}
             <Card>
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -279,9 +320,9 @@ export default function SettingsPage() {
                       Deactivate Account
                     </Button>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div>
                     <h4 className="font-medium mb-1 text-red-600 dark:text-red-400">Delete Account</h4>
                     <p className="text-sm text-muted-foreground mb-3">
