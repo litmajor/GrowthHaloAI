@@ -1267,6 +1267,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Notification endpoints
+  app.get('/api/notifications', async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const { notificationService } = await import('./notification-service');
+      const notifications = await notificationService.getUserNotifications(user.id);
+      res.json(notifications);
+    } catch (error) {
+      console.error('Get notifications error:', error);
+      res.status(500).json({ error: 'Failed to fetch notifications' });
+    }
+  });
+
+  app.get('/api/notifications/unread-count', async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const { notificationService } = await import('./notification-service');
+      const count = await notificationService.getUnreadCount(user.id);
+      res.json({ count });
+    } catch (error) {
+      console.error('Get unread count error:', error);
+      res.status(500).json({ error: 'Failed to get unread count' });
+    }
+  });
+
+  app.put('/api/notifications/:notificationId/read', async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const { notificationId } = req.params;
+      const { notificationService } = await import('./notification-service');
+      await notificationService.markAsRead(notificationId, user.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Mark as read error:', error);
+      res.status(500).json({ error: 'Failed to mark notification as read' });
+    }
+  });
+
+  app.put('/api/notifications/read-all', async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const { notificationService } = await import('./notification-service');
+      await notificationService.markAllAsRead(user.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Mark all as read error:', error);
+      res.status(500).json({ error: 'Failed to mark all notifications as read' });
+    }
+  });
+
+  app.delete('/api/notifications/:notificationId', async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const { notificationId } = req.params;
+      const { notificationService } = await import('./notification-service');
+      await notificationService.deleteNotification(notificationId, user.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Delete notification error:', error);
+      res.status(500).json({ error: 'Failed to delete notification' });
+    }
+  });
+
   // Memory & Emotional Intelligence routes
   app.get("/api/emotional-trajectory", async (req, res) => {
     try {

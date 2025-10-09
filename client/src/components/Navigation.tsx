@@ -1,8 +1,10 @@
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target, Users, CreditCard, Settings, User, ChevronLeft, ChevronRight, Brain, TrendingUp, Home, MessageCircle, CalendarDays, FileText, Lightbulb } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
+import { NotificationCenter } from "./NotificationCenter";
+import { cn } from "@/lib/utils";
+import { useUser } from '@/hooks/use-user';
 import HaloProgressRing from "./HaloProgressRing";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -42,6 +44,7 @@ export default function Navigation({
 }: NavigationProps) {
   const [location] = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const user = useUser(); // Assuming useUser hook provides user info
 
   return (
     <motion.aside
@@ -123,7 +126,7 @@ export default function Navigation({
                   animate={{
                     scale: isActive ? 1.02 : 1,
                   }}
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.02,
                     transition: { duration: 0.2 }
                   }}
@@ -187,8 +190,9 @@ export default function Navigation({
             );
           })}
 
-          {/* Theme Toggle */}
-          <div className={cn("flex", isCollapsed ? "justify-center" : "justify-start")}>
+          {/* Notification Center and Theme Toggle */}
+          <div className={cn("flex items-center gap-2")}>
+            <NotificationCenter />
             <ThemeToggle />
           </div>
         </div>

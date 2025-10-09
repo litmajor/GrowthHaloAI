@@ -222,19 +222,43 @@ export default function SettingsPage() {
                   {[
                     {
                       title: "Daily Check-in Reminders",
-                      description: "Get gentle nudges to reflect on your day"
+                      description: "Get gentle nudges to reflect on your day",
+                      key: "dailyCheckin"
                     },
                     {
                       title: "Community Updates",
-                      description: "Stay connected with your circles"
+                      description: "Stay connected with your circles",
+                      key: "communityUpdates"
                     },
                     {
                       title: "Growth Insights",
-                      description: "Receive AI-powered insights about your journey"
+                      description: "Receive AI-powered insights about your journey",
+                      key: "growthInsights"
                     },
                     {
                       title: "Weekly Reflections",
-                      description: "Summary of your week's growth patterns"
+                      description: "Summary of your week's growth patterns",
+                      key: "weeklyReflections"
+                    },
+                    {
+                      title: "Phase Transitions",
+                      description: "Get notified when your growth phase changes",
+                      key: "phaseTransitions"
+                    },
+                    {
+                      title: "Belief Revisions",
+                      description: "Celebrate your growth moments",
+                      key: "beliefRevisions"
+                    },
+                    {
+                      title: "Wisdom Discoveries",
+                      description: "New insights added to your wisdom library",
+                      key: "wisdomDiscoveries"
+                    },
+                    {
+                      title: "Email Notifications",
+                      description: "Receive notifications via email",
+                      key: "emailNotifications"
                     }
                   ].map((item, index) => (
                     <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
