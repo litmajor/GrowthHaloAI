@@ -1,10 +1,13 @@
 
 import { db } from './db';
-import { eq, desc, sql, and, gte } from 'drizzle-orm';
+import { eq, desc, sql, and, gte, lte } from 'drizzle-orm';
 import { users } from '../shared/schema';
-import { adminUsers, userAnalytics, digitalTwinProfiles, systemMetrics, auditLogs } from '../shared/admin-schema';
+import { adminUsers, userAnalytics, digitalTwinProfiles, systemMetrics, auditLogs, perceptionProfiles, experiments, experimentParticipants } from '../shared/admin-schema';
 import { memories, emotionalDataPoints, conversationThemes } from '../shared/growth-schema';
 import { beliefs, contradictions } from '../shared/phase2-schema';
+import { subscriptions } from '../shared/subscription-schema';
+import { subscriptionPayments } from '../shared/subscription-payment-schema';
+import bcrypt from 'bcryptjs';
 
 export class AdminService {
   async verifyAdminAccess(userId: string): Promise<boolean> {
@@ -554,6 +557,187 @@ export class AdminService {
       targetId,
       details,
     });
+  }
+
+  async getRevenueOverview(timeRange: string = 'month') {
+    const now = new Date();
+    const startDate = new Date();
+    
+    if (timeRange === 'week') startDate.setDate(now.getDate() - 7);
+    else if (timeRange === 'month') startDate.setMonth(now.getMonth() - 1);
+    else if (timeRange === 'year') startDate.setFullYear(now.getFullYear() - 1);
+    else startDate.setDate(now.getDate() - 30);
+
+    const payments = await db.select()
+      .from(subscriptionPayments)
+      .where(and(
+        gte(subscriptionPayments.paidAt, startDate),
+        eq(subscriptionPayments.status, 'completed')
+      ));
+
+    const totalRevenue = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+    const paymentCount = payments.length;
+
+    const activeSubscriptions = await db.select({ count: sql<number>`count(*)` })
+      .from(subscriptions)
+      .where(eq(subscriptions.status, 'active'));
+
+    const newSubscriptions = await db.select({ count: sql<number>`count(*)` })
+      .from(subscriptions)
+      .where(and(
+        gte(subscriptions.startedAt, startDate),
+        eq(subscriptions.status, 'active')
+      ));
+
+    const cancelledSubscriptions = await db.select({ count: sql<number>`count(*)` })
+      .from(subscriptions)
+      .where(and(
+        gte(subscriptions.startedAt, startDate),
+        eq(subscriptions.status, 'cancelled')
+      ));
+
+    const planBreakdown = await db.select({
+      plan: subscriptions.plan,
+      count: sql<number>`count(*)`,
+      revenue: sql<number>`sum(${subscriptions.price})`
+    })
+    .from(subscriptions)
+    .where(eq(subscriptions.status, 'active'))
+    .groupBy(subscriptions.plan);
+
+    const mrr = activeSubscriptions[0]?.count 
+      ? await db.select({ total: sql<number>`sum(${subscriptions.price})` })
+          .from(subscriptions)
+          .where(eq(subscriptions.status, 'active'))
+          .then(r => r[0]?.total || 0)
+      : 0;
+
+    return {
+      totalRevenue,
+      paymentCount,
+      activeSubscriptions: activeSubscriptions[0]?.count || 0,
+      newSubscriptions: newSubscriptions[0]?.count || 0,
+      cancelledSubscriptions: cancelledSubscriptions[0]?.count || 0,
+      mrr,
+      arr: mrr * 12,
+      planBreakdown: planBreakdown.map(p => ({
+        plan: p.plan,
+        count: p.count,
+        revenue: p.revenue
+      })),
+      avgRevenuePerUser: activeSubscriptions[0]?.count > 0 
+        ? totalRevenue / activeSubscriptions[0].count 
+        : 0
+    };
+  }
+
+  async getSubscriptionStats() {
+    const total = await db.select({ count: sql<number>`count(*)` })
+      .from(subscriptions);
+
+    const active = await db.select({ count: sql<number>`count(*)` })
+      .from(subscriptions)
+      .where(eq(subscriptions.status, 'active'));
+
+    const cancelled = await db.select({ count: sql<number>`count(*)` })
+      .from(subscriptions)
+      .where(eq(subscriptions.status, 'cancelled'));
+
+    const expired = await db.select({ count: sql<number>`count(*)` })
+      .from(subscriptions)
+      .where(eq(subscriptions.status, 'expired'));
+
+    const byPlan = await db.select({
+      plan: subscriptions.plan,
+      count: sql<number>`count(*)`
+    })
+    .from(subscriptions)
+    .where(eq(subscriptions.status, 'active'))
+    .groupBy(subscriptions.plan);
+
+    return {
+      total: total[0]?.count || 0,
+      active: active[0]?.count || 0,
+      cancelled: cancelled[0]?.count || 0,
+      expired: expired[0]?.count || 0,
+      byPlan: byPlan.reduce((acc, item) => {
+        acc[item.plan] = item.count;
+        return acc;
+      }, {} as Record<string, number>)
+    };
+  }
+
+  async getRecentPayments(limit: number = 50, offset: number = 0) {
+    return await db.select({
+      id: subscriptionPayments.id,
+      userId: subscriptionPayments.userId,
+      amount: subscriptionPayments.amount,
+      currency: subscriptionPayments.currency,
+      status: subscriptionPayments.status,
+      paidAt: subscriptionPayments.paidAt,
+      paymentMethod: subscriptionPayments.paymentMethod,
+      transactionId: subscriptionPayments.transactionId
+    })
+    .from(subscriptionPayments)
+    .orderBy(desc(subscriptionPayments.paidAt))
+    .limit(limit)
+    .offset(offset);
+  }
+
+  async registerAdmin(username: string, email: string, hashedPassword: string) {
+    const userId = `user_${Date.now()}`;
+    const adminId = `admin_${Date.now()}`;
+
+    await db.insert(users).values({
+      id: userId,
+      username: email,
+      password: hashedPassword
+    });
+
+    await db.insert(adminUsers).values({
+      id: adminId,
+      userId,
+      role: 'admin',
+      permissions: ['view_analytics', 'manage_users', 'view_revenue']
+    });
+
+    return { userId, adminId };
+  }
+
+  async authenticateAdmin(email: string, password: string) {
+    const [user] = await db.select()
+      .from(users)
+      .where(eq(users.username, email))
+      .limit(1);
+
+    if (!user) {
+      return { success: false };
+    }
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return { success: false };
+    }
+
+    const [admin] = await db.select()
+      .from(adminUsers)
+      .where(eq(adminUsers.userId, user.id))
+      .limit(1);
+
+    if (!admin) {
+      return { success: false };
+    }
+
+    await db.update(adminUsers)
+      .set({ lastLogin: new Date() })
+      .where(eq(adminUsers.id, admin.id));
+
+    return {
+      success: true,
+      userId: user.id,
+      role: admin.role,
+      permissions: admin.permissions
+    };
   }
 }
 

@@ -229,4 +229,89 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ error: 'Failed to add participant' });
     }
   });
+
+  app.get('/api/admin/revenue/overview', requireAdmin, async (req, res) => {
+    try {
+      const { timeRange } = req.query;
+      const revenue = await adminService.getRevenueOverview(timeRange as string || 'month');
+      res.json(revenue);
+    } catch (error) {
+      console.error('Get revenue overview error:', error);
+      res.status(500).json({ error: 'Failed to get revenue overview' });
+    }
+  });
+
+  app.get('/api/admin/revenue/subscriptions', requireAdmin, async (req, res) => {
+    try {
+      const stats = await adminService.getSubscriptionStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Get subscription stats error:', error);
+      res.status(500).json({ error: 'Failed to get subscription stats' });
+    }
+  });
+
+  app.get('/api/admin/revenue/payments', requireAdmin, async (req, res) => {
+    try {
+      const { limit, offset } = req.query;
+      const payments = await adminService.getRecentPayments(
+        parseInt(limit as string) || 50,
+        parseInt(offset as string) || 0
+      );
+      res.json(payments);
+    } catch (error) {
+      console.error('Get payments error:', error);
+      res.status(500).json({ error: 'Failed to get payments' });
+    }
+  });
+
+  app.post('/api/admin/register', async (req, res) => {
+    try {
+      const { username, password, email, inviteCode } = req.body;
+      
+      if (!inviteCode || inviteCode !== process.env.ADMIN_INVITE_CODE) {
+        return res.status(403).json({ error: 'Invalid invite code' });
+      }
+
+      const bcrypt = await import('bcryptjs');
+      const hashed = await bcrypt.hash(password, 10);
+      
+      const result = await adminService.registerAdmin(username, email, hashed);
+      res.status(201).json({ success: true, adminId: result.adminId });
+    } catch (error) {
+      console.error('Admin registration error:', error);
+      res.status(500).json({ error: 'Admin registration failed' });
+    }
+  });
+
+  app.post('/api/admin/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password required' });
+      }
+
+      const result = await adminService.authenticateAdmin(email, password);
+      
+      if (!result.success) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+
+      (req as any).session.userId = result.userId;
+      (req as any).session.isAdmin = true;
+
+      res.json({ 
+        success: true, 
+        user: { 
+          id: result.userId, 
+          role: result.role,
+          permissions: result.permissions 
+        } 
+      });
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({ error: 'Admin login failed' });
+    }
+  });
 }

@@ -40,10 +40,9 @@ const IdeasPage = lazy(() => import('./pages/IdeasPage'));
 const WisdomPage = lazy(() => import("./pages/WisdomPage"));
 const APIPage = lazy(() => import("./pages/APIPage"));
 const DigitalTwinLabsPage = lazy(() => import("./pages/DigitalTwinLabsPage"));
+const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage"));
+const AdminRegisterPage = lazy(() => import("./pages/AdminRegisterPage"));
 const OnboardingFlow = lazy(() => import("@/components/OnboardingFlow"));
-// Assuming CheckoutSuccess and CheckoutCancel are defined elsewhere or will be added
-// import CheckoutSuccess from "@/pages/CheckoutSuccess";
-// import CheckoutCancel from "@/pages/CheckoutCancel";
 
 // Loading fallback component
 const PageLoader = () => (
@@ -84,6 +83,8 @@ function Router() {
         <Route path="/analytics" component={AnalyticsPage} />
         <Route path="/personality" component={PersonalityTestPage} />
         <Route path="/admin/digital-twin-labs" component={DigitalTwinLabsPage} />
+        <Route path="/admin/login" component={AdminLoginPage} />
+        <Route path="/admin/register" component={AdminRegisterPage} />
         <Route path="/subscription" component={SubscriptionPage} />
         <Route path="/profile" component={ProfilePage} />
         <Route path="/faq" component={FAQPage} />
@@ -115,7 +116,8 @@ function App() {
 
   // Get current location to determine if sidebar should be shown
   const [location] = useLocation();
-  const showSidebar = !["/", "/login", "/register", "/faq"].includes(location);
+  const isAdminRoute = location.startsWith('/admin/');
+  const showSidebar = !["/", "/login", "/register", "/faq"].includes(location) && !isAdminRoute;
 
   return (
     <QueryClientProvider client={queryClient}>

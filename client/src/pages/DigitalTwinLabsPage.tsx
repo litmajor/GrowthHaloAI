@@ -17,7 +17,11 @@ import {
   RefreshCw,
   AlertCircle,
   CheckCircle,
-  Zap
+  Zap,
+  DollarSign,
+  CreditCard,
+  TrendingDown,
+  Package
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
@@ -47,7 +51,51 @@ interface DigitalTwin {
     totalMemories: number;
     totalBeliefs: number;
     totalContradictions: number;
+  };
+}
 
+export default function DigitalTwinLabsPage() {
+  const [users, setUsers] = useState<UserWithAnalytics[]>([]);
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [digitalTwin, setDigitalTwin] = useState<DigitalTwin | null>(null);
+  const [perceptionProfile, setPerceptionProfile] = useState<any>(null);
+  const [experiments, setExperiments] = useState<any[]>([]);
+  const [showCreateExperiment, setShowCreateExperiment] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [revenueData, setRevenueData] = useState<any>(null);
+  const [subscriptionStats, setSubscriptionStats] = useState<any>(null);
+  const [timeRange, setTimeRange] = useState<string>('month');
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchUsers();
+    fetchExperiments();
+    fetchRevenueData();
+    fetchSubscriptionStats();
+  }, []);
+
+  const fetchRevenueData = async (range: string = timeRange) => {
+    try {
+      const res = await fetch(`/api/admin/revenue/overview?timeRange=${range}`);
+      if (!res.ok) throw new Error('Failed to fetch revenue data');
+      const data = await res.json();
+      setRevenueData(data);
+    } catch (error) {
+      console.error('Failed to fetch revenue data:', error);
+    }
+  };
+
+  const fetchSubscriptionStats = async () => {
+    try {
+      const res = await fetch('/api/admin/revenue/subscriptions');
+      if (!res.ok) throw new Error('Failed to fetch subscription stats');
+      const data = await res.json();
+      setSubscriptionStats(data);
+    } catch (error) {
+      console.error('Failed to fetch subscription stats:', error);
+    }
+  };
 
   const fetchExperiments = async () => {
     try {
@@ -99,25 +147,6 @@ interface DigitalTwin {
       console.error('Failed to fetch perception profile:', error);
     }
   };
-
-  };
-}
-
-export default function DigitalTwinLabsPage() {
-  const [users, setUsers] = useState<UserWithAnalytics[]>([]);
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
-  const [digitalTwin, setDigitalTwin] = useState<DigitalTwin | null>(null);
-  const [perceptionProfile, setPerceptionProfile] = useState<any>(null);
-  const [experiments, setExperiments] = useState<any[]>([]);
-  const [showCreateExperiment, setShowCreateExperiment] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    fetchUsers();
-    fetchExperiments();
-  }, []);
 
   const fetchUsers = async () => {
     try {
@@ -222,12 +251,13 @@ export default function DigitalTwinLabsPage() {
           </div>
 
           <Tabs defaultValue="users" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="users">Users</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="twins">Digital Twins</TabsTrigger>
-              <TabsTrigger value="perception">Perception</TabsTrigger>
-              <TabsTrigger value="experiments">Experiments</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-6">
+              <TabsTrigger value="users" data-testid="tab-users">Users</TabsTrigger>
+              <TabsTrigger value="analytics" data-testid="tab-analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="revenue" data-testid="tab-revenue">Revenue</TabsTrigger>
+              <TabsTrigger value="twins" data-testid="tab-twins">Digital Twins</TabsTrigger>
+              <TabsTrigger value="perception" data-testid="tab-perception">Perception</TabsTrigger>
+              <TabsTrigger value="experiments" data-testid="tab-experiments">Experiments</TabsTrigger>
             </TabsList>
 
             <TabsContent value="users" className="space-y-4">
@@ -342,6 +372,188 @@ export default function DigitalTwinLabsPage() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="revenue" className="space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Revenue Analytics</h3>
+                  <p className="text-sm text-muted-foreground">Subscription revenue and financial metrics</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant={timeRange === 'week' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => { setTimeRange('week'); fetchRevenueData('week'); }}
+                    data-testid="button-timerange-week"
+                  >
+                    Week
+                  </Button>
+                  <Button
+                    variant={timeRange === 'month' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => { setTimeRange('month'); fetchRevenueData('month'); }}
+                    data-testid="button-timerange-month"
+                  >
+                    Month
+                  </Button>
+                  <Button
+                    variant={timeRange === 'year' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => { setTimeRange('year'); fetchRevenueData('year'); }}
+                    data-testid="button-timerange-year"
+                  >
+                    Year
+                  </Button>
+                </div>
+              </div>
+
+              {revenueData && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card data-testid="card-total-revenue">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Total Revenue</p>
+                          <p className="text-2xl font-bold">${revenueData.totalRevenue?.toFixed(2) || '0.00'}</p>
+                        </div>
+                        <DollarSign className="w-8 h-8 text-green-500" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card data-testid="card-mrr">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">MRR</p>
+                          <p className="text-2xl font-bold">${revenueData.mrr?.toFixed(2) || '0.00'}</p>
+                        </div>
+                        <TrendingUp className="w-8 h-8 text-blue-500" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card data-testid="card-arr">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">ARR</p>
+                          <p className="text-2xl font-bold">${revenueData.arr?.toFixed(2) || '0.00'}</p>
+                        </div>
+                        <CreditCard className="w-8 h-8 text-purple-500" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card data-testid="card-active-subs">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Active Subscriptions</p>
+                          <p className="text-2xl font-bold">{revenueData.activeSubscriptions || 0}</p>
+                        </div>
+                        <Users className="w-8 h-8 text-orange-500" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <Card data-testid="card-subscription-growth">
+                  <CardHeader>
+                    <CardTitle>Subscription Growth</CardTitle>
+                    <CardDescription>New and cancelled subscriptions</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {revenueData && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-green-500/10 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="w-5 h-5 text-green-500" />
+                            <span className="font-medium">New Subscriptions</span>
+                          </div>
+                          <span className="text-2xl font-bold text-green-600 dark:text-green-400" data-testid="text-new-subs">
+                            {revenueData.newSubscriptions || 0}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-red-500/10 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <TrendingDown className="w-5 h-5 text-red-500" />
+                            <span className="font-medium">Cancelled Subscriptions</span>
+                          </div>
+                          <span className="text-2xl font-bold text-red-600 dark:text-red-400" data-testid="text-cancelled-subs">
+                            {revenueData.cancelledSubscriptions || 0}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <span className="font-medium">Average Revenue Per User</span>
+                          <span className="text-xl font-bold" data-testid="text-arpu">
+                            ${revenueData.avgRevenuePerUser?.toFixed(2) || '0.00'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card data-testid="card-plan-breakdown">
+                  <CardHeader>
+                    <CardTitle>Plan Breakdown</CardTitle>
+                    <CardDescription>Revenue by subscription plan</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {revenueData?.planBreakdown && revenueData.planBreakdown.length > 0 ? (
+                      <div className="space-y-3">
+                        {revenueData.planBreakdown.map((plan: any, idx: number) => (
+                          <div key={idx} className="flex items-center justify-between p-3 bg-muted rounded-lg" data-testid={`plan-${plan.plan}`}>
+                            <div className="flex items-center gap-2">
+                              <Package className="w-4 h-4" />
+                              <span className="font-medium capitalize">{plan.plan}</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <Badge variant="secondary">{plan.count} users</Badge>
+                              <span className="font-bold">${plan.revenue?.toFixed(2) || '0.00'}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-center text-muted-foreground py-8">No plan data available</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {subscriptionStats && (
+                <Card data-testid="card-subscription-stats">
+                  <CardHeader>
+                    <CardTitle>Subscription Overview</CardTitle>
+                    <CardDescription>All-time subscription statistics</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-4 bg-primary/5 rounded-lg">
+                        <p className="text-3xl font-bold text-primary" data-testid="text-total-subs">{subscriptionStats.total || 0}</p>
+                        <p className="text-sm text-muted-foreground mt-1">Total</p>
+                      </div>
+                      <div className="text-center p-4 bg-green-500/5 rounded-lg">
+                        <p className="text-3xl font-bold text-green-600 dark:text-green-400" data-testid="text-active-subs-total">{subscriptionStats.active || 0}</p>
+                        <p className="text-sm text-muted-foreground mt-1">Active</p>
+                      </div>
+                      <div className="text-center p-4 bg-red-500/5 rounded-lg">
+                        <p className="text-3xl font-bold text-red-600 dark:text-red-400" data-testid="text-cancelled-subs-total">{subscriptionStats.cancelled || 0}</p>
+                        <p className="text-sm text-muted-foreground mt-1">Cancelled</p>
+                      </div>
+                      <div className="text-center p-4 bg-gray-500/5 rounded-lg">
+                        <p className="text-3xl font-bold text-gray-600 dark:text-gray-400" data-testid="text-expired-subs">{subscriptionStats.expired || 0}</p>
+                        <p className="text-sm text-muted-foreground mt-1">Expired</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="twins" className="space-y-4">

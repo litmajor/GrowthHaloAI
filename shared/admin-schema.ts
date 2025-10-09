@@ -122,8 +122,23 @@ export const auditLogs = pgTable("audit_logs", {
   id: varchar("id").primaryKey(),
   adminId: varchar("admin_id").notNull().references(() => adminUsers.id),
   action: text("action").notNull(),
-  targetType: varchar("target_type"), // 'user', 'system', 'data', 'experiment'
+  targetType: varchar("target_type"),
   targetId: varchar("target_id"),
   details: jsonb("details").$type<Record<string, any>>(),
   timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
+export const revenueMetrics = pgTable("revenue_metrics", {
+  id: varchar("id").primaryKey(),
+  date: timestamp("date").notNull(),
+  totalRevenue: real("total_revenue").default(0),
+  mrr: real("mrr").default(0),
+  arr: real("arr").default(0),
+  newSubscriptions: integer("new_subscriptions").default(0),
+  cancelledSubscriptions: integer("cancelled_subscriptions").default(0),
+  churnRate: real("churn_rate").default(0),
+  avgRevenuePerUser: real("avg_revenue_per_user").default(0),
+  planBreakdown: jsonb("plan_breakdown").$type<Record<string, number>>().default({}),
+  metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
