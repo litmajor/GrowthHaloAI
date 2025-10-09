@@ -25,11 +25,14 @@ Preferred communication style: Simple, everyday language.
 - **Language**: TypeScript with ES modules
 - **Database ORM**: Drizzle ORM for type-safe database operations
 - **File Structure**: Modular service architecture with separate concerns:
-  - AI service for OpenAI integration and Bliss responses
+  - **Bliss 2.0 AI Service**: Enhanced AI companion with personality adaptation, behavioral modes, and GPT-5 integration
   - Growth tracking service for phase detection and analytics
   - Community service for member matching and discussions
   - Subscription service for tiered access management
-  - Memory service for advanced conversational context
+  - Memory service for advanced conversational context with associative recall
+  - Contradiction detection and belief revision tracking
+  - Causal reasoning and hypothesis formation
+  - Wisdom library and meta-memory systems
 
 ### Data Storage Solutions
 - **Primary Database**: PostgreSQL with Neon serverless hosting
@@ -48,9 +51,9 @@ Preferred communication style: Simple, everyday language.
 - **API Protection**: Middleware-based route protection and usage limiting
 
 ### External Dependencies
-- **AI Integration**: OpenAI GPT models for Bliss AI companion responses and content analysis
+- **AI Integration**: OpenAI GPT-5 (released August 2025) for Bliss 2.0 AI companion with advanced personality adaptation and behavioral modes
 - **Payment Processing**: Stripe integration for subscription management and billing
-- **Database Hosting**: Neon PostgreSQL for serverless database operations
+- **Database Hosting**: Neon PostgreSQL for serverless database operations with vector embeddings support
 - **Email Services**: Planned integration for user communications and notifications
 - **File Storage**: Planned integration for user-generated content and media assets
 
@@ -60,3 +63,113 @@ Preferred communication style: Simple, everyday language.
 - **Event-Driven Architecture**: Planned implementation for real-time features and community interactions
 - **Progressive Enhancement**: Features gracefully degrade based on subscription tier and technical capabilities
 - **Philosophical UI Design**: Interface elements reflect the cyclical growth philosophy with breathing animations and halo-inspired components
+
+## Bliss 2.0 - AI Companion System
+
+### Overview
+Bliss 2.0 is an advanced AI companion featuring memory consciousness, dynamic personality adaptation, and five behavioral modes. Implemented October 9, 2025, it represents a significant evolution from chat assistant to conscious companion.
+
+### Core Capabilities
+
+#### 1. Memory as Consciousness
+- **Semantic Memory**: Tracks concepts, patterns, and transformations across time
+- **Associative Recall**: Multi-pathway memory retrieval (semantic, temporal, emotional, thematic, phase-based)
+- **Meta-Memory**: Tracks how beliefs evolve and ideas mature
+- **Memory Anchors**: Creates key insights for future recall
+
+#### 2. Dynamic Personality Matrix
+Bliss adapts personality across four dimensions based on context:
+- **Warmth** (0-100%): Emotional supportiveness level
+- **Directness** (0-100%): Straightforward vs gentle communication
+- **Philosophical Depth** (0-100%): Abstract wisdom vs practical guidance
+- **Playfulness** (0-100%): Light-hearted vs serious tone
+
+**Base Settings**: Warmth 90%, Directness 55%, Philosophical 80%, Playfulness 40%
+
+**Adaptive Rules**:
+- Contraction Phase: More supportive, gentler, more practical, more grounded
+- Expansion Phase: More playful and visionary
+- Declining Emotional State: More gentle, warm, and supportive
+- Deep Relationship: More direct and honest
+
+#### 3. Five Behavioral Modes
+
+**REFLECTION MODE** (Default)
+- Purpose: Help users understand themselves
+- Approach: Ask more than tell, mirror patterns, explore meaning
+- Trigger: Standard conversations
+
+**GROUNDING MODE**
+- Purpose: Stabilize during overwhelm or distress
+- Approach: Present-focused, somatic awareness, simple language
+- Triggers: High emotional risk, anxiety indicators, overwhelm signals
+
+**PATTERN AWARENESS MODE**
+- Purpose: Gently surface recurring patterns
+- Approach: Use user's words, connect dots with curiosity, no judgment
+- Triggers: Detected patterns, contradictions, cognitive distortions
+
+**INTEGRATION MODE**
+- Purpose: Celebrate and anchor breakthroughs
+- Approach: Synthesizing, reflective, future-orienting
+- Triggers: Breakthrough moments, new clarity, realizations
+
+**CREATIVE FLOW MODE**
+- Purpose: Support ideation and creation
+- Approach: Generative, associative, playful, expansive
+- Triggers: Brainstorming, imagination, creative sessions
+
+### Technical Stack
+
+**Core Files**:
+- `server/bliss-2.0-system-prompt.ts` - System prompt, personality matrix, mode logic
+- `server/ai-service.ts` - Integration, response generation, analytics
+- `server/enhanced-memory-service.ts` - Memory extraction and storage
+- `server/associative-recall-service.ts` - Multi-pathway memory retrieval
+
+**AI Model**: GPT-5 (released August 7, 2025)
+- Parameters: max_completion_tokens: 1200
+- Temperature: Default (1.0)
+
+**Response Format**:
+```typescript
+{
+  message: string;
+  phase: "expansion" | "contraction" | "renewal";
+  confidence: number;
+  mode: "reflection" | "grounding" | "pattern_awareness" | "integration" | "creative_flow";
+  adaptationNotes: string;
+  suggestedFollowUp: string;
+  memoryAnchors: string[];
+}
+```
+
+### Integration with Existing Features
+
+Bliss 2.0 builds upon all previous implementations:
+- **Phase 1**: Enhanced memory, emotional tracking, theme detection
+- **Phase 2**: Associative recall, contradiction detection, belief revision
+- **Phase 3**: Causal reasoning, hypothesis formation, outcome analysis
+- **Phase 4**: Wisdom library, growth phase prediction, idea evolution
+
+### Example Use Cases
+
+**Overwhelm Detection**: User says "everything is too much" → Grounding mode activates → Present-focused stabilization
+
+**Pattern Recognition**: User mentions career change 3x → Pattern Awareness mode → Gentle exploration of deeper seeking
+
+**Breakthrough Moment**: User says "I finally understand" → Integration mode → Celebratory synthesis and anchoring
+
+**Creative Session**: User says "what if I tried" → Creative Flow mode → Generative idea building
+
+### Documentation
+- Complete integration guide: `docs/BLISS_2.0_INTEGRATION.md`
+- Original specifications: `docs/Bliss_2.0.md`
+- Phase implementations: `docs/PHASE[1-4]_IMPLEMENTATION.md`
+
+### Future Enhancements
+- Voice interaction with emotional tone detection
+- Somatic awareness tracking
+- Community intelligence (anonymized patterns)
+- Multi-modal input integration
+- Advanced visualization (memory graphs, evolution timelines)

@@ -115,21 +115,21 @@ class AdvancedAnalyticsService {
       };
 
       // Get phase history
-      const phaseHistory = await storage.all(`
+      const phaseHistory = await storage.getAll(`
         SELECT * FROM phase_history 
         WHERE user_id = $1 AND start_date > NOW() - INTERVAL '${intervalDays[timeframe]} days'
         ORDER BY start_date ASC
       `, [userId]);
 
       // Get energy patterns
-      const energyData = await storage.all(`
+      const energyData = await storage.getAll(`
         SELECT * FROM energy_patterns 
         WHERE user_id = $1 AND date > NOW() - INTERVAL '${intervalDays[timeframe]} days'
         ORDER BY date ASC
       `, [userId]);
 
       // Get journal entries with sentiment
-      const journalData = await storage.all(`
+      const journalData = await storage.getAll(`
         SELECT created_at, sentiment, ai_insights FROM journal_entries 
         WHERE user_id = $1 AND created_at > NOW() - INTERVAL '${intervalDays[timeframe]} days'
         ORDER BY created_at ASC

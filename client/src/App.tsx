@@ -31,11 +31,15 @@ import PersonalityTestPage from "./pages/PersonalityTestPage";
 import PatternsPage from './pages/PatternsPage';
 import IdeasPage from './pages/IdeasPage';
 import WisdomPage from "./pages/WisdomPage";
+import APIPage from "./pages/APIPage";
+import { useState, useEffect } from "react";
+import OnboardingFlow from "@/components/OnboardingFlow";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
+      <Route path="/api" component={APIPage} />
       <Route path="/chat" component={Home} />
       <Route path="/dashboard" component={DashboardPage} />
       <Route path="/compass" component={ValuesPage} />
@@ -55,19 +59,32 @@ function Router() {
       <Route path="/patterns" component={PatternsPage} />
       <Route path="/ideas" component={IdeasPage} />
       <Route path="/wisdom" component={WisdomPage} />
-      <Route path="*" component={NotFound} />
       <Route path="/analytics" component={AnalyticsPage} />
-      <Route path="/profile" component={ProfilePage} />
-      <Route path="/subscription" component={SubscriptionPage} />
-      <Route path="/faq" component={FAQPage} />
-      <Route path="/goals" component={GoalsPage} />
       <Route path="/personality" component={PersonalityTestPage} />
+      <Route path="/subscription" component={SubscriptionPage} />
+      <Route path="/profile" component={ProfilePage} />
+      <Route path="/faq" component={FAQPage} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
 function App() {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    if (isLoggedIn && !hasSeenOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('hasSeenOnboarding', 'true');
+    setShowOnboarding(false);
+  };
+
   //todo: remove mock functionality - get real user phase data from backend
   const currentPhase = "expansion" as const;
   const phaseConfidence = 75;
@@ -78,9 +95,10 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="bliss-theme">
-        <TooltipProvider>
-          <HintsProvider>
+      <ThemeProvider defaultTheme="system" storageKey="growth-halo-theme">
+        {showOnboarding && <OnboardingFlow onComplete={handleOnboardingComplete} />}
+        <HintsProvider>
+          <TooltipProvider>
             <div className="min-h-screen bg-background text-foreground">
               {showSidebar && (
                 <Navigation
@@ -94,8 +112,8 @@ function App() {
               </main>
             </div>
             <Toaster />
-          </HintsProvider>
-        </TooltipProvider>
+          </TooltipProvider>
+        </HintsProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

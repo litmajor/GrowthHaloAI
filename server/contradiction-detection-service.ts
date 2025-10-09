@@ -4,7 +4,18 @@ import { beliefs, contradictions, cognitiveDistortions } from '../shared/phase2-
 import { eq, gt, and, desc, sql } from 'drizzle-orm';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+if (!process.env.OPENAI_API_KEY) {
+  console.warn('WARNING: OPENAI_API_KEY is not set. Contradiction detection will fail.');
+}
+
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY || 'dummy-key',
+  baseURL: 'https://openrouter.ai/api/v1',
+  defaultHeaders: {
+    'HTTP-Referer': 'https://growth-halo.replit.app',
+    'X-Title': 'Growth Halo AI'
+  }
+});
 
 interface BeliefExtraction {
   statement: string;

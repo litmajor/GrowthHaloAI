@@ -7,14 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 
 export default function IdeasPage() {
   const { user } = useUser();
-
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Please log in to view your ideas.</p>
-      </div>
-    );
-  }
+  const userId = user?.id || 'demo-user';
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
@@ -26,15 +19,15 @@ export default function IdeasPage() {
         </TabsList>
 
         <TabsContent value="garden" className="mt-6">
-          <IdeasDashboard userId={user.id} />
+          <IdeasDashboard userId={userId} />
         </TabsContent>
 
         <TabsContent value="dormant" className="mt-6">
-          <DormantConcepts userId={user.id} />
+          <DormantConcepts userId={userId} />
         </TabsContent>
 
         <TabsContent value="creative" className="mt-6">
-          <CreativeInsights userId={user.id} />
+          <CreativeInsights userId={userId} />
         </TabsContent>
       </Tabs>
     </div>

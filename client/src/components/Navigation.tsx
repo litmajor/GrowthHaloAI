@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target, Users, CreditCard, Settings, User, ChevronLeft, ChevronRight, Brain, TrendingUp } from "lucide-react";
+import { MessageSquare, Compass, Calendar, Sparkles, BarChart3, BookOpen, Target, Users, CreditCard, Settings, User, ChevronLeft, ChevronRight, Brain, TrendingUp, Home, MessageCircle, CalendarDays, FileText, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import HaloProgressRing from "./HaloProgressRing";
@@ -68,10 +68,10 @@ export default function Navigation({
                 <div>
                   <h1 className="text-lg font-medium flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-primary" />
-                    Bliss AI
+                    Bliss 2.0
                   </h1>
                   <p className="text-xs text-muted-foreground">
-                    Growth Halo Companion
+                    AI Growth Companion
                   </p>
                 </div>
               </Link>
@@ -131,18 +131,6 @@ export default function Navigation({
               </Link>
             );
           })}
-          <Link
-            to="/wisdom"
-            className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-              location.pathname === "/wisdom"
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-            )}
-          >
-            <Sparkles className="w-4 h-4" />
-            Wisdom
-          </Link>
         </nav>
 
         {/* Secondary Navigation */}
