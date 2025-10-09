@@ -2,6 +2,13 @@ import OpenAI from 'openai';
 import { advancedMemory } from './memory-service';
 import { goalIntelligence } from './goal-intelligence-service';
 import { storage } from './storage';
+import { 
+  BLISS_2_0_SYSTEM_PROMPT, 
+  BASE_PERSONALITY, 
+  adaptPersonality, 
+  determineOperatingMode,
+  type BlissPersonalityMatrix 
+} from './bliss-2.0-system-prompt';
 
 // Create OpenAI client conditionally to avoid startup errors when API key is not set
 let openai: OpenAI | null = null;
@@ -22,6 +29,10 @@ export interface BlissResponse {
   message: string;
   phase: "expansion" | "contraction" | "renewal";
   confidence: number;
+  mode?: 'reflection' | 'grounding' | 'pattern_awareness' | 'integration' | 'creative_flow';
+  adaptationNotes?: string;
+  suggestedFollowUp?: string;
+  memoryAnchors?: string[];
 }
 
 const GROWTH_HALO_SYSTEM_PROMPT = `# Growth Halo AI Agent - System Prompt
@@ -202,7 +213,38 @@ export async function generateAdaptiveBlissResponse(
     // Get goal insights for AI context
     const goalInsights = await goalIntelligence.getGoalInsightsForAI(userId);
 
-    const adaptivePrompt = `${GROWTH_HALO_SYSTEM_PROMPT}
+    // BLISS 2.0: Determine operating mode based on analytics
+    const operatingMode = determineOperatingMode({
+      userMessage,
+      emotionalTrajectory: patterns.emotionalTrajectory,
+      cognitiveDistortions: patterns.cognitiveDistortions,
+      patternsDetected: [], // Could be enhanced with more pattern data
+      contradictions: contradictionAnalysis.contradictions
+    });
+
+    // BLISS 2.0: Adapt personality based on context
+    const adaptedPersonality = adaptPersonality(BASE_PERSONALITY, {
+      phase: patterns.growthPhase.phase,
+      emotionalState: patterns.emotionalTrajectory.trend === 'ascending' ? 'improving' : 
+                     patterns.emotionalTrajectory.trend === 'descending' ? 'declining' : 'stable',
+      conversationDepth: conversationHistory.length / 100 // Simple depth metric
+    });
+
+    const adaptivePrompt = `${BLISS_2_0_SYSTEM_PROMPT}
+
+BLISS PERSONALITY ADAPTATION:
+Current Personality Matrix (adapted for context):
+- Warmth: ${adaptedPersonality.warmth}%
+- Directness: ${adaptedPersonality.directness}%
+- Philosophical Depth: ${adaptedPersonality.philosophical}%
+- Playfulness: ${adaptedPersonality.playfulness}%
+
+Current Operating Mode: ${operatingMode.toUpperCase()}
+${operatingMode === 'grounding' ? 'PRIORITY: Use present-focused, somatic awareness. Simple, clear, stabilizing language.' :
+  operatingMode === 'pattern_awareness' ? 'PRIORITY: Gently surface patterns. Use user\'s own words. Connect dots with curiosity.' :
+  operatingMode === 'integration' ? 'PRIORITY: Celebrate breakthrough. Be reflective and synthesizing. Anchor insights.' :
+  operatingMode === 'creative_flow' ? 'PRIORITY: Be generative and playful. Build on ideas. Ask "what if" questions.' :
+  'PRIORITY: Reflective mode. Ask more than tell. Mirror what user cannot see.'}
 
 CONTEXT-SENSITIVE ADAPTATION:
 User Communication Style: ${patterns.personalizationInsights.communicationStyle}
@@ -290,12 +332,13 @@ ADAPTIVE INSTRUCTIONS:
 - Suggest contextually relevant follow-up questions
 - If contradictions exist, weave gentle exploration into your response naturally
 
-Respond with enhanced JSON:
+Respond with enhanced JSON (must include mode):
 {
   "message": "your adapted response",
   "phase": "detected_phase",
   "confidence": confidence_number,
-  "adaptationNotes": "how you adapted your response",
+  "mode": "${operatingMode}",
+  "adaptationNotes": "how you adapted your response based on personality and mode",
   "suggestedFollowUp": "contextual follow-up question",
   "memoryAnchors": ["key_insight_1", "emotional_state_2"]
 }`;
@@ -306,11 +349,11 @@ Respond with enhanced JSON:
       { role: 'user' as const, content: userMessage }
     ];
 
+    // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
     const completion = await getOpenAIClient().chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-5',
       messages: messages,
-      temperature: 0.7,
-      max_tokens: 1200,
+      max_completion_tokens: 1200,
     });
 
     const response = completion.choices[0]?.message?.content;
@@ -320,6 +363,7 @@ Respond with enhanced JSON:
         message: parsed.message,
         phase: parsed.phase || patterns.growthPhase.phase,
         confidence: parsed.confidence || patterns.growthPhase.confidence,
+        mode: parsed.mode || operatingMode,
         adaptationNotes: parsed.adaptationNotes || '',
         suggestedFollowUp: parsed.suggestedFollowUp || '',
         memoryAnchors: parsed.memoryAnchors || [],
