@@ -68,10 +68,10 @@ export default function Navigation({
                 <div>
                   <h1 className="text-lg font-medium flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-primary" />
-                    Bliss AI
+                    Bliss 2.0
                   </h1>
                   <p className="text-xs text-muted-foreground">
-                    Growth Halo Companion
+                    AI Growth Companion
                   </p>
                 </div>
               </Link>

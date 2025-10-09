@@ -14,8 +14,8 @@ export default function LandingPage() {
   const features = [
     {
       icon: <Brain className="w-6 h-6" />,
-      title: "Bliss AI Companion",
-      description: "Your personal growth companion that learns, adapts, and provides insights tailored to your unique journey."
+      title: "Bliss 2.0 AI Companion",
+      description: "Advanced AI with 5 behavioral modes, dynamic personality adaptation, and deep memory consciousness that evolves with your growth journey."
     },
     {
       icon: <Circle className="w-6 h-6" />,
@@ -152,6 +152,117 @@ export default function LandingPage() {
               </Card>
             </motion.div>
           ))}
+        </div>
+      </section>
+
+
+
+      {/* Bliss 2.0 Operating Modes Section */}
+      <section className="container mx-auto px-4 py-20 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20">
+        <div className="text-center mb-16">
+          <Badge className="mb-4" variant="secondary">
+            <Sparkles className="w-4 h-4 mr-2" />
+            Bliss 2.0 Intelligence
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Five Intelligent Behavioral Modes
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            Bliss dynamically adapts her approach based on what you need in the moment, 
+            shifting between reflection, grounding, pattern awareness, integration, and creative flow.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <Card className="hover:shadow-lg transition-shadow" data-testid="mode-reflection">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+                <MessageCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <CardTitle>Reflection Mode</CardTitle>
+              <Badge variant="outline" className="w-fit">Default</Badge>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Mirrors patterns back to you, asks deep questions, and helps you understand yourself through gentle exploration.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow" data-testid="mode-grounding">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
+                <Heart className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+              <CardTitle>Grounding Mode</CardTitle>
+              <Badge variant="outline" className="w-fit">Support</Badge>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Activated during overwhelm. Present-focused, somatic awareness, and stabilizing language to help you feel safe.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow" data-testid="mode-pattern">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4">
+                <TrendingUp className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              </div>
+              <CardTitle>Pattern Awareness</CardTitle>
+              <Badge variant="outline" className="w-fit">Insight</Badge>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Gently surfaces recurring patterns and contradictions, connecting dots across time without judgment.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow" data-testid="mode-integration">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+                <Sparkles className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <CardTitle>Integration Mode</CardTitle>
+              <Badge variant="outline" className="w-fit">Breakthrough</Badge>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Celebrates insights, synthesizes understanding, and anchors breakthroughs for lasting transformation.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow" data-testid="mode-creative">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center mb-4">
+                <Lightbulb className="w-6 h-6 text-pink-600 dark:text-pink-400" />
+              </div>
+              <CardTitle>Creative Flow</CardTitle>
+              <Badge variant="outline" className="w-fit">Generative</Badge>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Builds on your ideas with associative thinking, playful exploration, and expansive possibility.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow border-primary/30" data-testid="mode-adaptive">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center mb-4">
+                <Brain className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle>Dynamic Personality</CardTitle>
+              <Badge variant="outline" className="w-fit bg-primary/10">Adaptive</Badge>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Bliss adjusts her warmth, directness, depth, and playfulness based on your growth phase and emotional state.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
@@ -309,6 +420,12 @@ export default function LandingPage() {
                   <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                     <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
+                  Basic Bliss AI (Reflection mode)
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
+                  </div>
                   Simple emotional tracking
                 </li>
                 <li className="flex items-center gap-2">
@@ -351,6 +468,18 @@ export default function LandingPage() {
                     <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
                   </div>
                   Unlimited chat
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
+                  </div>
+                  <strong>Full Bliss 2.0</strong> (all 5 modes)
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
+                  </div>
+                  Dynamic personality adaptation
                 </li>
                 <li className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
