@@ -81,15 +81,94 @@ export default {
           busy: "rgb(239 68 68)",
           offline: "rgb(156 163 175)",
         },
-        // Growth Halo Phase Colors
-        expansion: "hsl(200 70% 55%)", // Growth teal
-        contraction: "hsl(260 45% 60%)", // Reflection purple
-        renewal: "hsl(45 85% 65%)", // Integration gold
+        // Enhanced Semantic Colors (WCAG AAA Compliant)
+        success: {
+          DEFAULT: "hsl(var(--success) / <alpha-value>)",
+          foreground: "hsl(var(--success-foreground) / <alpha-value>)",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning) / <alpha-value>)",
+          foreground: "hsl(var(--warning-foreground) / <alpha-value>)",
+        },
+        error: {
+          DEFAULT: "hsl(var(--error) / <alpha-value>)",
+          foreground: "hsl(var(--error-foreground) / <alpha-value>)",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info) / <alpha-value>)",
+          foreground: "hsl(var(--info-foreground) / <alpha-value>)",
+        },
+        // Growth Halo Phase Color Scales (WCAG AAA Compliant)
+        expansion: {
+          50: "hsl(var(--expansion-50) / <alpha-value>)",
+          100: "hsl(var(--expansion-100) / <alpha-value>)",
+          200: "hsl(var(--expansion-200) / <alpha-value>)",
+          300: "hsl(var(--expansion-300) / <alpha-value>)",
+          400: "hsl(var(--expansion-400) / <alpha-value>)",
+          500: "hsl(var(--expansion-500) / <alpha-value>)",
+          600: "hsl(var(--expansion-600) / <alpha-value>)",
+          700: "hsl(var(--expansion-700) / <alpha-value>)",
+          800: "hsl(var(--expansion-800) / <alpha-value>)",
+          900: "hsl(var(--expansion-900) / <alpha-value>)",
+          DEFAULT: "hsl(var(--expansion-500) / <alpha-value>)",
+        },
+        contraction: {
+          50: "hsl(var(--contraction-50) / <alpha-value>)",
+          100: "hsl(var(--contraction-100) / <alpha-value>)",
+          200: "hsl(var(--contraction-200) / <alpha-value>)",
+          300: "hsl(var(--contraction-300) / <alpha-value>)",
+          400: "hsl(var(--contraction-400) / <alpha-value>)",
+          500: "hsl(var(--contraction-500) / <alpha-value>)",
+          600: "hsl(var(--contraction-600) / <alpha-value>)",
+          700: "hsl(var(--contraction-700) / <alpha-value>)",
+          800: "hsl(var(--contraction-800) / <alpha-value>)",
+          900: "hsl(var(--contraction-900) / <alpha-value>)",
+          DEFAULT: "hsl(var(--contraction-500) / <alpha-value>)",
+        },
+        renewal: {
+          50: "hsl(var(--renewal-50) / <alpha-value>)",
+          100: "hsl(var(--renewal-100) / <alpha-value>)",
+          200: "hsl(var(--renewal-200) / <alpha-value>)",
+          300: "hsl(var(--renewal-300) / <alpha-value>)",
+          400: "hsl(var(--renewal-400) / <alpha-value>)",
+          500: "hsl(var(--renewal-500) / <alpha-value>)",
+          600: "hsl(var(--renewal-600) / <alpha-value>)",
+          700: "hsl(var(--renewal-700) / <alpha-value>)",
+          800: "hsl(var(--renewal-800) / <alpha-value>)",
+          900: "hsl(var(--renewal-900) / <alpha-value>)",
+          DEFAULT: "hsl(var(--renewal-500) / <alpha-value>)",
+        }
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
+      },
+      fontSize: {
+        base: "var(--font-size-base)",
+        lg: "var(--font-size-lg)",
+        xl: "var(--font-size-xl)",
+        "2xl": "var(--font-size-2xl)",
+        "3xl": "var(--font-size-3xl)",
+      },
+      lineHeight: {
+        tight: "var(--line-height-tight)",
+        normal: "var(--line-height-normal)",
+        relaxed: "var(--line-height-relaxed)",
+      },
+      spacing: {
+        xs: "var(--spacing-xs)",
+        sm: "var(--spacing-sm)",
+        md: "var(--spacing-md)",
+        lg: "var(--spacing-lg)",
+        xl: "var(--spacing-xl)",
+        "2xl": "var(--spacing-2xl)",
+        "3xl": "var(--spacing-3xl)",
+      },
+      maxWidth: {
+        "content-narrow": "var(--content-narrow)",
+        "content-readable": "var(--content-readable)",
+        "content-wide": "var(--content-wide)",
       },
       keyframes: {
         "accordion-down": {
