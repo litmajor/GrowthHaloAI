@@ -27,6 +27,7 @@ const navItems = [
   { path: "/personality", icon: Brain, label: "Personality" }, // Added Personality Test
   { path: "/patterns", icon: TrendingUp, label: "Patterns" }, // Added Patterns link
   { path: "/ideas", icon: Sparkles, label: "Ideas" }, // Added Ideas link
+  { path: "/admin/digital-twin-labs", icon: Brain, label: "Digital Twin Labs" }, // Admin section
   { path: "/community", icon: Users, label: "Community" },
   { path: "/events", icon: Calendar, label: "Events" },
   { path: "/content", icon: BookOpen, label: "Content" },

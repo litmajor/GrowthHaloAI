@@ -39,6 +39,7 @@ const PatternsPage = lazy(() => import('./pages/PatternsPage'));
 const IdeasPage = lazy(() => import('./pages/IdeasPage'));
 const WisdomPage = lazy(() => import("./pages/WisdomPage"));
 const APIPage = lazy(() => import("./pages/APIPage"));
+const DigitalTwinLabsPage = lazy(() => import("./pages/DigitalTwinLabsPage"));
 const OnboardingFlow = lazy(() => import("@/components/OnboardingFlow"));
 // Assuming CheckoutSuccess and CheckoutCancel are defined elsewhere or will be added
 // import CheckoutSuccess from "@/pages/CheckoutSuccess";
@@ -82,6 +83,7 @@ function Router() {
         <Route path="/wisdom" component={WisdomPage} />
         <Route path="/analytics" component={AnalyticsPage} />
         <Route path="/personality" component={PersonalityTestPage} />
+        <Route path="/admin/digital-twin-labs" component={DigitalTwinLabsPage} />
         <Route path="/subscription" component={SubscriptionPage} />
         <Route path="/profile" component={ProfilePage} />
         <Route path="/faq" component={FAQPage} />

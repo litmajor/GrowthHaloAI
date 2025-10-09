@@ -22,6 +22,7 @@ import { memories, emotionalDataPoints as emotionalStates, conversationThemes as
 import { beliefs, contradictions, cognitiveDistortions } from '../shared/phase2-schema';
 import { causalReasoningService } from './causal-reasoning-service';
 import { hypothesisFormationService } from './hypothesis-formation-service'; // Import Hypothesis Formation Service
+import { registerAdminRoutes } from './admin-routes';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Attach user to request from session if present so route handlers can use (req as any).user
@@ -1466,6 +1467,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to fetch cognitive distortions' });
     }
   });
+
+  // Register admin routes
+  registerAdminRoutes(app);
 
   const httpServer = createServer(app);
 
