@@ -375,6 +375,38 @@
     @apply hidden;
   }
 
+  /* GPU-accelerated animations for better performance */
+  .gpu-accelerate {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  .smooth-transform {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateZ(0);
+  }
+
+  /* Instant page transitions */
+  .page-transition-enter {
+    opacity: 0;
+    transform: translateY(10px) translateZ(0);
+  }
+
+  .page-transition-enter-active {
+    opacity: 1;
+    transform: translateY(0) translateZ(0);
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  }
+
+  .page-transition-exit {
+    opacity: 1;
+  }
+
+  .page-transition-exit-active {
+    opacity: 0;
+    transition: opacity 0.15s ease-in;
+  }
+
   /* Placeholder styling for contentEditable div */
   [contenteditable][data-placeholder]:empty::before {
     content: attr(data-placeholder);

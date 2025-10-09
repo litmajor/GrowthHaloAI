@@ -6,73 +6,86 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { HintsProvider } from "@/components/HintsProvider";
 import { ContextualHelpWidget } from "@/components/ContextualHelpWidget";
 import Navigation from "@/components/Navigation";
-import Home from "@/pages/Home";
-import ValuesPage from "./pages/ValuesPage";
-import CheckInPage from "./pages/CheckInPage";
-import CommunityPage from "./pages/CommunityPage";
-import HomePage from "@/pages/HomePage";
-import LoginPage from "@/pages/LoginPage";
-import RegisterPage from "@/pages/RegisterPage";
-import DashboardPage from './pages/DashboardPage';
-import JournalPage from "@/pages/JournalPage";
-import IntentionsPage from "./pages/IntentionsPage";
-import PricingPage from "@/pages/PricingPage";
-import NotFound from "@/pages/not-found";
 import { queryClient } from "./lib/queryClient";
-import ProfilePage from "./pages/ProfilePage";
-import SettingsPage from "./pages/SettingsPage";
-import EventsPage from './pages/EventsPage';
-import ContentPage from './pages/ContentPage';
-import AnalyticsPage from "./pages/AnalyticsPage";
-import LandingPage from "./pages/LandingPage";
-import SubscriptionPage from "./pages/SubscriptionPage";
-import FAQPage from "./pages/FAQPage";
-import GoalsPage from "./pages/GoalsPage";
-import PersonalityTestPage from "./pages/PersonalityTestPage";
-import PatternsPage from './pages/PatternsPage';
-import IdeasPage from './pages/IdeasPage';
-import WisdomPage from "./pages/WisdomPage";
-import APIPage from "./pages/APIPage";
-import { useState, useEffect } from "react";
-import OnboardingFlow from "@/components/OnboardingFlow";
+import { useState, useEffect, lazy, Suspense } from "react";
+import { CardSkeleton } from "@/components/ui/skeleton";
+
+// Lazy load all page components for better code splitting
+const Home = lazy(() => import("@/pages/Home"));
+const ValuesPage = lazy(() => import("./pages/ValuesPage"));
+const CheckInPage = lazy(() => import("./pages/CheckInPage"));
+const CommunityPage = lazy(() => import("./pages/CommunityPage"));
+const HomePage = lazy(() => import("@/pages/HomePage"));
+const LoginPage = lazy(() => import("@/pages/LoginPage"));
+const RegisterPage = lazy(() => import("@/pages/RegisterPage"));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const JournalPage = lazy(() => import("@/pages/JournalPage"));
+const IntentionsPage = lazy(() => import("./pages/IntentionsPage"));
+const PricingPage = lazy(() => import("@/pages/PricingPage"));
+const NotFound = lazy(() => import("@/pages/not-found"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const EventsPage = lazy(() => import('./pages/EventsPage'));
+const ContentPage = lazy(() => import('./pages/ContentPage'));
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const SubscriptionPage = lazy(() => import("./pages/SubscriptionPage"));
+const FAQPage = lazy(() => import("./pages/FAQPage"));
+const GoalsPage = lazy(() => import("./pages/GoalsPage"));
+const PersonalityTestPage = lazy(() => import("./pages/PersonalityTestPage"));
+const PatternsPage = lazy(() => import('./pages/PatternsPage'));
+const IdeasPage = lazy(() => import('./pages/IdeasPage'));
+const WisdomPage = lazy(() => import("./pages/WisdomPage"));
+const APIPage = lazy(() => import("./pages/APIPage"));
+const OnboardingFlow = lazy(() => import("@/components/OnboardingFlow"));
 // Assuming CheckoutSuccess and CheckoutCancel are defined elsewhere or will be added
 // import CheckoutSuccess from "@/pages/CheckoutSuccess";
 // import CheckoutCancel from "@/pages/CheckoutCancel";
 
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center p-8">
+    <div className="w-full max-w-4xl space-y-4">
+      <CardSkeleton />
+      <CardSkeleton />
+      <CardSkeleton />
+    </div>
+  </div>
+);
+
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={LandingPage} />
-      <Route path="/api" component={APIPage} />
-      <Route path="/chat" component={Home} />
-      <Route path="/dashboard" component={DashboardPage} />
-      <Route path="/compass" component={ValuesPage} />
-      <Route path="/values" component={ValuesPage} />
-      <Route path="/community" component={CommunityPage} />
-      <Route path="/checkin" component={CheckInPage} />
-      <Route path="/journal" component={JournalPage} />
-      <Route path="/intentions" component={IntentionsPage} />
-      <Route path="/home" component={HomePage} />
-      <Route path="/login" component={LoginPage} />
-      <Route path="/register" component={RegisterPage} />
-      <Route path="/pricing" component={PricingPage} />
-      <Route path="/settings" component={SettingsPage} />
-      <Route path="/events" component={EventsPage} />
-      <Route path="/content" component={ContentPage} />
-      <Route path="/goals" component={GoalsPage} />
-      <Route path="/patterns" component={PatternsPage} />
-      <Route path="/ideas" component={IdeasPage} />
-      <Route path="/wisdom" component={WisdomPage} />
-      <Route path="/analytics" component={AnalyticsPage} />
-      <Route path="/personality" component={PersonalityTestPage} />
-      <Route path="/subscription" component={SubscriptionPage} />
-      <Route path="/profile" component={ProfilePage} />
-      <Route path="/faq" component={FAQPage} />
-      {/* Placeholder routes for checkout, assuming they exist */}
-      {/* <Route path="/checkout/success" component={CheckoutSuccess} /> */}
-      {/* <Route path="/checkout/cancel" component={CheckoutCancel} /> */}
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<PageLoader />}>
+      <Switch>
+        <Route path="/" component={LandingPage} />
+        <Route path="/api" component={APIPage} />
+        <Route path="/chat" component={Home} />
+        <Route path="/dashboard" component={DashboardPage} />
+        <Route path="/compass" component={ValuesPage} />
+        <Route path="/values" component={ValuesPage} />
+        <Route path="/community" component={CommunityPage} />
+        <Route path="/checkin" component={CheckInPage} />
+        <Route path="/journal" component={JournalPage} />
+        <Route path="/intentions" component={IntentionsPage} />
+        <Route path="/home" component={HomePage} />
+        <Route path="/login" component={LoginPage} />
+        <Route path="/register" component={RegisterPage} />
+        <Route path="/pricing" component={PricingPage} />
+        <Route path="/settings" component={SettingsPage} />
+        <Route path="/events" component={EventsPage} />
+        <Route path="/content" component={ContentPage} />
+        <Route path="/goals" component={GoalsPage} />
+        <Route path="/patterns" component={PatternsPage} />
+        <Route path="/ideas" component={IdeasPage} />
+        <Route path="/wisdom" component={WisdomPage} />
+        <Route path="/analytics" component={AnalyticsPage} />
+        <Route path="/personality" component={PersonalityTestPage} />
+        <Route path="/subscription" component={SubscriptionPage} />
+        <Route path="/profile" component={ProfilePage} />
+        <Route path="/faq" component={FAQPage} />
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 
