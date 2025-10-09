@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Sparkles } from 'lucide-react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,27 +12,65 @@ export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<{ id: string; username: string } | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
     name: ''
   });
+  const [, setLocation] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLoading(false);
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, password: formData.password }),
+        credentials: 'include'
+      });
 
-    console.log('Form submitted:', formData);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        alert(body?.error || 'Login failed');
+        setIsLoading(false);
+        return;
+      }
+
+      // fetch current user
+      const me = await fetch('/api/me', { credentials: 'include' });
+      const meBody = await me.json().catch(() => ({}));
+      setUser(meBody.user || null);
+      // Redirect to dashboard after successful login
+      setLocation('/dashboard');
+    } catch (err: any) {
+      alert(err?.message || 'Network error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/me');
+        const body = await res.json().catch(() => ({}));
+        if (mounted) setUser(body.user || null);
+      } catch (err) {
+        // ignore
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <div className="min-h-screen relative overflow-hidden">

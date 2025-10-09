@@ -4,13 +4,39 @@ dotenv.config({ path: '.env.local' });
 dotenv.config();
 
 import express, { type Request, Response, NextFunction } from "express";
+import cors from 'cors';
+import session from 'express-session';
+import connectPgSimple from 'connect-pg-simple';
+import crypto from 'crypto';
+import pg from 'pg';
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import client from 'prom-client';
 
 const app = express();
 // Default JSON/urlencoded parsers for regular API routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+  // Allow cross-origin requests from the frontend dev server and allow credentials
+  const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
+  app.use(cors({ origin: FRONTEND_ORIGIN, credentials: true }));
+
+  // Setup session store backed by Postgres (connect-pg-simple)
+  const sessionSecret = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+  const PgStore = connectPgSimple(session);
+
+  // Use DATABASE_URL from env (docker-compose sets this for the backend service)
+  const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || '';
+  const pgPool = new pg.Pool({ connectionString: dbUrl });
+
+  app.use(session({
+    store: new PgStore({ pool: pgPool }),
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false }
+  }));
 
 // Helper raw body parser to use for endpoints that need the raw payload (e.g. Stripe webhooks)
 import { raw } from 'express';
@@ -47,6 +73,22 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Setup Prometheus metrics collection
+  try {
+    client.collectDefaultMetrics();
+    app.get('/metrics', async (_req: Request, res: Response) => {
+      try {
+        const metrics = await client.register.metrics();
+        res.set('Content-Type', client.register.contentType);
+        res.send(metrics);
+      } catch (e) {
+        res.status(500).send('could not collect metrics');
+      }
+    });
+  } catch (e) {
+    // if prom-client isn't available in some environments, don't fail startup
+    log('prom-client not available or failed to initialize metrics');
+  }
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

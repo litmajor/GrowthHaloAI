@@ -10,10 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import HaloProgressRing from "../components/HaloProgressRing";
 import PhaseIndicator from "../components/PhaseIndicator";
 import WeeklyInsights from "../components/WeeklyInsights";
-import MemoryInsights from '@/components/MemoryInsights'; // Import MemoryInsights component
-import EmotionalTrajectory from '@/components/EmotionalTrajectory'; // Import EmotionalTrajectory component
-import ThemeCloud from '@/components/ThemeCloud'; // Import ThemeCloud component
-import { BeliefJourney } from '@/components/BeliefJourney'; // Import BeliefJourney component
+import MemoryInsights from '@/components/MemoryInsights';
+import EmotionalTrajectory from '@/components/EmotionalTrajectory';
+import ThemeCloud from '@/components/ThemeCloud';
+import { BeliefJourney } from '@/components/BeliefJourney';
+import AnalyticsDashboard from '@/components/AnalyticsDashboard';
+import ValuesCompass from '@/components/ValuesCompass';
+import CommunityPage from '@/pages/CommunityPage';
 
 
 import { ResponsiveContainer } from "@/components/ui/responsive-container";
@@ -117,6 +120,17 @@ export default function DashboardPage() {
     renewal: "from-renewal/20 to-renewal/5"
   };
 
+  // SSR-safe window width
+  const [windowWidth, setWindowWidth] = useState(1024);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setWindowWidth(window.innerWidth);
+      const handleResize = () => setWindowWidth(window.innerWidth);
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <ResponsiveContainer size="xl" className="py-4 sm:py-6 lg:py-8">
@@ -141,7 +155,7 @@ export default function DashboardPage() {
             <HaloProgressRing
               progress={loading ? 0 : phaseConfidence}
               phase={currentPhase}
-              size={window.innerWidth < 640 ? 150 : 200}
+              size={windowWidth < 640 ? 150 : 200}
             />
             <PhaseIndicator
               currentPhase={currentPhase}
@@ -152,12 +166,12 @@ export default function DashboardPage() {
 
           {/* Tabs for different sections */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-6"> {/* Changed to 6 columns */}
+            <TabsList className="grid w-full grid-cols-6"> {/* 6 columns for all tabs */}
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="insights">Insights</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="values">Values</TabsTrigger>
-              <TabsTrigger value="memory">Memory</TabsTrigger> {/* New Memory tab */}
+              <TabsTrigger value="memory">Memory</TabsTrigger>
               <TabsTrigger value="community">Community</TabsTrigger>
             </TabsList>
 
@@ -165,7 +179,6 @@ export default function DashboardPage() {
             <TabsContent value="overview" className="space-y-6">
               {/* Main Content Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-
                 {/* Energy Mapping Card */}
                 <motion.div
                   className="lg:col-span-2"
@@ -236,7 +249,7 @@ export default function DashboardPage() {
                           {growthData?.recentJournalEntries || 0}
                         </motion.div>
                         <p className="text-sm text-muted-foreground">Entries this week</p>
-                        <Button variant="link" className="mt-4">
+                        <Button variant="ghost" className="mt-4">
                           View Journal →
                         </Button>
                       </div>
@@ -247,7 +260,6 @@ export default function DashboardPage() {
 
               {/* Weekly Insights & Intentions Progress */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-
                 {/* Weekly Insights */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
@@ -451,56 +463,26 @@ export default function DashboardPage() {
               </motion.div>
             </TabsContent>
 
-            {/* Insights Tab Content (assuming it exists and is unchanged) */}
+            {/* Insights Tab Content */}
             <TabsContent value="insights" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>AI Insights</CardTitle>
-                  <CardDescription>Deeper dives into your growth patterns</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    Insights content loading...
-                  </div>
-                </CardContent>
-              </Card>
+              <WeeklyInsights userId={userId} />
             </TabsContent>
 
-            {/* Analytics Tab Content (assuming it exists and is unchanged) */}
+            {/* Analytics Tab Content */}
             <TabsContent value="analytics" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Growth Analytics</CardTitle>
-                  <CardDescription>Visualize your progress over time</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    Analytics content loading...
-                  </div>
-                </CardContent>
-              </Card>
+              <AnalyticsDashboard userId={userId} />
             </TabsContent>
 
-            {/* Values Tab Content (assuming it exists and is unchanged) */}
+            {/* Values Tab Content */}
             <TabsContent value="values" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Your Core Values</CardTitle>
-                  <CardDescription>Navigate life aligned with what matters most</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    Values Compass content loading...
-                  </div>
-                </CardContent>
-              </Card>
+              <ValuesCompass />
             </TabsContent>
 
             {/* New Memory Tab Content */}
             <TabsContent value="memory" className="space-y-6">
               <MemoryInsights userId="current-user" />
-              <EmotionalTrajectory userId="current-user" />
-              <ThemeCloud userId="current-user" />
+              <EmotionalTrajectory />
+              <ThemeCloud userId={userId} />
               <div className="mt-6">
                 <BeliefJourney />
               </div>
@@ -508,17 +490,7 @@ export default function DashboardPage() {
 
             {/* Community Tab Content */}
             <TabsContent value="community" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Growth Circles</CardTitle>
-                  <CardDescription>Connect with others on similar journeys</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    Community features coming soon...
-                  </div>
-                </CardContent>
-              </Card>
+              <CommunityPage />
             </TabsContent>
           </Tabs>
 

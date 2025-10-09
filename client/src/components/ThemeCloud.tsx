@@ -1,13 +1,18 @@
+import React from "react";
+
+interface ThemeCloudProps {
+  userId: string;
+}
 
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-export default function ThemeCloud() {
+const ThemeCloud: React.FC<ThemeCloudProps> = ({ userId }) => {
   const { data: themes, isLoading } = useQuery({
     queryKey: ['conversation-themes'],
     queryFn: async () => {
-      const res = await fetch('/api/conversation-themes');
+      const res = await fetch('/api/conversation-themes', { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch themes');
       return res.json();
     },
@@ -69,4 +74,6 @@ export default function ThemeCloud() {
       </CardContent>
     </Card>
   );
-}
+};
+
+export default ThemeCloud;

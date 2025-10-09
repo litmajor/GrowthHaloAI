@@ -13,22 +13,26 @@ export default function LandingPage() {
 
   const features = [
     {
-      icon: <Brain className="w-6 h-6" />,
+      // Bliss AI Companion (icon: white)
+      icon: <Brain className="w-6 h-6 text-white" />,
       title: "Bliss AI Companion",
       description: "Your personal growth companion that learns, adapts, and provides insights tailored to your unique journey."
     },
     {
-      icon: <Circle className="w-6 h-6" />,
+      // Growth Halo Tracking (icon: gold)
+      icon: <Circle className="w-6 h-6 text-yellow-500" />,
       title: "Growth Halo Tracking",
       description: "Visual representation of your growth phases - expansion, contraction, and renewal - with adaptive guidance."
     },
     {
-      icon: <Heart className="w-6 h-6" />,
+      // Values Compass (icon: blue)
+      icon: <Heart className="w-6 h-6 text-blue-600" />,
       title: "Values Compass",
       description: "Discover and align with your core values through interactive assessments and dynamic visualization."
     },
     {
-      icon: <Users className="w-6 h-6" />,
+      // Community Circles (icon: green)
+      icon: <Users className="w-6 h-6 text-green-600" />,
       title: "Community Circles",
       description: "Connect with like-minded individuals in curated communities for support and shared growth."
     }

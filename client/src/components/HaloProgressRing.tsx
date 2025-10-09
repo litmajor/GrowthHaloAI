@@ -6,7 +6,7 @@ type GrowthPhase = "expansion" | "contraction" | "renewal";
 interface HaloProgressRingProps {
   phase: GrowthPhase;
   progress: number; // 0-100
-  size?: "sm" | "md" | "lg";
+  size?: number; // pixel size
   showLabel?: boolean;
 }
 
@@ -23,27 +23,22 @@ const phaseLabels = {
 };
 
 export default function HaloProgressRing({ 
-  phase, 
-  progress, 
-  size = "md",
-  showLabel = true 
+  phase,
+  progress,
+  size = 96, // default to 96px
+  showLabel = true
 }: HaloProgressRingProps) {
-  const sizeClasses = {
-    sm: "w-16 h-16",
-    md: "w-24 h-24", 
-    lg: "w-32 h-32"
-  };
-
-  const radius = size === "sm" ? 28 : size === "md" ? 44 : 60;
+  // Calculate radius based on size (leave some padding)
+  const radius = (size / 2) - 12;
   const circumference = 2 * Math.PI * radius;
   const strokeDasharray = circumference;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className={cn("relative", sizeClasses[size])}>
+      <div className="relative" style={{ width: size, height: size }}>
         {/* Background rings */}
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+        <svg width={size} height={size} className="-rotate-90" viewBox={`0 0 ${size} ${size}`}>
           {/* Outer breathing ring */}
           <motion.circle
             cx="60"

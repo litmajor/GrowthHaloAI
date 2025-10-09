@@ -17,7 +17,7 @@ export function CausalPatterns({ userId }: { userId: string | number }) {
   const { data: patterns, isLoading } = useQuery<CausalPattern[]>({
     queryKey: ['causal-patterns', userId],
     queryFn: async () => {
-      const response = await fetch(`/api/causal-patterns/${userId}`);
+      const response = await fetch(`/api/causal-patterns/${userId}`, { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to fetch patterns');
       return response.json();
     },

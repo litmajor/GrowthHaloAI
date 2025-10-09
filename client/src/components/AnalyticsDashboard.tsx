@@ -118,9 +118,9 @@ export default function AnalyticsDashboard({ userId }: AnalyticsDashboardProps) 
       setLoading(true);
       
       const [timelineRes, patternsRes, predictionsRes] = await Promise.all([
-        fetch(`/api/user/${userId}/analytics/timeline?timeframe=${timeframe}`),
-        fetch(`/api/user/${userId}/analytics/patterns?timeframe=${timeframe}`),
-        fetch(`/api/user/${userId}/analytics/predictions`)
+        fetch(`/api/user/${userId}/analytics/timeline?timeframe=${timeframe}`, { credentials: 'include' }),
+        fetch(`/api/user/${userId}/analytics/patterns?timeframe=${timeframe}`, { credentials: 'include' }),
+        fetch(`/api/user/${userId}/analytics/predictions`, { credentials: 'include' })
       ]);
 
       if (timelineRes.ok) {
@@ -446,7 +446,7 @@ export default function AnalyticsDashboard({ userId }: AnalyticsDashboardProps) 
                   {patterns?.phaseTransitionMap.edges.map((edge, index) => (
                     <div key={index} className="flex items-center justify-between p-2 rounded border-l-2 border-primary/20">
                       <span className="text-sm">
-                        {edge.from} → {edge.toPhase}
+                        {edge.from} → {edge.to}
                       </span>
                       <Badge variant="outline">
                         {edge.frequency} times

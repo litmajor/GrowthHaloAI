@@ -59,7 +59,7 @@ export function IdeasDashboard({ userId }: { userId: string | number }) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-2">Your Idea Garden</h2>
+        <h2 className="text-2xl font-bold mb-2 dark:text-white">Your Idea Garden</h2>
         <p className="text-muted-foreground">
           Watch how your thoughts grow and mature over time
         </p>

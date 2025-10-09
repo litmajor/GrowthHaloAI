@@ -6,13 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
+  const [, navigate] = useLocation();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -36,13 +38,55 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+
+    // Basic step-aware validation: ensure required fields from step 1 are present
+    if (!formData.firstName || !formData.lastName || !formData.email) {
+      setFormError('Please complete your personal information (name and email).');
+      setCurrentStep(1);
+      return;
+    }
+    if (!formData.password || !formData.confirmPassword) {
+      setFormError('Please set and confirm your password.');
+      setCurrentStep(1);
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setFormError('Passwords do not match.');
+      setCurrentStep(1);
+      return;
+    }
+
     setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsLoading(false);
-    
-    console.log('Registration submitted:', formData);
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          interests: formData.interests,
+          goals: formData.goals,
+        })
+      , credentials: 'include'
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setFormError(body?.error || 'Registration failed');
+        setIsLoading(false);
+        return;
+      }
+
+  // Success - redirect to login
+  setIsLoading(false);
+  navigate('/login');
+    } catch (err: any) {
+      setFormError(err?.message || 'Network error');
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -439,7 +483,10 @@ export default function RegisterPage() {
           >
             <Card className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl">
               <CardContent className="p-8">
-                <form onSubmit={handleSubmit}>
+                {formError && (
+                  <div className="mb-4 text-sm text-destructive">{formError}</div>
+                )}
+                <form onSubmit={handleSubmit} noValidate>
                   {currentStep === 1 && renderStep1()}
                   {currentStep === 2 && renderStep2()}
                   {currentStep === 3 && renderStep3()}

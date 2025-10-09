@@ -47,6 +47,7 @@ export default function MemoryInsights({ userId, className }: MemoryInsightsProp
       const response = await fetch('/api/memory/patterns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           userId,
           pattern: patternType,
@@ -71,6 +72,7 @@ export default function MemoryInsights({ userId, className }: MemoryInsightsProp
       const response = await fetch('/api/memory/cluster', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ userId }),
       });
 

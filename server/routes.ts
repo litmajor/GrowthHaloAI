@@ -17,12 +17,26 @@ import { enhancedMemoryService } from './enhanced-memory-service';
 import { associativeRecallService } from './associative-recall-service';
 import { contradictionDetectionService } from './contradiction-detection-service';
 import { users, type InsertUser } from '../shared/schema';
+import bcrypt from 'bcryptjs';
 import { memories, emotionalDataPoints as emotionalStates, conversationThemes as conversationTopics } from '../shared/growth-schema';
 import { beliefs, contradictions, cognitiveDistortions } from '../shared/phase2-schema';
 import { causalReasoningService } from './causal-reasoning-service';
 import { hypothesisFormationService } from './hypothesis-formation-service'; // Import Hypothesis Formation Service
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Attach user to request from session if present so route handlers can use (req as any).user
+  app.use(async (req, _res, next) => {
+    try {
+      const sessionAny = (req as any).session;
+      if (sessionAny && sessionAny.userId) {
+        const u = await storage.getUser(sessionAny.userId);
+        if (u) (req as any).user = u;
+      }
+    } catch (err) {
+      // ignore
+    }
+    next();
+  });
   // Chat endpoint
   app.post('/api/chat', async (req, res) => {
     try {
@@ -157,6 +171,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Adaptive chat error:", error);
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // User registration endpoint
+  app.post('/api/register', async (req, res) => {
+    try {
+      const { email, password, firstName, lastName, interests, goals } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
+      }
+
+      // Check for existing user
+      const existing = await storage.getUserByUsername(email);
+      if (existing) {
+        return res.status(409).json({ error: 'User already exists' });
+      }
+
+  // Hash password before storing
+  const hashed = await bcrypt.hash(password, 10);
+
+  // Create user (InsertUser expects username/password)
+  const newUser = await storage.createUser({ username: email, password: hashed } as InsertUser);
+
+      // Create a free subscription for the new user
+      try {
+        await subscriptionService.createFreeSubscription(newUser.id);
+      } catch (err) {
+        console.warn('Could not create free subscription for new user:', err);
+      }
+
+      res.status(201).json({ id: newUser.id });
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(500).json({ error: 'Registration failed' });
+    }
+  });
+
+  // Simple login endpoint - verifies credentials and sets session
+  app.post('/api/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+
+      const user = await storage.getUserByUsername(email);
+      if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+
+      const ok = await bcrypt.compare(password, (user as any).password);
+      if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
+
+      // Attach user id to session
+      (req as any).session.userId = (user as any).id;
+
+      res.json({ success: true, id: (user as any).id });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'Login failed' });
+    }
+  });
+
+  // Get current authenticated user
+  app.get('/api/me', async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (!user) return res.json({ user: null });
+      // return minimal public user info
+      const safe = { id: user.id, username: user.username } as any;
+      res.json({ user: safe });
+    } catch (err) {
+      console.error('Me error:', err);
+      res.status(500).json({ error: 'Failed to get user' });
+    }
+  });
+
+  // Logout endpoint
+  app.post('/api/logout', (req, res) => {
+    try {
+      const sess = (req as any).session;
+      if (sess) {
+        sess.destroy?.(() => {});
+      }
+      res.json({ success: true });
+    } catch (err) {
+      console.error('Logout error:', err);
+      res.status(500).json({ error: 'Logout failed' });
     }
   });
 

@@ -9,7 +9,7 @@ export default function EmotionalTrajectory() {
   const { data: trajectory, isLoading } = useQuery({
     queryKey: ['emotional-trajectory'],
     queryFn: async () => {
-      const res = await fetch('/api/emotional-trajectory?days=30');
+      const res = await fetch('/api/emotional-trajectory?days=30', { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch emotional trajectory');
       return res.json();
     },
