@@ -1,6 +1,7 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Lightbulb, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
+import { X, Lightbulb, ArrowRight, ArrowLeft, CheckCircle, Trophy, Play, Calendar, Users, Brain, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,19 +18,28 @@ interface Hint {
   triggerElement?: string;
 }
 
+interface TutorialStep {
+  title: string;
+  content: string;
+  element?: string; // CSS selector to highlight
+  position?: 'top' | 'bottom' | 'left' | 'right';
+  action?: {
+    type: 'click' | 'input' | 'navigate';
+    target: string;
+    validation?: () => boolean;
+  };
+  video?: string;
+}
+
 interface Tutorial {
   id: string;
   title: string;
   description: string;
+  category: 'getting-started' | 'feature' | 'advanced';
   steps: TutorialStep[];
-  category: 'getting-started' | 'advanced' | 'ai-interaction' | 'growth-tracking';
-}
-
-interface TutorialStep {
-  title: string;
-  content: string;
-  element?: string;
-  action?: string;
+  estimatedTime: number; // minutes
+  prerequisites?: string[];
+  icon?: React.ReactNode;
 }
 
 interface HintsContextType {
@@ -43,55 +53,21 @@ interface HintsContextType {
   currentStep: number;
   dismissedHints: string[];
   completedTutorials: string[];
+  availableTutorials: Tutorial[];
+  spotlightElement: string | null;
 }
 
 const HintsContext = createContext<HintsContextType | undefined>(undefined);
 
 const hints: Hint[] = [
   {
-    id: 'welcome-chat',
-    title: 'Start Your Growth Journey',
-    content: 'Click on any chat template to begin a meaningful conversation with Bliss, your AI companion.',
-    page: '/chat',
+    id: 'welcome-hint',
+    title: 'Welcome to Growth Halo',
+    content: 'Start your journey by chatting with Bliss or taking a daily check-in.',
+    page: 'dashboard',
     position: 'center',
     priority: 'high',
     category: 'tutorial',
-  },
-  {
-    id: 'sidebar-navigation',
-    title: 'Easy Navigation',
-    content: 'Use the sidebar to quickly navigate between different sections of your growth journey. Click the arrow to collapse it.',
-    page: '/dashboard',
-    position: 'top-right',
-    priority: 'medium',
-    category: 'navigation',
-  },
-  {
-    id: 'growth-halo',
-    title: 'Your Growth Phase',
-    content: 'The halo ring shows your current growth phase. Expansion (outward growth), Contraction (integration), or Renewal (transformation).',
-    page: '/dashboard',
-    position: 'top-right',
-    priority: 'high',
-    category: 'feature',
-  },
-  {
-    id: 'values-compass',
-    title: 'Discover Your Values',
-    content: 'The Values Compass helps you identify and align with your core values. This is fundamental to authentic growth.',
-    page: '/compass',
-    position: 'center',
-    priority: 'high',
-    category: 'feature',
-  },
-  {
-    id: 'daily-checkin',
-    title: 'Daily Reflection',
-    content: 'Regular check-ins help track your emotional and spiritual state, creating patterns for deeper insights.',
-    page: '/checkin',
-    position: 'bottom-center',
-    priority: 'medium',
-    category: 'feature',
   },
 ];
 
@@ -101,6 +77,8 @@ const tutorials: Tutorial[] = [
     title: 'Getting Started with Growth Halo',
     description: 'Learn the basics of navigating your personal development journey',
     category: 'getting-started',
+    estimatedTime: 5,
+    icon: <Play className="w-5 h-5" />,
     steps: [
       {
         title: 'Welcome to Growth Halo',
@@ -109,41 +87,143 @@ const tutorials: Tutorial[] = [
       {
         title: 'Meet Bliss, Your AI Companion',
         content: 'Bliss learns your patterns and provides personalized guidance. Start with the chat templates to begin meaningful conversations.',
-        element: 'chat-templates',
+        element: '[data-tutorial="chat-templates"]',
+        position: 'bottom',
       },
       {
         title: 'Track Your Growth Phase',
         content: 'The halo ring shows your current phase. Each phase has different needs and opportunities for growth.',
-        element: 'halo-ring',
+        element: '[data-tutorial="halo-ring"]',
+        position: 'left',
       },
       {
-        title: 'Explore Your Values',
-        content: 'Use the Values Compass to understand what matters most to you. This becomes your north star for decision-making.',
-        element: 'values-compass',
+        title: 'Navigation Basics',
+        content: 'Use the sidebar to access your dashboard, journal, analytics, and more. Everything is designed to support your growth journey.',
+        element: 'nav',
+        position: 'right',
       },
     ],
   },
   {
-    id: 'ai-interaction',
-    title: 'Maximizing AI Conversations',
-    description: 'Learn how to have more meaningful and productive conversations with Bliss',
-    category: 'ai-interaction',
+    id: 'values-discovery',
+    title: 'Values Discovery',
+    description: 'Understand what matters most to you and use it as your north star',
+    category: 'getting-started',
+    estimatedTime: 8,
+    icon: <Compass className="w-5 h-5" />,
     steps: [
       {
-        title: 'Be Authentic and Specific',
-        content: 'Bliss responds best to honest, specific sharing. Instead of "I feel bad," try "I feel stuck in my career and unsure about my next move."',
+        title: 'Why Values Matter',
+        content: 'Your core values act as a compass for decisions. When you\'re aligned with your values, you experience more fulfillment and less internal conflict.',
       },
       {
-        title: 'Use the Growth Phases',
-        content: 'Mention what phase you think you\'re in. "I feel like I\'m in a contraction phase, needing to process recent changes."',
+        title: 'Compass Assessment',
+        content: 'Take the Values Compass assessment to identify your top values. This helps Bliss provide more personalized guidance.',
+        element: '[data-tutorial="values-compass"]',
+        position: 'top',
+        action: {
+          type: 'navigate',
+          target: '/values',
+        },
       },
       {
-        title: 'Ask for Different Types of Help',
-        content: 'You can ask for reflection questions, practical next steps, values clarification, or pattern recognition in your journey.',
+        title: 'Using Values for Decisions',
+        content: 'When facing a choice, ask: "Which option aligns better with my values?" Bliss can help you explore this question.',
       },
       {
-        title: 'Build on Previous Conversations',
-        content: 'Bliss remembers your conversation history. Reference previous insights or continue developing themes from past chats.',
+        title: 'Values Evolution Over Time',
+        content: 'Your values may shift as you grow. Revisit your compass quarterly to see how you\'ve evolved.',
+      },
+    ],
+  },
+  {
+    id: 'daily-practice',
+    title: 'Daily Practice',
+    description: 'Build consistent habits for sustainable growth',
+    category: 'getting-started',
+    estimatedTime: 6,
+    icon: <Calendar className="w-5 h-5" />,
+    steps: [
+      {
+        title: 'Daily Check-ins',
+        content: 'Start each day with a quick check-in. Track your energy levels across mental, physical, emotional, and spiritual dimensions.',
+        element: '[data-tutorial="daily-checkin"]',
+        position: 'top',
+      },
+      {
+        title: 'Energy Tracking',
+        content: 'Understanding your energy patterns helps you optimize your day. Notice when you have the most creative energy or need rest.',
+      },
+      {
+        title: 'Journaling Effectively',
+        content: 'Write freely without judgment. Bliss can help you reflect on your entries and spot patterns over time.',
+        element: '[data-tutorial="journal"]',
+        position: 'bottom',
+      },
+      {
+        title: 'Building Consistency',
+        content: 'Small daily actions compound over time. Your streak tracker celebrates your commitment to growth.',
+        element: '[data-tutorial="streak"]',
+        position: 'left',
+      },
+    ],
+  },
+  {
+    id: 'advanced-features',
+    title: 'Advanced Features',
+    description: 'Unlock deeper insights with AI-powered pattern recognition',
+    category: 'advanced',
+    estimatedTime: 12,
+    prerequisites: ['getting-started'],
+    icon: <Brain className="w-5 h-5" />,
+    steps: [
+      {
+        title: 'Pattern Recognition',
+        content: 'Bliss analyzes your conversations to identify recurring themes and behavioral patterns you might not notice on your own.',
+        element: '[data-tutorial="patterns"]',
+        position: 'top',
+      },
+      {
+        title: 'Contradiction Detection',
+        content: 'When your stated goals conflict with your actions, Bliss gently points this out - helping you grow through awareness.',
+      },
+      {
+        title: 'Hypothesis Formation',
+        content: 'Based on your patterns, Bliss forms hypotheses about what helps you thrive and tests them over time.',
+      },
+      {
+        title: 'Wisdom Library',
+        content: 'Your most valuable insights are saved here. Bliss resurfaces them at the perfect moment when you need them most.',
+        element: '[data-tutorial="wisdom"]',
+        position: 'bottom',
+      },
+    ],
+  },
+  {
+    id: 'community-connection',
+    title: 'Community Connection',
+    description: 'Find your circle and grow together',
+    category: 'feature',
+    estimatedTime: 7,
+    icon: <Users className="w-5 h-5" />,
+    steps: [
+      {
+        title: 'Finding Your Circle',
+        content: 'Connect with others who share your values and growth journey. Small circles foster deeper connections than large groups.',
+        element: '[data-tutorial="circles"]',
+        position: 'top',
+      },
+      {
+        title: 'Meaningful Contribution',
+        content: 'Share insights and support others. Teaching reinforces your own learning and creates positive impact.',
+      },
+      {
+        title: 'Privacy & Boundaries',
+        content: 'You control what you share. Everything is private by default. Choose your level of vulnerability mindfully.',
+      },
+      {
+        title: 'Getting Support',
+        content: 'When you\'re struggling, your circle is here. Asking for help is a sign of strength, not weakness.',
       },
     ],
   },
@@ -155,9 +235,9 @@ export function HintsProvider({ children }: { children: React.ReactNode }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [dismissedHints, setDismissedHints] = useState<string[]>([]);
   const [completedTutorials, setCompletedTutorials] = useState<string[]>([]);
+  const [spotlightElement, setSpotlightElement] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load dismissed hints and completed tutorials from localStorage
     const dismissed = localStorage.getItem('growth-halo-dismissed-hints');
     const completed = localStorage.getItem('growth-halo-completed-tutorials');
     
@@ -169,9 +249,16 @@ export function HintsProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  useEffect(() => {
+    if (currentTutorial && currentTutorial.steps[currentStep]?.element) {
+      setSpotlightElement(currentTutorial.steps[currentStep].element!);
+    } else {
+      setSpotlightElement(null);
+    }
+  }, [currentTutorial, currentStep]);
+
   const showHint = (hintId: string) => {
     if (dismissedHints.includes(hintId)) return;
-    
     const hint = hints.find(h => h.id === hintId);
     if (hint) {
       setCurrentHint(hint);
@@ -192,8 +279,15 @@ export function HintsProvider({ children }: { children: React.ReactNode }) {
   const startTutorial = (tutorialId: string) => {
     const tutorial = tutorials.find(t => t.id === tutorialId);
     if (tutorial) {
-      setCurrentTutorial(tutorial);
-      setCurrentStep(0);
+      const canStart = !tutorial.prerequisites || 
+        tutorial.prerequisites.every(prereq => completedTutorials.includes(prereq));
+      
+      if (canStart) {
+        setCurrentTutorial(tutorial);
+        setCurrentStep(0);
+      } else {
+        alert('Please complete prerequisite tutorials first.');
+      }
     }
   };
 
@@ -203,6 +297,7 @@ export function HintsProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('growth-halo-completed-tutorials', JSON.stringify(newCompleted));
     setCurrentTutorial(null);
     setCurrentStep(0);
+    setSpotlightElement(null);
   };
 
   const contextValue: HintsContextType = {
@@ -216,80 +311,27 @@ export function HintsProvider({ children }: { children: React.ReactNode }) {
     currentStep,
     dismissedHints,
     completedTutorials,
+    availableTutorials: tutorials,
+    spotlightElement,
   };
 
   return (
     <HintsContext.Provider value={contextValue}>
       {children}
-      
-      {/* Hint Overlay */}
+
+      {/* Spotlight Overlay */}
       <AnimatePresence>
-        {currentHint && (
+        {spotlightElement && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ backdropFilter: 'blur(2px)' }}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className={cn(
-                "relative max-w-md w-full",
-                currentHint.position === 'center' && "mx-auto",
-                currentHint.position === 'top-right' && "ml-auto mr-4 mt-4",
-                currentHint.position === 'bottom-right' && "ml-auto mr-4 mb-4 mt-auto",
-                currentHint.position === 'bottom-center' && "mx-auto mb-4 mt-auto"
-              )}
-            >
-              <Card className="border-primary/20 shadow-xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <Lightbulb className="w-5 h-5 text-primary" />
-                      <Badge variant="outline" className="text-xs">
-                        {currentHint.category}
-                      </Badge>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => dismissHint(currentHint.id)}
-                      className="h-6 w-6 p-0"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  
-                  <h3 className="font-medium mb-2 text-foreground">
-                    {currentHint.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {currentHint.content}
-                  </p>
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => dismissHint(currentHint.id)}
-                      className="flex-1"
-                    >
-                      Got it!
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={hideHint}
-                    >
-                      Later
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </motion.div>
+            className="fixed inset-0 z-40 pointer-events-none"
+            style={{
+              background: 'rgba(0, 0, 0, 0.6)',
+              backdropFilter: 'blur(2px)',
+            }}
+          />
         )}
       </AnimatePresence>
 
@@ -300,29 +342,42 @@ export function HintsProvider({ children }: { children: React.ReactNode }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="max-w-2xl w-full max-h-[80vh] overflow-hidden"
+              className="max-w-2xl w-full"
             >
-              <Card>
+              <Card className="shadow-2xl">
                 <CardContent className="p-0">
                   {/* Progress Header */}
-                  <div className="p-6 border-b border-border">
+                  <div className="p-6 border-b border-border bg-gradient-to-r from-primary/5 to-transparent">
                     <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-xl font-medium">{currentTutorial.title}</h2>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          {currentTutorial.icon}
+                        </div>
+                        <div>
+                          <h2 className="text-xl font-semibold">{currentTutorial.title}</h2>
+                          <p className="text-sm text-muted-foreground">
+                            {currentTutorial.estimatedTime} minute tutorial
+                          </p>
+                        </div>
+                      </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setCurrentTutorial(null)}
+                        onClick={() => {
+                          setCurrentTutorial(null);
+                          setSpotlightElement(null);
+                        }}
                       >
                         <X className="w-4 h-4" />
                       </Button>
                     </div>
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-3">
                       <span className="text-sm text-muted-foreground">
                         Step {currentStep + 1} of {currentTutorial.steps.length}
                       </span>
@@ -330,10 +385,14 @@ export function HintsProvider({ children }: { children: React.ReactNode }) {
                         {currentTutorial.category}
                       </Badge>
                     </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${((currentStep + 1) / currentTutorial.steps.length) * 100}%` }}
+                    <div className="w-full bg-muted rounded-full h-2 mt-3">
+                      <motion.div
+                        className="bg-primary h-2 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ 
+                          width: `${((currentStep + 1) / currentTutorial.steps.length) * 100}%` 
+                        }}
+                        transition={{ duration: 0.3 }}
                       />
                     </div>
                   </div>
@@ -345,13 +404,22 @@ export function HintsProvider({ children }: { children: React.ReactNode }) {
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3 }}
+                      className="space-y-4"
                     >
-                      <h3 className="text-lg font-medium mb-4">
+                      <h3 className="text-lg font-medium">
                         {currentTutorial.steps[currentStep].title}
                       </h3>
                       <p className="text-muted-foreground leading-relaxed">
                         {currentTutorial.steps[currentStep].content}
                       </p>
+                      {currentTutorial.steps[currentStep].video && (
+                        <div className="bg-muted rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            <Play className="w-4 h-4" />
+                            Video tutorial available
+                          </p>
+                        </div>
+                      )}
                     </motion.div>
                   </div>
 
@@ -369,8 +437,9 @@ export function HintsProvider({ children }: { children: React.ReactNode }) {
                     {currentStep === currentTutorial.steps.length - 1 ? (
                       <Button
                         onClick={() => completeTutorial(currentTutorial.id)}
+                        className="bg-gradient-to-r from-primary to-primary/80"
                       >
-                        <CheckCircle className="w-4 h-4 mr-2" />
+                        <Trophy className="w-4 h-4 mr-2" />
                         Complete Tutorial
                       </Button>
                     ) : (
@@ -388,6 +457,43 @@ export function HintsProvider({ children }: { children: React.ReactNode }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Contextual Hints */}
+      <AnimatePresence>
+        {currentHint && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className={cn(
+              'fixed z-50 max-w-sm',
+              currentHint.position === 'top-right' && 'top-4 right-4',
+              currentHint.position === 'bottom-right' && 'bottom-4 right-4',
+              currentHint.position === 'center' && 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+              currentHint.position === 'bottom-center' && 'bottom-4 left-1/2 -translate-x-1/2'
+            )}
+          >
+            <Card className="shadow-lg">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <Lightbulb className="w-5 h-5 text-primary mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="font-medium mb-1">{currentHint.title}</h4>
+                    <p className="text-sm text-muted-foreground">{currentHint.content}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => dismissHint(currentHint.id)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </HintsContext.Provider>
   );
 }
@@ -398,25 +504,4 @@ export function useHints() {
     throw new Error('useHints must be used within a HintsProvider');
   }
   return context;
-}
-
-// Hook for page-specific hints
-export function usePageHints(pagePath: string) {
-  const { showHint, dismissedHints } = useHints();
-  
-  useEffect(() => {
-    // Show hints for this page after a short delay
-    const timer = setTimeout(() => {
-      const pageHints = hints.filter(h => h.page === pagePath && !dismissedHints.includes(h.id));
-      const highPriorityHint = pageHints.find(h => h.priority === 'high');
-      
-      if (highPriorityHint) {
-        showHint(highPriorityHint.id);
-      } else if (pageHints.length > 0) {
-        showHint(pageHints[0].id);
-      }
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, [pagePath, showHint, dismissedHints]);
 }

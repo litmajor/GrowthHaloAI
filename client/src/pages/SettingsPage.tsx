@@ -16,16 +16,22 @@ import {
   Palette,
   Database,
   Sparkles,
-  HelpCircle
+  HelpCircle,
+  BookOpen,
+  MessageSquare,
+  CheckCircle
 } from "lucide-react";
 import { useState } from 'react';
 import { useUser } from '@/hooks/use-user';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation, Link } from 'wouter';
 import OnboardingFlow from '@/components/OnboardingFlow';
+import { Badge } from "@/components/ui/badge";
+import { useHints } from "@/hooks/use-hints"; // Assuming useHints provides tutorial data
 
 export default function SettingsPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const hints = useHints(); // Get tutorial data from context or hook
 
   return (
     <div className="min-h-screen bg-background">
@@ -113,37 +119,76 @@ export default function SettingsPage() {
             {/* Help & Support */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HelpCircle className="w-5 h-5" />
-                  Help & Support
-                </CardTitle>
-                <CardDescription>
-                  Get help and learn about Growth Halo features
-                </CardDescription>
+                <CardTitle>Help & Support</CardTitle>
+                <CardDescription>Get help and learn how to use Growth Halo</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="space-y-1">
-                    <p className="font-medium">Revisit Onboarding Tutorial</p>
-                    <p className="text-sm text-muted-foreground">
-                      Take the tour again to learn about features
-                    </p>
-                  </div>
-                  <Button onClick={() => setShowOnboarding(true)} variant="outline">
-                    Start Tour
-                  </Button>
-                </div>
-                <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="space-y-1">
-                    <p className="font-medium">Help Documentation</p>
-                    <p className="text-sm text-muted-foreground">
-                      Browse guides and tutorials
-                    </p>
-                  </div>
-                  <Button variant="outline" asChild>
-                    <Link href="/faq">View FAQ</Link>
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => setShowOnboarding(true)}
+                >
+                  <HelpCircle className="mr-2 h-4 w-4" />
+                  Restart Onboarding Tour
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  Documentation
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Contact Support
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Interactive Tutorials */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Interactive Tutorials</CardTitle>
+                <CardDescription>Learn at your own pace with guided tutorials</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {hints.availableTutorials.map((tutorial) => {
+                  const isCompleted = hints.completedTutorials.includes(tutorial.id);
+                  const canStart = !tutorial.prerequisites ||
+                    tutorial.prerequisites.every(prereq => hints.completedTutorials.includes(prereq));
+
+                  return (
+                    <div key={tutorial.id} className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          {tutorial.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium text-sm">{tutorial.title}</h4>
+                            {isCompleted && (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-1">{tutorial.description}</p>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="text-xs">
+                              {tutorial.estimatedTime} min
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {tutorial.category}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant={isCompleted ? "outline" : "default"}
+                        onClick={() => hints.startTutorial(tutorial.id)}
+                        disabled={!canStart}
+                      >
+                        {isCompleted ? 'Replay' : 'Start'}
+                      </Button>
+                    </div>
+                  );
+                })}
               </CardContent>
             </Card>
 
