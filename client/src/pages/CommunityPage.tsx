@@ -308,8 +308,8 @@ export default function CommunityPage() {
             </Button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Tabs value={selectedType} onValueChange={(value) => setSelectedType(value as CircleType | "all")}>
+          <div className="space-y-4">
+            <Tabs value={selectedType} onValueChange={(value) => setSelectedType(value as CircleType | "all")} className="w-full">
               <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="phase">Phase</TabsTrigger>
@@ -319,37 +319,39 @@ export default function CommunityPage() {
               </TabsList>
             </Tabs>
             
-            <select
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-              className="px-3 py-2 border border-input rounded-md bg-background text-foreground"
-            >
-              <option value="all">All Locations</option>
-              <option value="virtual">Virtual</option>
-              <option value="local">Local</option>
-              <option value="hybrid">Hybrid</option>
-            </select>
-            
-            <select
-              value={selectedPersonality}
-              onChange={(e) => setSelectedPersonality(e.target.value)}
-              className="px-3 py-2 border border-input rounded-md bg-background text-foreground"
-            >
-              <option value="all">All Personalities</option>
-              <option value="introvert">Introvert-Friendly</option>
-              <option value="extrovert">Extrovert-Friendly</option>
-              <option value="mixed">Mixed</option>
-            </select>
-            
-            <select
-              value={selectedPrivacy}
-              onChange={(e) => setSelectedPrivacy(e.target.value)}
-              className="px-3 py-2 border border-input rounded-md bg-background text-foreground"
-            >
-              <option value="all">All Privacy</option>
-              <option value="public">Public</option>
-              <option value="private">Private</option>
-            </select>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <select
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
+                className="px-3 py-2 border border-input rounded-md bg-background text-foreground text-sm"
+              >
+                <option value="all">All Locations</option>
+                <option value="virtual">Virtual</option>
+                <option value="local">Local</option>
+                <option value="hybrid">Hybrid</option>
+              </select>
+              
+              <select
+                value={selectedPersonality}
+                onChange={(e) => setSelectedPersonality(e.target.value)}
+                className="px-3 py-2 border border-input rounded-md bg-background text-foreground text-sm"
+              >
+                <option value="all">All Personalities</option>
+                <option value="introvert">Introvert-Friendly</option>
+                <option value="extrovert">Extrovert-Friendly</option>
+                <option value="mixed">Mixed</option>
+              </select>
+              
+              <select
+                value={selectedPrivacy}
+                onChange={(e) => setSelectedPrivacy(e.target.value)}
+                className="px-3 py-2 border border-input rounded-md bg-background text-foreground text-sm"
+              >
+                <option value="all">All Privacy</option>
+                <option value="public">Public</option>
+                <option value="private">Private</option>
+              </select>
+            </div>
           </div>
         </motion.div>
 

@@ -10,16 +10,8 @@ import { Brain, TrendingUp, Sparkles } from 'lucide-react';
 export default function PatternsPage() {
   const { user } = useUser();
 
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Please log in to view your patterns.</p>
-      </div>
-    );
-  }
-
-  // Extract userId here, assuming user object has an id property
-  const userId = user.id;
+  // Use a default user ID for demo purposes
+  const userId = user?.id || 'demo-user';
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">

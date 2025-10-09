@@ -18,7 +18,8 @@ import {
   Database,
   Moon,
   Sun,
-  Monitor
+  Monitor,
+  Sparkles
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -184,6 +185,112 @@ export default function SettingsPage() {
                     <Database className="w-4 h-4 mr-2" />
                     Export Data
                   </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Data & Privacy */}
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Database className="w-5 h-5" />
+                  Data & Privacy
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 sm:space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-sm font-medium">Analytics & Insights</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Allow Bliss to analyze your conversations for insights
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <Separator />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-sm font-medium">Share Anonymous Usage Data</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Help improve Growth Halo by sharing anonymous usage data
+                    </p>
+                  </div>
+                  <Switch />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* AI Preferences */}
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Sparkles className="w-5 h-5" />
+                  AI Preferences
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 sm:space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-sm font-medium">Response Style</Label>
+                    <p className="text-xs text-muted-foreground">
+                      How Bliss communicates with you
+                    </p>
+                  </div>
+                  <Select defaultValue="balanced">
+                    <SelectTrigger className="w-full sm:w-[160px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="concise">Concise</SelectItem>
+                      <SelectItem value="balanced">Balanced</SelectItem>
+                      <SelectItem value="detailed">Detailed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Separator />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-sm font-medium">Proactive Insights</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Let Bliss surface insights without prompting
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Account Management */}
+            <Card className="border-red-200 dark:border-red-900">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg text-red-600 dark:text-red-400">
+                  <Shield className="w-5 h-5" />
+                  Account Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="font-medium mb-1">Deactivate Account</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Temporarily disable your account. You can reactivate it anytime.
+                    </p>
+                    <Button variant="outline" className="text-amber-600 border-amber-300 hover:bg-amber-50">
+                      Deactivate Account
+                    </Button>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h4 className="font-medium mb-1 text-red-600 dark:text-red-400">Delete Account</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Permanently delete your account and all data. This action cannot be undone.
+                    </p>
+                    <Button variant="destructive">
+                      Delete Account
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
